@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitReturns": true,
+    "declaration": false,
+    "declarationDir": null,
+    "skipLibCheck": true,
+    "noEmitOnError": false
+  },
+  "include": ["src/**/*.ts"]
+}

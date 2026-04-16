@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+*.tgz
+.env
+.idea/
+.vscode/
+
+docs/.vitepress/cache/

@@ -1,0 +1,352 @@
+/* ===== xcolor docs theme ===== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --xc-brand: #F472B6;
+  --xc-brand-light: #F9A8D4;
+  --xc-brand-dark: #EC4899;
+  --xc-brand-accent: #F97316;
+  --xc-gradient: linear-gradient(135deg, #F472B6, #F97316);
+  --xc-bg: #ffffff;
+  --xc-bg-soft: #f8f9fb;
+  --xc-bg-mute: #f0f1f3;
+  --xc-border: #e2e4e8;
+  --xc-text: #1a1a2e;
+  --xc-text-secondary: #5c6370;
+  --xc-code-bg: #f3f4f6;
+  --xc-swatch-border: rgba(0, 0, 0, 0.12);
+  --xc-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  --vp-c-brand-1: var(--xc-brand);
+  --vp-c-brand-2: var(--xc-brand-light);
+  --vp-c-brand-3: var(--xc-brand-dark);
+}
+
+.dark {
+  --xc-brand: #F472B6;
+  --xc-brand-light: #F9A8D4;
+  --xc-brand-dark: #EC4899;
+  --xc-brand-accent: #F97316;
+  --xc-bg: #1a1a2e;
+  --xc-bg-soft: #1e1e32;
+  --xc-bg-mute: #252540;
+  --xc-border: #3a3a5c;
+  --xc-text: #e2e8f0;
+  --xc-text-secondary: #94a3b8;
+  --xc-code-bg: #252540;
+  --xc-swatch-border: rgba(255, 255, 255, 0.15);
+  --xc-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== playground full-width ===== */
+.playground-page-class .VPDoc .container {
+  max-width: 100% !important;
+}
+.playground-page-class .VPDoc .content {
+  max-width: 100% !important;
+}
+.playground-page-class .VPDoc .content-container {
+  max-width: 100% !important;
+}
+.playground-page-class .vp-doc {
+  max-width: 100% !important;
+}
+
+/* ===== color swatch ===== */
+.color-swatch {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid var(--xc-swatch-border);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.color-swatch-lg {
+  width: 56px;
+  height: 56px;
+  border-width: 2px;
+}
+
+.color-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.color-row .color-swatch {
+  cursor: default;
+  transition: transform 0.15s ease;
+}
+
+.color-row .color-swatch:hover {
+  transform: scale(1.12);
+}
+
+/* ===== method signature badge ===== */
+.method-sig {
+  display: inline-block;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--xc-code-bg);
+  color: var(--xc-brand);
+}
+
+.alias-badge {
+  display: inline-block;
+  font-size: 0.75em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--xc-brand);
+  color: #fff;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: 500;
+}
+
+/* ===== result comment in code ===== */
+.vp-doc div[class*="language-"] code .comment {
+  opacity: 0.65;
+}
+
+/* ===== SVG diagrams: fix dark mode ===== */
+.dark .vp-doc svg text,
+.dark .vp-doc svg [stroke="#333"],
+.dark .vp-doc svg [stroke="#333333"],
+.dark .vp-doc svg [stroke="black"],
+.dark .vp-doc svg [stroke="#000"],
+.dark .vp-doc svg [stroke="#000000"] {
+  stroke: var(--xc-text);
+}
+
+.dark .vp-doc svg [fill="#333"],
+.dark .vp-doc svg [fill="#333333"],
+.dark .vp-doc svg [fill="black"],
+.dark .vp-doc svg [fill="#000"],
+.dark .vp-doc svg [fill="#000000"] {
+  fill: var(--xc-text);
+}
+
+.dark .vp-doc svg [fill="white"],
+.dark .vp-doc svg [fill="#fff"],
+.dark .vp-doc svg [fill="#ffffff"] {
+  fill: var(--xc-bg);
+}
+
+/* ===== comparison table icons ===== */
+.vp-doc table td {
+  vertical-align: middle;
+}
+
+/* ===== tip/warning containers color accent ===== */
+.vp-doc .custom-block.tip {
+  border-color: var(--xc-brand);
+}
+
+/* ===== toast notification (center-screen) ===== */
+.xc-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  align-items: center;
+}
+
+.xc-toast-item {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+  animation: xc-toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  max-width: 400px;
+  word-break: break-all;
+  backdrop-filter: blur(8px);
+  letter-spacing: 0.02em;
+}
+
+@keyframes xc-toast-in {
+  from { opacity: 0; transform: scale(0.8); filter: blur(8px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes xc-toast-out {
+  from { opacity: 1; transform: scale(1); filter: blur(0); }
+  to { opacity: 0; transform: scale(0.85); filter: blur(6px); }
+}
+
+/* ===== color demo blocks (manipulation page) ===== */
+.color-demo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--xc-bg-soft);
+  border: 1px solid var(--xc-border);
+}
+
+.color-demo-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--xc-swatch-border);
+  flex-shrink: 0;
+}
+
+.color-demo-arrow {
+  color: var(--xc-text-secondary);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.color-demo-label {
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  color: var(--xc-text-secondary);
+}
+
+/* ===== home page hero gradient ===== */
+.VPHero .VPImage {
+  filter: drop-shadow(0 0 24px rgba(244, 114, 182, 0.4));
+}
+
+.dark .VPHero .VPImage {
+  filter: drop-shadow(0 0 24px rgba(244, 114, 182, 0.3));
+}
+
+/* ===== hero name gradient text ===== */
+.VPHero .name .clip {
+  background: var(--xc-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ===== brand button gradient ===== */
+.VPButton.brand {
+  background: var(--xc-gradient) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  transition: opacity 0.25s, box-shadow 0.25s;
+}
+.VPButton.brand:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.35);
+}
+
+/* ===== nav bar accent border (full width) ===== */
+.VPNavBar .divider-line {
+  background: var(--xc-gradient) !important;
+  height: 1px;
+}
+
+/* ===== h2 style ===== */
+.vp-doc h2 {
+  border-top: none;
+  padding-top: 24px;
+}
+
+/* ===== doc heading gradient text + hover shimmer ===== */
+.vp-doc h1,
+.vp-doc h2 {
+  background: linear-gradient(90deg, #F472B6, #F97316, #F472B6, #F97316);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.vp-doc h1:hover,
+.vp-doc h2:hover {
+  animation: heading-shimmer 5s linear infinite;
+}
+
+@keyframes heading-shimmer {
+  from { background-position: 0 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ===== hide built-in VitePress translations (replaced by FixedLangSwitcher) ===== */
+.VPNavBarTranslations {
+  display: none !important;
+}
+.VPNavScreen .translations {
+  display: none !important;
+}
+
+/* ===== Position FixedLangSwitcher between menu and appearance ===== */
+/* VitePress content-body order: search, menu, translations(hidden), appearance, social-links, extra, [slot:after], hamburger */
+/* Use CSS order to reposition FixedLangSwitcher to sit between menu and appearance */
+.VPNavBar .content-body .search        { order: 0; }
+.VPNavBar .content-body .menu          { order: 1; }
+.VPNavBar .content-body .translations  { order: 2; }
+.VPNavBar .content-body .fixed-lang-switcher { order: 3; }
+.VPNavBar .content-body .appearance    { order: 4; }
+.VPNavBar .content-body .social-links  { order: 5; }
+.VPNavBar .content-body .extra         { order: 6; }
+.VPNavBar .content-body .hamburger     { order: 7; }
+
+/* Divider lines on both sides of FixedLangSwitcher */
+.VPNavBar .content-body .fixed-lang-switcher::before,
+.VPNavBar .content-body .fixed-lang-switcher::after {
+  margin-right: 8px;
+  margin-left: 8px;
+  width: 1px;
+  height: 24px;
+  background-color: var(--vp-c-divider);
+  content: "";
+  flex-shrink: 0;
+}
+/* Right divider (before appearance) gets wider right margin to match VitePress spacing */
+.VPNavBar .content-body .fixed-lang-switcher::after {
+  margin-right: 16px;
+}
+
+/* Suppress built-in VitePress dividers that conflict with FixedLangSwitcher dividers */
+.VPNavBar .content-body .translations + .appearance::before,
+.VPNavBar .content-body .menu + .translations::before {
+  content: none;
+}
+
+/* ===== code block top gradient line ===== */
+.vp-doc div[class*='language-'] {
+  border-top: 2px solid transparent;
+  background-image: linear-gradient(var(--xc-code-bg), var(--xc-code-bg)),
+    var(--xc-gradient);
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* ===== sidebar active item ===== */
+.VPSidebarItem.is-active > .item > .link > .text {
+  color: var(--xc-brand) !important;
+}
+
+/* ===== feature card hover glow ===== */
+.VPFeature {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.VPFeature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(244, 114, 182, 0.15);
+}
+
+.xc-toast-item.xc-toast-out {
+  animation: xc-toast-out 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

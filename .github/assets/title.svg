@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 60" width="480" height="60">
+  <defs>
+    <linearGradient id="flow" x1="0%" y1="0%" x2="200%" y2="0%">
+      <stop offset="0%" stop-color="#F472B6"/>
+      <stop offset="25%" stop-color="#F97316"/>
+      <stop offset="50%" stop-color="#F472B6"/>
+      <stop offset="75%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#F472B6"/>
+      <animate attributeName="x1" from="0%" to="100%" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="x2" from="200%" to="300%" dur="3s" repeatCount="indefinite"/>
+    </linearGradient>
+  </defs>
+  <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle"
+        font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="800" font-size="38"
+        fill="url(#flow)">🎨 @xpyjs/color</text>
+</svg>
