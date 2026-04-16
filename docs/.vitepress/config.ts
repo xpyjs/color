@@ -2,6 +2,9 @@ import { defineConfig } from "vitepress";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
+const root = resolve(fileURLToPath(import.meta.url), "../../..");
+const isDev = !process.argv.includes("build");
+
 const zhSidebar = {
   "/guide/": [
     {
@@ -170,10 +173,15 @@ export default defineConfig({
   base: "/color/",
   vite: {
     resolve: {
-      alias: {
-        "@xpyjs/color/plugins": resolve(fileURLToPath(import.meta.url), "../../..", "src/plugins"),
-        "@xpyjs/color": resolve(fileURLToPath(import.meta.url), "../../..", "src/index.ts")
-      }
+      alias: isDev
+        ? {
+            "@xpyjs/color/plugins": resolve(root, "src/plugins"),
+            "@xpyjs/color": resolve(root, "src/index.ts")
+          }
+        : {
+            "@xpyjs/color/plugins": resolve(root, "dist/plugins"),
+            "@xpyjs/color": resolve(root, "dist/index.esm.js")
+          }
     }
   },
   appearance: "dark",

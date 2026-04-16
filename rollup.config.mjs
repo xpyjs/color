@@ -143,7 +143,7 @@ const pluginConfigs = plugins.flatMap((plugin) => [
                 globals: {
                     "@xpyjs/color": "xcolor"
                 },
-                exports: "default",
+                exports: "named",
                 sourcemap: false
             }
         ],
