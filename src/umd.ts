@@ -9,7 +9,7 @@ import { xcolor, XColor, registerStringFormatter } from "./core";
 import {
   clamp, round, clampByte, normalizeSteps, rgbaToHex,
   rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb,
-  relativeLuminance, contrastRatio, Logger
+  relativeLuminance, contrastRatio, defineMethod, Logger
 } from "./utils";
 import {
   parseColor, registerColorParser, parseFunctionalChannels,
@@ -43,6 +43,7 @@ exp.rgbToHsv = rgbToHsv;
 exp.hsvToRgb = hsvToRgb;
 exp.relativeLuminance = relativeLuminance;
 exp.contrastRatio = contrastRatio;
+exp.defineMethod = defineMethod;
 exp.Logger = Logger;
 
 export default exp;

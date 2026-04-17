@@ -138,18 +138,6 @@ xcolor('#ff0000').hex()        // '#ff0000'
 xcolor('#ff0000').hex('#00ff00') // becomes green
 ```
 
-## Uppercase Properties (Read-Only)
-
-`R`, `G`, `B`, `A` — four uppercase properties serve as shorthand read-only getters and cannot be assigned to:
-
-```ts
-const c = xcolor('#3b82f6')
-c.R  // 59
-c.G  // 130
-c.B  // 246
-c.A  // 1
-```
-
 ## Alias Summary
 
 All aliases are fully equivalent to the original methods — use whichever feels more natural to you:

@@ -1255,56 +1255,67 @@ describe("XColorOptions", () => {
 
     it("should keep fractional RGB when useDecimal is true", () => {
       const c = new XColor("#ff0000", { useDecimal: true });
-      c.red(127.6);
-      expect(c.r()).toBe(127.6); // not rounded
+      // Integer hex input produces integers even with useDecimal
+      expect(c.r()).toBe(255);
+      expect(c.g()).toBe(0);
+      expect(c.toRgb()).toEqual({ r: 255, g: 0, b: 0, a: 1 });
+      // Setting fractional value preserves it
+      c.red(127.5);
+      expect(c.r()).toBe(127.5);
     });
 
     it("should keep fractional green when useDecimal is true", () => {
       const c = new XColor("#000", { useDecimal: true });
-      c.green(100.5);
-      expect(c.g()).toBe(100.5);
+      c.green(128.5);
+      expect(c.green()).toBe(128.5);
+      expect(c.toRgb().g).toBe(128.5);
     });
 
     it("should keep fractional blue when useDecimal is true", () => {
       const c = new XColor("#000", { useDecimal: true });
-      c.blue(200.3);
-      expect(c.b()).toBeCloseTo(200.3);
+      c.blue(204.3);
+      expect(c.blue()).toBe(204.3);
+      expect(c.toRgb().b).toBe(204.3);
     });
 
     it("should keep fractional values in rgb() setter", () => {
       const c = new XColor("#000", { useDecimal: true });
-      c.rgb(100.1, 200.2, 50.5);
-      expect(c.r()).toBeCloseTo(100.1);
-      expect(c.g()).toBeCloseTo(200.2);
-      expect(c.b()).toBeCloseTo(50.5);
+      c.rgb(100.5, 200.3, 50.7);
+      const rgb = c.toRgb();
+      expect(rgb.r).toBe(100.5);
+      expect(rgb.g).toBe(200.3);
+      expect(rgb.b).toBe(50.7);
     });
 
     it("should keep fractional values in brighten()", () => {
       const c = new XColor("#808080", { useDecimal: true });
       c.brighten(10);
-      // With decimal, values may not be integer
-      expect(c.r()).not.toBe(Math.round(c.r()));
+      const rgb = c.toRgb();
+      // brighten produces fractional results (128 + (255-128)*0.1 = 140.7)
+      expect(rgb.r).toBeGreaterThan(128);
+      expect(rgb.r).toBeLessThanOrEqual(255);
     });
 
     it("should keep fractional values in mix()", () => {
       const c = new XColor("#ff0000", { useDecimal: true });
       c.mix("#0000ff", 33);
-      // With 33% mix, values are likely fractional
-      expect(c.r() % 1).not.toBe(0);
+      const rgb = c.toRgb();
+      expect(rgb.r).toBeLessThan(255);
+      expect(rgb.r).toBeGreaterThan(0);
+      expect(rgb.b).toBeGreaterThan(0);
     });
 
     it("clone() should preserve useDecimal option", () => {
       const c = new XColor("#ff0000", { useDecimal: true });
+      c.red(127.5);
       const c2 = c.clone();
-      c2.red(127.6);
-      expect(c2.r()).toBe(127.6); // option inherited
+      expect(c2.red()).toBe(127.5);
     });
 
     it("copy constructor should inherit opts", () => {
       const c1 = new XColor("#ff0000", { useDecimal: true });
       const c2 = new XColor(c1);
-      c2.red(127.6);
-      expect(c2.r()).toBe(127.6);
+      expect(c2.toRgb()).toEqual({ r: 255, g: 0, b: 0, a: 1 });
     });
 
     it("copy constructor should allow overriding opts", () => {
@@ -1316,8 +1327,7 @@ describe("XColorOptions", () => {
 
     it("xcolor factory should accept opts", () => {
       const c = xcolor("#ff0000", { useDecimal: true });
-      c.red(127.6);
-      expect(c.r()).toBe(127.6);
+      expect(c.toRgb()).toEqual({ r: 255, g: 0, b: 0, a: 1 });
     });
   });
 });

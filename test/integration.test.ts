@@ -600,11 +600,11 @@ describe("end-to-end workflows", () => {
     it("gradient should propagate opts to result instances", () => {
       const c = new XColor("#ff0000", { useDecimal: true });
       const grad = (c as any).gradient("#0000ff", 3);
-      // Gradient uses Math.round internally, so values are integers
-      // But opts should still be propagated to the new instances
       expect(grad).toHaveLength(3);
+      // useDecimal preserves fractional values, integer inputs stay integer
       expect(grad[0].red()).toBe(255);
       expect(grad[2].blue()).toBe(255);
+      expect(grad[0].toRgb().r).toBe(255);
       // All should be valid
       for (const g of grad) {
         expect(g.isValid()).toBe(true);
@@ -615,10 +615,9 @@ describe("end-to-end workflows", () => {
       const c = new XColor("#ff8000", { useDecimal: true });
       const scaled = (c as any).scale("#0000ff", { steps: 3 });
       expect(scaled).toHaveLength(3);
-      // Start and end should match
       expect(scaled[0].red()).toBe(255);
       expect(scaled[2].blue()).toBe(255);
-      // Middle should be in between
+      expect(scaled[0].toRgb().r).toBe(255);
       expect(scaled[1].red()).toBeGreaterThanOrEqual(0);
       expect(scaled[1].red()).toBeLessThanOrEqual(255);
     });

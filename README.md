@@ -132,12 +132,6 @@ c.red(200).green(100).blue(50).alpha(0.8)
 // Or use aliases:
 c.r(200).g(100).b(50).a(0.8)
 
-// Property getters (read-only)
-c.R  // 200
-c.G  // 100
-c.B  // 50
-c.A  // 0.8
-
 // HSL channel access
 c.hue()         // Get hue (0-360)        (alias: c.h())
 c.hue(180)      // Set hue                (alias: c.h(180))

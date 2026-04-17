@@ -171,13 +171,13 @@ export class XColor {
     this._opts = opts ? { ..._globalOpts, ...opts } : { ..._globalOpts };
 
     if (value instanceof XColor) {
-      this._r = value._r;
-      this._g = value._g;
-      this._b = value._b;
-      this._a = value._a;
-      this._valid = value._valid;
       // Inherit options from the source unless explicitly provided
       if (!opts) this._opts = { ...value._opts };
+      this._r = this._roundCh(value._r);
+      this._g = this._roundCh(value._g);
+      this._b = this._roundCh(value._b);
+      this._a = value._a;
+      this._valid = value._valid;
       return;
     } else if (value === undefined || value === null) {
       this._r = 0;
@@ -196,16 +196,16 @@ export class XColor {
       this._a = 1;
       this._valid = false;
     } else {
-      this._r = this._opts.useDecimal ? parsed.r : Math.round(parsed.r);
-      this._g = this._opts.useDecimal ? parsed.g : Math.round(parsed.g);
-      this._b = this._opts.useDecimal ? parsed.b : Math.round(parsed.b);
+      this._r = this._roundCh(parsed.r);
+      this._g = this._roundCh(parsed.g);
+      this._b = this._roundCh(parsed.b);
       this._a = parsed.a;
       this._valid = true;
     }
   }
 
   /**
-   * Round a channel value based on the `useDecimal` option.
+   * Round a channel value.
    * @internal
    */
   private _roundCh(value: number): number {
@@ -225,9 +225,9 @@ export class XColor {
     const cs = toCS(this._r, this._g, this._b);
     fn(cs);
     const c = fromCS(...keys.map(k => cs[k] as number));
-    this._r = c.r;
-    this._g = c.g;
-    this._b = c.b;
+    this._r = this._roundCh(c.r);
+    this._g = this._roundCh(c.g);
+    this._b = this._roundCh(c.b);
     return this;
   }
 
@@ -547,9 +547,9 @@ export class XColor {
       clamp(s ?? current.s, 0, 100),
       clamp(l ?? current.l, 0, 100)
     );
-    this._r = c.r;
-    this._g = c.g;
-    this._b = c.b;
+    this._r = this._roundCh(c.r);
+    this._g = this._roundCh(c.g);
+    this._b = this._roundCh(c.b);
     if (a !== undefined) this._a = clamp(a, 0, 1);
     return this;
   }
@@ -579,9 +579,9 @@ export class XColor {
       clamp(s ?? current.s, 0, 100),
       clamp(v ?? current.v, 0, 100)
     );
-    this._r = c.r;
-    this._g = c.g;
-    this._b = c.b;
+    this._r = this._roundCh(c.r);
+    this._g = this._roundCh(c.g);
+    this._b = this._roundCh(c.b);
     if (a !== undefined) this._a = clamp(a, 0, 1);
     return this;
   }
@@ -604,9 +604,9 @@ export class XColor {
     if (value === undefined) return this.toHex();
     const parsed = parseColor(value);
     if (parsed) {
-      this._r = parsed.r;
-      this._g = parsed.g;
-      this._b = parsed.b;
+      this._r = this._roundCh(parsed.r);
+      this._g = this._roundCh(parsed.g);
+      this._b = this._roundCh(parsed.b);
       this._a = parsed.a;
       this._valid = true;
     } else {
@@ -1340,6 +1340,16 @@ export class XColor {
    * ```
    */
   static extend<T = unknown>(plugin: XColorPlugin<T>, option?: T): typeof XColor {
+    // Handle UMD/CJS modules that wrap the plugin in a default export
+    if (
+      plugin && typeof plugin === "object"
+      && "default" in plugin
+      && typeof (plugin as any).default === "object"
+      && typeof (plugin as any).default.install === "function"
+    ) {
+      plugin = (plugin as any).default;
+    }
+
     if (
       typeof plugin !== "object" || plugin === null
       || typeof plugin.name !== "string"

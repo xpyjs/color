@@ -128,6 +128,5 @@ Alias: `format()`
 | `'rgb'` | `rgb(255, 0, 0)` |
 | `'hsl'` | `hsl(0, 100%, 50%)` |
 | `'hsv'` | `hsv(0, 100%, 100%)` |
-| `'number'` | `16711680` |
 
 Plugins can extend additional formats. For example, after registering the `cmyk` plugin, you can use `toString('cmyk')`.

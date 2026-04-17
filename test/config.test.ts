@@ -13,17 +13,23 @@ afterEach(() => {
 describe("xcolor.config()", () => {
   it("should set global useDecimal option", () => {
     xcolor.config({ useDecimal: true });
-    // When useDecimal is true, channels may keep fractional precision
-    const c = xcolor("rgb(127.5, 63.75, 191.25)");
-    // With useDecimal, the internal values should preserve fractions
-    expect(typeof c.red()).toBe("number");
+    // useDecimal allows fractional RGB — integer hex input stays integer
+    const c = xcolor("#ff0000");
+    expect(c.toRgb()).toEqual({ r: 255, g: 0, b: 0, a: 1 });
+    // Setting fractional value preserves it
+    c.red(127.5);
+    expect(c.red()).toBe(127.5);
   });
 
   it("should apply global options to new instances", () => {
     xcolor.config({ useDecimal: true });
     const c = xcolor("#808080");
-    // The color should be created without errors
     expect(c.toHex()).toBe("#808080");
+    // Integer input stays integer
+    expect(c.toRgb().r).toBe(128);
+    // Fractional setter is preserved
+    c.green(100.5);
+    expect(c.green()).toBe(100.5);
   });
 
   it("should allow instance options to override global options", () => {
@@ -44,6 +50,7 @@ describe("xcolor.config()", () => {
     XColor.config({ useDecimal: true });
     const c = new XColor("#ff0000");
     expect(c.toHex()).toBe("#ff0000");
+    expect(c.toRgb()).toEqual({ r: 255, g: 0, b: 0, a: 1 });
   });
 
   it("should be accessible from xcolor.config", () => {
