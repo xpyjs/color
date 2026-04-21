@@ -188,7 +188,7 @@ export default defineConfig({
   title: "xcolor",
   description: "一个轻量、快速、可扩展的 JavaScript/TypeScript 颜色操作库",
   lang: "zh-CN",
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/color/logo.svg" }]],
+  head: [["link", { rel: "icon", type: "image/png", href: "/color/logo.png" }]],
   locales: {
     root: {
       label: "简体中文",
@@ -225,7 +225,7 @@ export default defineConfig({
     math: true
   },
   themeConfig: {
-    logo: "/logo.svg",
+    logo: "/logo.png",
     socialLinks: [{ icon: "github", link: "https://github.com/xpyjs/color" }],
     footer: {
       message: "Released under the MIT License.",

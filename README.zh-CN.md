@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/assets/logo.svg" alt="xcolor logo" width="120" height="120" />
+  <img src=".github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
 </p>
 
 <h1 align="center">
