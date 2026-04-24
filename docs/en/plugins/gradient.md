@@ -1,6 +1,6 @@
 # gradient - Gradient
 
-Generate gradient color sequences between two colors, or generate a palette from a single color.
+Generate gradient color sequences between two colors, or generate a tonal range from a single color.
 
 ## Install
 
@@ -39,9 +39,9 @@ xcolor('#ff0000').gradient('#0000ff', 5).map(c => c.toHex())
   <div class="color-demo-swatch" style="background: #0000ff"></div>
 </div>
 
-### palette(steps?)
+### tones(steps?)
 
-Generate a light-dark palette centered on the current color.
+Generate a tonal range of shades and tints centered on the current color.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -50,7 +50,7 @@ Generate a light-dark palette centered on the current color.
 **Returns**: `XColor[]`
 
 ```ts
-xcolor('#3b82f6').palette(5).map(c => c.toHex())
+xcolor('#3b82f6').tones(5).map(c => c.toHex())
 // 5-step variation from dark to light
 ```
 

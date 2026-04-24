@@ -77,7 +77,7 @@ Add new manipulation and query capabilities to color instances:
 | --- | --- |
 | [a11y](/en/plugins/a11y) | Accessibility (contrast, readability checks) |
 | [blend](/en/plugins/blend) | 11 layer blend modes |
-| [gradient](/en/plugins/gradient) | Gradient sequence generation |
+| [gradient](/en/plugins/gradient) | Gradient sequences and tonal range generation |
 | [harmony](/en/plugins/harmony) | Color schemes (complement, triad, tetrad, etc.) |
 | [name](/en/plugins/name) | CSS color names (148 colors) |
 | [palette](/en/plugins/palette) | Shade palette generation |

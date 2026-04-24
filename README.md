@@ -305,7 +305,7 @@ import gradient from '@xpyjs/color/plugins/gradient'
 xcolor.use(gradient)
 
 xcolor('#ff0000').gradient('#0000ff', 5) // 5-step gradient array
-xcolor('#ff0000').palette(5)             // Shades + original + tints
+xcolor('#ff0000').tones(5)               // Shades + original + tints
 ```
 
 #### 🖨️ CMYK — CMYK color space

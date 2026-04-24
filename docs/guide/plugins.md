@@ -77,7 +77,7 @@ xcolor.use(somePlugin, { /* 选项 */ })
 | --- | --- |
 | [a11y](/plugins/a11y) | 无障碍（对比度、可读性判断）|
 | [blend](/plugins/blend) | 11 种图层混合模式 |
-| [gradient](/plugins/gradient) | 渐变色序列生成 |
+| [gradient](/plugins/gradient) | 渐变色序列与明暗色调生成 |
 | [harmony](/plugins/harmony) | 配色方案（互补、三色、四色等）|
 | [name](/plugins/name) | CSS 颜色名称（148 种）|
 | [palette](/plugins/palette) | 色阶面板生成 |

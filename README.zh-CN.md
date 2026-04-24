@@ -297,7 +297,7 @@ import gradient from '@xpyjs/color/plugins/gradient'
 xcolor.use(gradient)
 
 xcolor('#ff0000').gradient('#0000ff', 5) // 5 步渐变数组
-xcolor('#ff0000').palette(5)             // 暗色 + 原色 + 亮色
+xcolor('#ff0000').tones(5)               // 暗色 + 原色 + 亮色
 ```
 
 #### 🖨️ CMYK — CMYK 色彩空间

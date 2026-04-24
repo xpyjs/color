@@ -24,17 +24,17 @@ declare module "@xpyjs/color" {
     gradient(to: XColorInput, steps?: number): XColor[];
 
     /**
-     * Generate a palette of tints (lighter) and shades (darker) around this color.
+     * Generate a tonal range of tints (lighter) and shades (darker) around this color.
      * @param steps - Number of variations in each direction (default 5, minimum 2)
      * @returns Array of XColor instances: shades (dark→light) + original + tints (light→lighter)
      * @example
      * ```ts
-     * const palette = xcolor('#ff0000').palette(3);
+     * const tones = xcolor('#ff0000').tones(3);
      * // Returns shades + original + tints
-     * palette.map(c => c.toHex());
+     * tones.map(c => c.toHex());
      * ```
      */
-    palette(steps?: number): XColor[];
+    tones(steps?: number): XColor[];
   }
 }
 
@@ -59,7 +59,7 @@ const gradient: XColorPlugin = {
       return colors;
     });
 
-    defineMethod(cls, 'palette', function (this: InstanceType<typeof cls>, steps: number = 5) {
+    defineMethod(cls, 'tones', function (this: InstanceType<typeof cls>, steps: number = 5) {
       const colors: InstanceType<typeof cls>[] = [];
       const total = normalizeSteps(steps);
 

@@ -67,51 +67,51 @@ describe("gradient plugin", () => {
     });
   });
 
-  describe("palette", () => {
+  describe("tones", () => {
     it("should generate tints and shades", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette(3);
+      const pal = c.tones(3);
       // 3 shades + original + 3 tints = 7
       expect(pal).toHaveLength(7);
     });
 
     it("should default to 5 steps each way", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette();
+      const pal = c.tones();
       // 5 shades + original + 5 tints = 11
       expect(pal).toHaveLength(11);
     });
 
     it("shades should be darker than original", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette(3);
+      const pal = c.tones(3);
       // First 3 are shades (darker)
       expect(pal[0].brightness()).toBeLessThan(c.brightness());
     });
 
     it("tints should be lighter than original", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette(3);
+      const pal = c.tones(3);
       // Last 3 are tints (lighter)
       expect(pal[6].brightness()).toBeGreaterThan(c.brightness());
     });
 
     it("should not mutate original", () => {
       const c = xcolor("#ff0000");
-      c.palette();
+      c.tones();
       expect(c.toHex()).toBe("#ff0000");
     });
 
     it("should normalize palette steps < 2 to 2", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette(1);
+      const pal = c.tones(1);
       // normalizeSteps(1) = 2, so 2 shades + original + 2 tints = 5
       expect(pal).toHaveLength(5);
     });
 
     it("should handle large palette steps", () => {
       const c = xcolor("#ff0000");
-      const pal = c.palette(20);
+      const pal = c.tones(20);
       // 20 shades + original + 20 tints = 41
       expect(pal).toHaveLength(41);
       // All should be valid colors
@@ -124,7 +124,7 @@ describe("gradient plugin", () => {
 
     it("should produce monotonic lightness gradient", () => {
       const c = xcolor("#808080");
-      const pal = c.palette(5);
+      const pal = c.tones(5);
       // Shades should get progressively lighter (index 0 is darkest shade)
       for (let i = 0; i < pal.length - 1; i++) {
         expect(pal[i].brightness()).toBeLessThanOrEqual(pal[i + 1].brightness());

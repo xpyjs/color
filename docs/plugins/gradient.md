@@ -1,6 +1,6 @@
 # gradient - 渐变
 
-生成两个颜色之间的渐变色序列，或从单一颜色生成调色板。
+生成两个颜色之间的渐变色序列，或从单一颜色生成明暗变化序列。
 
 ## 安装
 
@@ -39,9 +39,9 @@ xcolor('#ff0000').gradient('#0000ff', 5).map(c => c.toHex())
   <div class="color-demo-swatch" style="background: #0000ff"></div>
 </div>
 
-### palette(steps?)
+### tones(steps?)
 
-以当前颜色为中心，生成明暗变化的调色板。
+以当前颜色为中心，生成明暗变化的色调序列（shades + 原色 + tints）。
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -50,7 +50,7 @@ xcolor('#ff0000').gradient('#0000ff', 5).map(c => c.toHex())
 **返回值**：`XColor[]`
 
 ```ts
-xcolor('#3b82f6').palette(5).map(c => c.toHex())
+xcolor('#3b82f6').tones(5).map(c => c.toHex())
 // 从深色到浅色的 5 步变化
 ```
 
