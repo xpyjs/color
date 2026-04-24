@@ -17,6 +17,8 @@ xcolor.use(themePlugin, {
 
 > **Note**: `colors` is required.
 
+<SvgThemePipeline />
+
 ## Configuration Options
 
 The `options` parameter of `xcolor.use(themePlugin, options)` has the type `XColorThemeOptions`:
@@ -125,6 +127,8 @@ xcolor.use(themePlugin, {
 ```
 
 ### Dark Mode
+
+<SvgThemeDarkMode />
 
 ```ts
 // CSS class strategy

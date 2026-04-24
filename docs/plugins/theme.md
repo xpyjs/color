@@ -17,6 +17,8 @@ xcolor.use(themePlugin, {
 
 > **注意**：`colors` 为必填项。
 
+<SvgThemePipeline />
+
 ## 配置选项
 
 `xcolor.use(themePlugin, options)` 的 `options` 参数类型为 `XColorThemeOptions`：
@@ -125,6 +127,8 @@ xcolor.use(themePlugin, {
 ```
 
 ### 暗色模式
+
+<SvgThemeDarkMode />
 
 ```ts
 // CSS class 策略

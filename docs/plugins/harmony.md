@@ -77,6 +77,12 @@ xcolor('#ff0000').splitComplement().map(c => c.toHex())
 // ['#ff0000', '#00ff80', '#0080ff']
 ```
 
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+  <div class="color-demo-swatch" style="background: #00ff80"></div>
+  <div class="color-demo-swatch" style="background: #0080ff"></div>
+</div>
+
 ### analogous(results?, slices?)
 
 类似色——色轮上相邻的颜色。
@@ -93,6 +99,15 @@ xcolor('#ff0000').analogous().map(c => c.toHex())
 // 6 个红色附近的颜色
 ```
 
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+  <div class="color-demo-swatch" style="background: #ff3300"></div>
+  <div class="color-demo-swatch" style="background: #ff6600"></div>
+  <div class="color-demo-swatch" style="background: #ff9900"></div>
+  <div class="color-demo-swatch" style="background: #ffcc00"></div>
+  <div class="color-demo-swatch" style="background: #ffff00"></div>
+</div>
+
 ### monochromatic(results?)
 
 单色方案——相同色相，不同明度。
@@ -107,3 +122,12 @@ xcolor('#ff0000').analogous().map(c => c.toHex())
 xcolor('#ff0000').monochromatic().map(c => c.toHex())
 // 6 个从深到浅的红色
 ```
+
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #2b0000"></div>
+  <div class="color-demo-swatch" style="background: #550000"></div>
+  <div class="color-demo-swatch" style="background: #800000"></div>
+  <div class="color-demo-swatch" style="background: #aa0000"></div>
+  <div class="color-demo-swatch" style="background: #d40000"></div>
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+</div>

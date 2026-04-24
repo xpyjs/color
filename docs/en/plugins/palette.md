@@ -50,6 +50,8 @@ xcolor('#ff0000').palette({ shades: [100, 500, 900] })
 
 ### Palette Type (PaletteType)
 
+<SvgPaletteTypes />
+
 | Value | Description |
 | --- | --- |
 | `'antd'` | Ant Design HSV curve algorithm. Non-linear hue rotation + saturation/value adjustment for perceptually uniform palettes |

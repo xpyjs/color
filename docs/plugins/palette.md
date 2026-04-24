@@ -50,6 +50,8 @@ xcolor('#ff0000').palette({ shades: [100, 500, 900] })
 
 ### 色阶类型 (PaletteType)
 
+<SvgPaletteTypes />
+
 | 值 | 说明 |
 | --- | --- |
 | `'antd'` | Ant Design HSV 曲线算法。非线性色相旋转 + 饱和度/明度调整，生成感知均匀的色阶 |

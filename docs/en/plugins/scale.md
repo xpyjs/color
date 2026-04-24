@@ -82,6 +82,8 @@ xcolor('#ff0000').at('#0000ff', 0.5, { space: 'hsl' }).toHex()  // Interpolated 
 
 RGB interpolation may produce "muddy" intermediate colors, while HSL interpolation transitions along the color wheel:
 
+<SvgScaleSpaces />
+
 ```ts
 // RGB: red→blue, the middle is a grayish purple
 xcolor('#ff0000').scale('#0000ff', { space: 'rgb', steps: 5 })

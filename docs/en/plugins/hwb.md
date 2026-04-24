@@ -11,6 +11,8 @@ import hwbPlugin from '@xpyjs/color/plugins/hwb'
 xcolor.use(hwbPlugin)
 ```
 
+<SvgHwbModel />
+
 ## Methods
 
 ### toHwb()

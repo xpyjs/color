@@ -54,6 +54,8 @@ xcolor('#3b82f6').tones(5).map(c => c.toHex())
 // 5-step variation from dark to light
 ```
 
+<SvgTonesBar />
+
 ## Practical Scenarios
 
 ### CSS Gradient Background
@@ -67,6 +69,8 @@ const stops = xcolor('#6366f1')
 const css = `linear-gradient(to right, ${stops})`
 ```
 
+<SvgCssGradient />
+
 ### Chart Color Scheme
 
 ```ts
@@ -74,3 +78,5 @@ const chartColors = xcolor('#3b82f6')
   .gradient('#10b981', 8)
   .map(c => c.toHex())
 ```
+
+<SvgChartColors />

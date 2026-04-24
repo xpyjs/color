@@ -77,6 +77,12 @@ xcolor('#ff0000').splitComplement().map(c => c.toHex())
 // ['#ff0000', '#00ff80', '#0080ff']
 ```
 
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+  <div class="color-demo-swatch" style="background: #00ff80"></div>
+  <div class="color-demo-swatch" style="background: #0080ff"></div>
+</div>
+
 ### analogous(results?, slices?)
 
 Analogous colors — adjacent colors on the color wheel.
@@ -93,6 +99,15 @@ xcolor('#ff0000').analogous().map(c => c.toHex())
 // 6 colors near red
 ```
 
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+  <div class="color-demo-swatch" style="background: #ff3300"></div>
+  <div class="color-demo-swatch" style="background: #ff6600"></div>
+  <div class="color-demo-swatch" style="background: #ff9900"></div>
+  <div class="color-demo-swatch" style="background: #ffcc00"></div>
+  <div class="color-demo-swatch" style="background: #ffff00"></div>
+</div>
+
 ### monochromatic(results?)
 
 Monochromatic scheme — same hue, varying lightness.
@@ -107,3 +122,12 @@ Monochromatic scheme — same hue, varying lightness.
 xcolor('#ff0000').monochromatic().map(c => c.toHex())
 // 6 shades of red from dark to light
 ```
+
+<div class="color-demo">
+  <div class="color-demo-swatch" style="background: #2b0000"></div>
+  <div class="color-demo-swatch" style="background: #550000"></div>
+  <div class="color-demo-swatch" style="background: #800000"></div>
+  <div class="color-demo-swatch" style="background: #aa0000"></div>
+  <div class="color-demo-swatch" style="background: #d40000"></div>
+  <div class="color-demo-swatch" style="background: #ff0000"></div>
+</div>

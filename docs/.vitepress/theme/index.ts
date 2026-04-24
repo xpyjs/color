@@ -25,6 +25,15 @@ import SvgScaleComparison from './components/svg/SvgScaleComparison.vue'
 import SvgColorBlindness from './components/svg/SvgColorBlindness.vue'
 import SvgTemperatureBar from './components/svg/SvgTemperatureBar.vue'
 import SvgChainFlow from './components/svg/SvgChainFlow.vue'
+import SvgThemePipeline from './components/svg/SvgThemePipeline.vue'
+import SvgThemeDarkMode from './components/svg/SvgThemeDarkMode.vue'
+import SvgPaletteTypes from './components/svg/SvgPaletteTypes.vue'
+import SvgContrastRatio from './components/svg/SvgContrastRatio.vue'
+import SvgHwbModel from './components/svg/SvgHwbModel.vue'
+import SvgTonesBar from './components/svg/SvgTonesBar.vue'
+import SvgCssGradient from './components/svg/SvgCssGradient.vue'
+import SvgChartColors from './components/svg/SvgChartColors.vue'
+import SvgScaleSpaces from './components/svg/SvgScaleSpaces.vue'
 
 import './custom.css'
 
@@ -56,5 +65,14 @@ export default {
     app.component('SvgColorBlindness', SvgColorBlindness)
     app.component('SvgTemperatureBar', SvgTemperatureBar)
     app.component('SvgChainFlow', SvgChainFlow)
+    app.component('SvgThemePipeline', SvgThemePipeline)
+    app.component('SvgThemeDarkMode', SvgThemeDarkMode)
+    app.component('SvgPaletteTypes', SvgPaletteTypes)
+    app.component('SvgContrastRatio', SvgContrastRatio)
+    app.component('SvgHwbModel', SvgHwbModel)
+    app.component('SvgTonesBar', SvgTonesBar)
+    app.component('SvgCssGradient', SvgCssGradient)
+    app.component('SvgChartColors', SvgChartColors)
+    app.component('SvgScaleSpaces', SvgScaleSpaces)
   }
 } satisfies Theme

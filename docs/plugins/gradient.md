@@ -54,6 +54,8 @@ xcolor('#3b82f6').tones(5).map(c => c.toHex())
 // 从深色到浅色的 5 步变化
 ```
 
+<SvgTonesBar />
+
 ## 实际场景
 
 ### CSS 渐变背景
@@ -67,6 +69,8 @@ const stops = xcolor('#6366f1')
 const css = `linear-gradient(to right, ${stops})`
 ```
 
+<SvgCssGradient />
+
 ### 图表配色
 
 ```ts
@@ -74,3 +78,5 @@ const chartColors = xcolor('#3b82f6')
   .gradient('#10b981', 8)
   .map(c => c.toHex())
 ```
+
+<SvgChartColors />
