@@ -55,6 +55,20 @@ html {
   max-width: 100% !important;
 }
 
+/* ===== theme-studio full-width ===== */
+.theme-studio-page-class .VPDoc .container {
+  max-width: 100% !important;
+}
+.theme-studio-page-class .VPDoc .content {
+  max-width: 100% !important;
+}
+.theme-studio-page-class .VPDoc .content-container {
+  max-width: 100% !important;
+}
+.theme-studio-page-class .vp-doc {
+  max-width: 100% !important;
+}
+
 /* ===== color swatch ===== */
 .color-swatch {
   display: inline-block;

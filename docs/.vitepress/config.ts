@@ -198,7 +198,8 @@ export default defineConfig({
           { text: "指南", link: "/guide/getting-started" },
           { text: "API", link: "/api/constructor" },
           { text: "插件", link: "/plugins/overview" },
-          { text: "Playground", link: "/playground" }
+          { text: "Playground", link: "/playground" },
+          { text: "配色工坊", link: "/theme-studio" }
         ],
         sidebar: zhSidebar,
         outline: { level: [2, 3], label: "目录" }
@@ -213,7 +214,8 @@ export default defineConfig({
           { text: "Guide", link: "/en/guide/getting-started" },
           { text: "API", link: "/en/api/constructor" },
           { text: "Plugins", link: "/en/plugins/overview" },
-          { text: "Playground", link: "/en/playground" }
+          { text: "Playground", link: "/en/playground" },
+          { text: "Theme Studio", link: "/en/theme-studio" }
         ],
         sidebar: enSidebar,
         outline: { level: [2, 3], label: "On this page" }

@@ -38,6 +38,13 @@ describe("theme plugin - config resolution", () => {
     expect(vars["--x-primary-text"]).toBeDefined();
   });
 
+  it("should generate bare base variable (e.g. --x-primary) pointing to 500 shade", () => {
+    const vars = xcolor.getThemeVars();
+    // --x-primary should exist and equal --x-primary-500
+    expect(vars["--x-primary"]).toBeDefined();
+    expect(vars["--x-primary"]).toBe(vars["--x-primary-500"]);
+  });
+
   it("should handle object with DEFAULT and overrides", () => {
     xcolor.updateTheme({
       colors: {
@@ -380,6 +387,35 @@ describe("theme plugin - prefix", () => {
     // Reset
     xcolor.updateTheme({ prefix: "--x" });
   });
+
+  it("should auto-normalize prefix (strip --, lowercase, add --)", () => {
+    // User provides bare word
+    xcolor.updateTheme({ prefix: "color", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--color-primary-500"]).toBe("#1890ff");
+
+    // User provides with --
+    xcolor.updateTheme({ prefix: "--brand", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--brand-primary-500"]).toBe("#1890ff");
+
+    // Uppercase + special chars
+    xcolor.updateTheme({ prefix: "--X-Foo", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--x-foo-primary-500"]).toBe("#1890ff");
+
+    // Leading digits stripped
+    xcolor.updateTheme({ prefix: "123abc", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--abc-primary-500"]).toBe("#1890ff");
+
+    // Empty string → fallback --x
+    xcolor.updateTheme({ prefix: "", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--x-primary-500"]).toBe("#1890ff");
+
+    // All invalid → fallback --x
+    xcolor.updateTheme({ prefix: "---", colors: { primary: "#1890ff" } });
+    expect(xcolor.getThemeVars()["--x-primary-500"]).toBe("#1890ff");
+
+    // Reset
+    xcolor.updateTheme({ prefix: "--x" });
+  });
 });
 
 // =======================================
@@ -669,6 +705,11 @@ describe("theme plugin - derive integration", () => {
     expect(vars["--x-success-hover"]).toBeDefined();
     expect(vars["--x-success-active"]).toBeDefined();
     expect(vars["--x-success-bg"]).toBeDefined();
+    // Bare base variables for derived roles
+    expect(vars["--x-success"]).toBeDefined();
+    expect(vars["--x-success"]).toBe(vars["--x-success-500"]);
+    expect(vars["--x-error"]).toBeDefined();
+    expect(vars["--x-error"]).toBe(vars["--x-error-500"]);
   });
 
   it("user-provided color should take priority over derived", () => {

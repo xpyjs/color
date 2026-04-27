@@ -80,9 +80,16 @@ export type ThemeCssFormat = "hex" | "rgb" | "hsl";
  */
 export interface XColorThemeOptions {
   /**
-   * CSS variable name prefix.
+   * CSS variable name prefix. Only lowercase letters and hyphens are kept;
+   * leading `--` is added automatically. Invalid or empty values fall back
+   * to `'--x'`.
+   *
    * @default '--x'
-   * @example '--color' → `--color-primary-500`
+   * @example
+   * prefix: 'color'   // → --color-primary-500
+   * prefix: '--color'  // → --color-primary-500
+   * prefix: 'X-Foo'   // → --x-foo-primary-500
+   * prefix: ''         // → --x-primary-500  (fallback)
    */
   prefix?: string;
 

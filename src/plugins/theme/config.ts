@@ -62,6 +62,39 @@ export function flattenColors(
 }
 
 /**
+ * Normalize a user-provided CSS variable prefix into a valid `--<letters>` form.
+ *
+ * Rules:
+ * - Only lowercase letters (`a-z`) and hyphens (`-`) are kept.
+ * - Leading non-letter characters are stripped (prefix must start with a letter).
+ * - The result is always prefixed with `--`.
+ * - If nothing valid remains, falls back to `--x`.
+ *
+ * @example
+ * normalizePrefix('color')   // '--color'
+ * normalizePrefix('--x')     // '--x'
+ * normalizePrefix('--X-Foo') // '--x-foo'
+ * normalizePrefix('123abc')  // '--abc'
+ * normalizePrefix('')        // '--x'
+ */
+export function normalizePrefix(raw?: string): string {
+  if (!raw) return "--x";
+
+  // Lowercase, keep only a-z and hyphen
+  var cleaned = raw.toLowerCase().replace(/[^a-z-]/g, "");
+
+  // Strip leading hyphens (we'll re-add --)
+  cleaned = cleaned.replace(/^-+/, "");
+
+  // Strip leading non-letter chars (shouldn't remain after above, but safety)
+  cleaned = cleaned.replace(/^[^a-z]+/, "");
+
+  if (!cleaned) return "--x";
+
+  return "--" + cleaned;
+}
+
+/**
  * Resolve a complete theme configuration into CSS output and structured data.
  *
  * Processing steps for each color entry:
@@ -79,7 +112,7 @@ export function resolveThemeConfig(
   cls: new (...args: any[]) => any,
   factory: (...args: any[]) => any
 ): ThemeResult {
-  var prefix = options.prefix || "--x";
+  var prefix = normalizePrefix(options.prefix);
   var type = options.type || "antd";
   var shades = options.shades || DEFAULT_SHADES;
   var semantic = options.semantic !== false; // default true
@@ -120,6 +153,11 @@ export function resolveThemeConfig(
       for (var si = 0; si < shades.length; si++) {
         vars[colorPrefix + "-" + shades[si]] = palette[si].toHex();
       }
+
+      // Always emit a bare base variable (e.g. --x-primary) that points
+      // to the 500 shade — this gives users a convenient shorthand.
+      var shade500Idx = shades.indexOf(500 as any);
+      vars[colorPrefix] = shade500Idx !== -1 ? palette[shade500Idx].toHex() : base.toHex();
 
       // Generate semantic colors
       if (semantic) {
@@ -163,6 +201,9 @@ export function resolveThemeConfig(
         for (var di = 0; di < shades.length; di++) {
           darkVars[colorPrefix + "-" + shades[di]] = darkPalette[di].toHex();
         }
+        // Bare base variable for dark mode
+        var darkShade500Idx = shades.indexOf(500 as any);
+        darkVars[colorPrefix] = darkShade500Idx !== -1 ? darkPalette[darkShade500Idx].toHex() : darkPalette[Math.floor(darkPalette.length / 2)].toHex();
         if (semantic) {
           var darkSemantic = generateDarkSemantic(darkPalette, shades);
           var dsKeys = Object.keys(darkSemantic);

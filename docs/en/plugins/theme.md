@@ -2,6 +2,10 @@
 
 Design-system-level theme color generator. Automatically generates complete shade palettes, semantic colors, and dark mode from base colors, outputting CSS variables that can be injected into the DOM or used as strings for SSR.
 
+::: info 🎨 Try it live
+Want to see theme colors in action? Try [Theme Studio](/en/theme-studio) — enter a primary color and generate a full color scheme in one click.
+:::
+
 ::: tip Plugin Dependencies
 This plugin depends on the [palette](/en/plugins/palette) plugin for shade palette generation.
 :::

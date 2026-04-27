@@ -13,6 +13,9 @@ hero:
       text: Playground
       link: /en/playground
     - theme: alt
+      text: Theme Studio
+      link: /en/theme-studio
+    - theme: alt
       text: Explore Colors ↓
       link: '#color-explorer'
 
