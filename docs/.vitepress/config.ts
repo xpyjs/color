@@ -193,7 +193,6 @@ export default defineConfig({
     root: {
       label: "简体中文",
       lang: "zh-CN",
-      link: "/",
       themeConfig: {
         nav: [
           { text: "指南", link: "/guide/getting-started" },

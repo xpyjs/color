@@ -8,7 +8,10 @@ import type {
   XColorThemeOptions,
   ThemeResult,
   ThemeCssFormat,
-  ColorConfig
+  ColorConfig,
+  BuiltinRole,
+  ThemeDeriveAlgorithm,
+  XColorThemeDeriveOptions
 } from "./types";
 import { resolveThemeConfig, deepMerge } from "./config";
 
@@ -176,6 +179,9 @@ export type {
   XColorThemeOptions,
   ThemeResult,
   ThemeCssFormat,
-  ColorConfig
+  ColorConfig,
+  BuiltinRole,
+  ThemeDeriveAlgorithm,
+  XColorThemeDeriveOptions
 };
 export default theme;

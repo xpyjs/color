@@ -144,6 +144,42 @@ export interface XColorThemeOptions {
    * @default 'hex'
    */
   format?: ThemeCssFormat;
+
+  /**
+   * Automatically derive a full set of semantic role colors from a single
+   * source color (e.g. `primary`).
+   *
+   * When enabled, the plugin generates `secondary`, `success`, `warning`,
+   * `error`, and `info` colors that share a unified visual style with the
+   * source. Colors explicitly provided in `colors` take priority over
+   * derived colors.
+   *
+   * - `false` (default) — No derivation; only colors in `colors` are generated.
+   * - `true` — Derive all 5 roles from `primary` using OKLCh algorithm.
+   * - `XColorThemeDeriveOptions` — Fine-grained control over derivation.
+   *
+   * @default false
+   * @example
+   * ```ts
+   * // Quick: derive everything from primary
+   * xcolor.use(themePlugin, {
+   *   colors: { primary: '#1890ff' },
+   *   derive: true
+   * })
+   *
+   * // Advanced: customize roles, alias, and hue anchors
+   * xcolor.use(themePlugin, {
+   *   colors: { primary: '#1890ff' },
+   *   derive: {
+   *     algorithm: 'oklch',
+   *     roles: ['success', 'warning', 'error'],
+   *     alias: { warning: 'warn' },
+   *     hues: { success: 150 }
+   *   }
+   * })
+   * ```
+   */
+  derive?: boolean | XColorThemeDeriveOptions;
 }
 
 /**
@@ -156,4 +192,164 @@ export interface ThemeResult {
   vars: Record<string, string>;
   /** Generated color palettes keyed by color name. Only includes colors with a base value. */
   colors: Record<string, XColor[]>;
+}
+
+// =======================================
+// Derive: auto-generate a full set of
+// semantic role colors from a single
+// primary (or other source) color.
+// =======================================
+
+/**
+ * Built-in semantic role names that can be auto-derived from a source color.
+ *
+ * - `'secondary'` — Complementary / accent color
+ * - `'success'` — Positive / confirmation
+ * - `'warning'` — Cautionary / attention
+ * - `'error'` — Negative / destructive
+ * - `'info'` — Informational / neutral
+ */
+export type BuiltinRole = "secondary" | "success" | "warning" | "error" | "info";
+
+/**
+ * Algorithm used to derive role colors from the source color.
+ *
+ * - `'oklch'` — OKLCh perceptual color space (recommended). Produces
+ *   visually uniform results by preserving lightness and chroma while
+ *   rotating hue to each role's anchor point.
+ * - `'hsl'` — HSL color space fallback. Simpler but less perceptually
+ *   uniform — hue rotation in HSL can produce uneven brightness.
+ *
+ * @default 'oklch'
+ */
+export type ThemeDeriveAlgorithm = "oklch" | "hsl";
+
+/**
+ * Configuration for the automatic role-color derivation feature.
+ *
+ * When enabled, a single source color (e.g. `primary`) is used to
+ * generate a full set of semantic role colors (`secondary`, `success`,
+ * `warning`, `error`, `info`) with a unified visual style.
+ *
+ * @example
+ * ```ts
+ * // Enable with defaults — derive all 5 roles from primary
+ * xcolor.use(themePlugin, {
+ *   colors: { primary: '#1890ff' },
+ *   derive: true
+ * })
+ *
+ * // Fine-tune derivation
+ * xcolor.use(themePlugin, {
+ *   colors: { primary: '#1890ff' },
+ *   derive: {
+ *     from: 'primary',
+ *     algorithm: 'oklch',
+ *     roles: ['success', 'warning', 'error'],
+ *     hues: { success: 150 },
+ *     alias: { warning: 'warn' }
+ *   }
+ * })
+ * ```
+ */
+export interface XColorThemeDeriveOptions {
+  /**
+   * Explicitly enable or disable derivation when using the object form.
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * The key in `colors` to use as the source color for derivation.
+   *
+   * Must reference a color that resolves to a base value — either a
+   * string color or an object with a `DEFAULT` key.
+   *
+   * @default 'primary'
+   * @example
+   * ```ts
+   * { from: 'brand' }  // derive from colors.brand
+   * ```
+   */
+  from?: string;
+
+  /**
+   * Algorithm for deriving role colors from the source.
+   *
+   * - `'oklch'` (default) — Perceptually uniform; recommended for
+   *   visually consistent palettes.
+   * - `'hsl'` — HSL-based hue rotation; simpler but less uniform.
+   *
+   * @default 'oklch'
+   */
+  algorithm?: ThemeDeriveAlgorithm;
+
+  /**
+   * Which built-in roles to derive. Omit to derive all 5 default roles.
+   *
+   * @default ['secondary', 'success', 'warning', 'error', 'info']
+   * @example
+   * ```ts
+   * // Only derive success and error
+   * { roles: ['success', 'error'] }
+   * ```
+   */
+  roles?: BuiltinRole[];
+
+  /**
+   * Override the default hue anchor (in degrees) for specific roles.
+   *
+   * Default hue anchors (OKLCh space):
+   * - `error`: 27° (red)
+   * - `warning`: 70° (amber / orange)
+   * - `success`: 145° (green)
+   * - `info`: 235° (blue-cyan)
+   * - `secondary`: source hue + 180° (complementary)
+   *
+   * @example
+   * ```ts
+   * { hues: { success: 160, warning: 60 } }
+   * ```
+   */
+  hues?: Partial<Record<BuiltinRole, number>>;
+
+  /**
+   * Rename the output variable segment for a role.
+   *
+   * By default, role names are used as-is in CSS variable names (e.g.
+   * `--x-warning-500`). Use `alias` to change the output name while
+   * keeping the role identity. User overrides should use the alias name
+   * in `colors` (e.g. `colors.warn` instead of `colors.warning`).
+   *
+   * @example
+   * ```ts
+   * // Output: --x-warn-500 instead of --x-warning-500
+   * { alias: { warning: 'warn' } }
+   * ```
+   */
+  alias?: Partial<Record<BuiltinRole, string>>;
+
+  /**
+   * Chroma scale factor applied to the source color's chroma when
+   * deriving role colors. Values > 1 increase saturation; < 1 decrease.
+   *
+   * @default 1
+   * @example
+   * ```ts
+   * { chromaScale: 0.8 }  // slightly less saturated
+   * ```
+   */
+  chromaScale?: number;
+
+  /**
+   * Lightness offset applied to derived colors (OKLCh `L`, range 0-1).
+   * Positive values lighten; negative values darken.
+   *
+   * @default 0
+   * @example
+   * ```ts
+   * { lightnessShift: -0.05 }  // slightly darker
+   * ```
+   */
+  lightnessShift?: number;
 }

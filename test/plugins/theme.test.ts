@@ -3,6 +3,7 @@ import { XColor, xcolor } from "../../src/core";
 import theme from "../../src/plugins/theme";
 import type { XColorThemeOptions } from "../../src/plugins/theme";
 import { flattenColors, deepMerge } from "../../src/plugins/theme/config";
+import { resolveDeriveOptions, deriveRoleColors, deriveBaseColor, DEFAULT_ROLES, DEFAULT_ROLE_HUES } from "../../src/plugins/theme/derive";
 
 const basicOptions: XColorThemeOptions = {
   prefix: "--x",
@@ -421,5 +422,354 @@ describe("theme plugin - type option", () => {
     expect(vars["--x-primary-50"]).toBe("#1890ff");
     expect(vars["--x-primary-500"]).toBe("#1890ff");
     expect(vars["--x-primary-900"]).toBe("#1890ff");
+  });
+});
+
+// =======================================
+// Derive: resolveDeriveOptions tests
+// =======================================
+describe("theme plugin - resolveDeriveOptions()", () => {
+  it("should return null for false", () => {
+    expect(resolveDeriveOptions(false)).toBeNull();
+  });
+
+  it("should return null for undefined", () => {
+    expect(resolveDeriveOptions(undefined)).toBeNull();
+  });
+
+  it("should return full defaults for true", () => {
+    const opts = resolveDeriveOptions(true)!;
+    expect(opts).not.toBeNull();
+    expect(opts.enabled).toBe(true);
+    expect(opts.from).toBe("primary");
+    expect(opts.algorithm).toBe("oklch");
+    expect(opts.roles).toEqual(DEFAULT_ROLES);
+    expect(opts.chromaScale).toBe(1);
+    expect(opts.lightnessShift).toBe(0);
+  });
+
+  it("should return null for { enabled: false }", () => {
+    expect(resolveDeriveOptions({ enabled: false })).toBeNull();
+  });
+
+  it("should merge partial object with defaults", () => {
+    const opts = resolveDeriveOptions({
+      from: "brand",
+      roles: ["success", "error"]
+    })!;
+    expect(opts.from).toBe("brand");
+    expect(opts.algorithm).toBe("oklch");
+    expect(opts.roles).toEqual(["success", "error"]);
+    expect(opts.chromaScale).toBe(1);
+  });
+
+  it("should preserve custom chromaScale and lightnessShift", () => {
+    const opts = resolveDeriveOptions({
+      chromaScale: 0.8,
+      lightnessShift: -0.05
+    })!;
+    expect(opts.chromaScale).toBe(0.8);
+    expect(opts.lightnessShift).toBe(-0.05);
+  });
+});
+
+// =======================================
+// Derive: deriveRoleColors tests
+// =======================================
+describe("theme plugin - deriveRoleColors()", () => {
+  it("should derive all 5 roles when source exists", () => {
+    const opts = resolveDeriveOptions(true)!;
+    const colors = { primary: "#1890ff" };
+    const result = deriveRoleColors(colors, opts, XColor);
+
+    // Original preserved
+    expect(result.primary).toBe("#1890ff");
+    // All 5 roles derived
+    expect(result.secondary).toBeDefined();
+    expect(result.success).toBeDefined();
+    expect(result.warning).toBeDefined();
+    expect(result.error).toBeDefined();
+    expect(result.info).toBeDefined();
+    // Each should be a hex string
+    for (const role of DEFAULT_ROLES) {
+      expect(typeof result[role]).toBe("string");
+      expect((result[role] as string).startsWith("#")).toBe(true);
+    }
+  });
+
+  it("should not override user-provided colors", () => {
+    const opts = resolveDeriveOptions(true)!;
+    const colors = {
+      primary: "#1890ff",
+      success: "#00ff00"
+    };
+    const result = deriveRoleColors(colors, opts, XColor);
+    // User's success preserved
+    expect(result.success).toBe("#00ff00");
+    // Others derived
+    expect(result.error).toBeDefined();
+    expect(result.warning).toBeDefined();
+  });
+
+  it("should use alias for output names", () => {
+    const opts = resolveDeriveOptions({
+      alias: { warning: "warn", error: "danger" }
+    })!;
+    const colors = { primary: "#1890ff" };
+    const result = deriveRoleColors(colors, opts, XColor);
+
+    // Alias names used
+    expect(result.warn).toBeDefined();
+    expect(result.danger).toBeDefined();
+    // Original role names NOT present
+    expect(result.warning).toBeUndefined();
+    expect(result.error).toBeUndefined();
+  });
+
+  it("should skip derivation when source color not found", () => {
+    const opts = resolveDeriveOptions({ from: "nonexistent" })!;
+    const colors = { primary: "#1890ff" };
+    const result = deriveRoleColors(colors, opts, XColor);
+    // Should return original without crash
+    expect(result.primary).toBe("#1890ff");
+    expect(result.success).toBeUndefined();
+  });
+
+  it("should support from with DEFAULT object", () => {
+    const opts = resolveDeriveOptions({ from: "brand" })!;
+    const colors = {
+      brand: { DEFAULT: "#1890ff", hover: "#40a9ff" }
+    };
+    const result = deriveRoleColors(colors, opts, XColor);
+    expect(result.success).toBeDefined();
+    expect(result.error).toBeDefined();
+  });
+
+  it("should skip source without DEFAULT in nested object", () => {
+    const opts = resolveDeriveOptions({ from: "brand" })!;
+    const colors = {
+      brand: { logo: "#ff6600" }
+    };
+    const result = deriveRoleColors(colors, opts, XColor);
+    // No base → should not derive
+    expect(result.success).toBeUndefined();
+  });
+
+  it("should only derive specified roles", () => {
+    const opts = resolveDeriveOptions({
+      roles: ["success", "error"]
+    })!;
+    const colors = { primary: "#1890ff" };
+    const result = deriveRoleColors(colors, opts, XColor);
+
+    expect(result.success).toBeDefined();
+    expect(result.error).toBeDefined();
+    // Not requested
+    expect(result.warning).toBeUndefined();
+    expect(result.info).toBeUndefined();
+    expect(result.secondary).toBeUndefined();
+  });
+
+  it("should respect user color with alias name", () => {
+    const opts = resolveDeriveOptions({
+      alias: { warning: "warn" }
+    })!;
+    const colors = {
+      primary: "#1890ff",
+      warn: "#ffaa00" // user provides with alias name
+    };
+    const result = deriveRoleColors(colors, opts, XColor);
+    expect(result.warn).toBe("#ffaa00"); // user value preserved
+  });
+});
+
+// =======================================
+// Derive: deriveBaseColor tests
+// =======================================
+describe("theme plugin - deriveBaseColor()", () => {
+  it("should produce a valid hex color with oklch algorithm", () => {
+    const source = new XColor("#1890ff");
+    const opts = resolveDeriveOptions(true)!;
+    const hex = deriveBaseColor(source, "success", opts);
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it("should produce a valid hex color with hsl algorithm", () => {
+    const source = new XColor("#1890ff");
+    const opts = resolveDeriveOptions({ algorithm: "hsl" })!;
+    const hex = deriveBaseColor(source, "success", opts);
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it("should use custom hue anchor", () => {
+    const source = new XColor("#1890ff");
+    const opts = resolveDeriveOptions({ hues: { success: 160 } })!;
+    const hex = deriveBaseColor(source, "success", opts);
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/i);
+    // Should differ from default hue
+    const defaultOpts = resolveDeriveOptions(true)!;
+    const defaultHex = deriveBaseColor(source, "success", defaultOpts);
+    expect(hex).not.toBe(defaultHex);
+  });
+
+  it("secondary should use complementary hue by default", () => {
+    const source = new XColor("#1890ff");
+    const opts = resolveDeriveOptions(true)!;
+    const hex = deriveBaseColor(source, "secondary", opts);
+    // The complementary of a blue should be in the orange/amber region
+    const derived = new XColor(hex);
+    expect(derived.red()).toBeGreaterThan(derived.blue());
+  });
+});
+
+// =======================================
+// Derive: integration with resolveThemeConfig
+// =======================================
+describe("theme plugin - derive integration", () => {
+  it("derive: false should not generate extra colors (backward compat)", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: false
+    }, false);
+    const vars = xcolor.getThemeVars();
+    expect(vars["--x-primary-500"]).toBe("#1890ff");
+    expect(vars["--x-success-500"]).toBeUndefined();
+    expect(vars["--x-error-500"]).toBeUndefined();
+  });
+
+  it("derive: true should generate all 5 role colors", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: true
+    }, false);
+    const vars = xcolor.getThemeVars();
+    expect(vars["--x-primary-500"]).toBe("#1890ff");
+    // All derived roles should have shade 500
+    expect(vars["--x-secondary-500"]).toBeDefined();
+    expect(vars["--x-success-500"]).toBeDefined();
+    expect(vars["--x-warning-500"]).toBeDefined();
+    expect(vars["--x-error-500"]).toBeDefined();
+    expect(vars["--x-info-500"]).toBeDefined();
+  });
+
+  it("derive should also generate semantic and shade vars for derived colors", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: true,
+      semantic: true
+    }, false);
+    const vars = xcolor.getThemeVars();
+    // Derived success should have full shades
+    expect(vars["--x-success-50"]).toBeDefined();
+    expect(vars["--x-success-900"]).toBeDefined();
+    // And semantic states
+    expect(vars["--x-success-hover"]).toBeDefined();
+    expect(vars["--x-success-active"]).toBeDefined();
+    expect(vars["--x-success-bg"]).toBeDefined();
+  });
+
+  it("user-provided color should take priority over derived", () => {
+    xcolor.updateTheme({
+      colors: {
+        primary: "#1890ff",
+        success: "#00ff00"
+      },
+      type: "antd",
+      derive: true
+    }, false);
+    const vars = xcolor.getThemeVars();
+    expect(vars["--x-success-500"]).toBe("#00ff00");
+    // Other roles still derived
+    expect(vars["--x-error-500"]).toBeDefined();
+  });
+
+  it("alias should rename output variables", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: {
+        alias: { warning: "warn" }
+      }
+    }, false);
+    const vars = xcolor.getThemeVars();
+    // warn exists
+    expect(vars["--x-warn-500"]).toBeDefined();
+    expect(vars["--x-warn-hover"]).toBeDefined();
+    // warning does NOT exist
+    expect(vars["--x-warning-500"]).toBeUndefined();
+  });
+
+  it("custom hues should change derived colors", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: { hues: { success: 90 } }
+    }, false);
+    const vars1 = xcolor.getThemeVars();
+
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: { hues: { success: 200 } }
+    }, false);
+    const vars2 = xcolor.getThemeVars();
+
+    // Different hues should produce different colors
+    expect(vars1["--x-success-500"]).not.toBe(vars2["--x-success-500"]);
+  });
+
+  it("derive with from: 'brand' should use brand as source", () => {
+    xcolor.updateTheme({
+      colors: { brand: "#ff6600" },
+      type: "antd",
+      derive: { from: "brand" }
+    }, false);
+    const vars = xcolor.getThemeVars();
+    expect(vars["--x-brand-500"]).toBe("#ff6600");
+    expect(vars["--x-success-500"]).toBeDefined();
+    expect(vars["--x-error-500"]).toBeDefined();
+  });
+
+  it("derive with algorithm: 'hsl' should also work", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: { algorithm: "hsl" }
+    }, false);
+    const vars = xcolor.getThemeVars();
+    expect(vars["--x-success-500"]).toBeDefined();
+    expect(vars["--x-error-500"]).toBeDefined();
+  });
+
+  it("derive should work with dark mode", () => {
+    xcolor.updateTheme({
+      colors: { primary: "#1890ff" },
+      type: "antd",
+      derive: true,
+      darkMode: "class",
+      darkSelector: ".dark"
+    }, false);
+    const css = xcolor.getThemeCss();
+    expect(css).toContain(".dark {");
+    // Dark mode should contain derived colors
+    expect(css).toContain("--x-success-500:");
+    expect(css).toContain("--x-error-500:");
+  });
+
+  it("missing source should not crash", () => {
+    expect(() => {
+      xcolor.updateTheme({
+        colors: { brand: "#ff0000" },
+        type: "antd",
+        derive: true // from: 'primary' by default but primary not present
+      }, false);
+    }).not.toThrow();
+    const vars = xcolor.getThemeVars();
+    // Derivation skipped, only brand exists
+    expect(vars["--x-brand-500"]).toBe("#ff0000");
+    expect(vars["--x-success-500"]).toBeUndefined();
   });
 });

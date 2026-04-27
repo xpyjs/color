@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 import { computed, ref } from 'vue'
 
 const { site, localeIndex, page, hash } = useData()
@@ -42,7 +42,7 @@ const allLocaleLinks = computed(() => {
 
     return {
       text: value.label!,
-      link: targetLink,
+      link: withBase(targetLink),
       isCurrent
     }
   })

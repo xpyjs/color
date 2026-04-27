@@ -8,6 +8,7 @@ import { generatePalette } from "@xpyjs/color/plugins/palette/generate";
 import { generateSemantic } from "./semantic";
 import { generateDarkPalette, generateDarkSemantic } from "./dark";
 import { buildCssString } from "./css";
+import { resolveDeriveOptions, deriveRoleColors } from "./derive";
 
 /**
  * Check whether a ColorConfig object has a DEFAULT base color.
@@ -88,11 +89,17 @@ export function resolveThemeConfig(
   var darkVars: Record<string, string> = {};
   var colorPalettes: Record<string, any[]> = {};
 
-  var colorKeys = Object.keys(options.colors);
+  // ---- Derive role colors (if enabled) ----
+  var deriveOpts = resolveDeriveOptions(options.derive);
+  var workingColors = deriveOpts
+    ? deriveRoleColors(options.colors, deriveOpts, cls)
+    : options.colors;
+
+  var colorKeys = Object.keys(workingColors);
 
   for (var ci = 0; ci < colorKeys.length; ci++) {
     var colorName = colorKeys[ci];
-    var colorValue = options.colors[colorName];
+    var colorValue = workingColors[colorName];
     var colorPrefix = prefix + "-" + colorName;
 
     var baseColor: string | null = null;
