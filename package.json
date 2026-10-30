@@ -6,7 +6,6 @@
   "description": "A tiny, fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.",
   "main": "dist/index.cjs",
   "module": "dist/index.esm.js",
-  "browser": "dist/index.umd.js",
   "unpkg": "dist/index.umd.js",
   "jsdelivr": "dist/index.umd.js",
   "types": "dist/types/index.d.ts",
@@ -20,15 +19,23 @@
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "browser": "./dist/index.umd.js",
+      "browser": {
+        "types": "./dist/types/index.d.ts",
+        "import": "./dist/index.esm.js",
+        "require": "./dist/index.cjs",
+        "default": "./dist/index.esm.js"
+      },
       "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.esm.js"
     },
     "./plugins/*": {
       "types": "./dist/types/plugins/*/index.d.ts",
       "import": "./dist/plugins/*/index.js",
-      "require": "./dist/plugins/*/index.cjs"
-    }
+      "require": "./dist/plugins/*/index.cjs",
+      "default": "./dist/plugins/*/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
