@@ -22,15 +22,15 @@ Getter/setter mode. Without arguments, returns the approximate color temperature
 #### Read Color Temperature
 
 ```ts
-xcolor('#ff8000').temperature()   // ≈ 2000 (warm light)
-xcolor('#ffffff').temperature()   // ≈ 6500 (daylight)
+xcolor('#ff8000').temperature()   // ≈ 1800 (warm light)
+xcolor('#ffffff').temperature()   // 6500 (D65 daylight neutral)
 xcolor('#80b0ff').temperature()   // > 10000 (cool light)
 ```
 
 #### Set Color Temperature
 
 ```ts
-xcolor('#000000').temperature(2700).toHex()  // warm white light ≈ '#ffb46b'
+xcolor('#000000').temperature(2700).toHex()  // '#ffa757' (warm white)
 xcolor('#000000').temperature(5500).toHex()  // daylight
 xcolor('#000000').temperature(9000).toHex()  // cool blue light
 ```

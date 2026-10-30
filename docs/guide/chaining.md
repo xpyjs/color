@@ -26,7 +26,7 @@ const color = xcolor('#ff0000')
 color.lighten(20)
 
 // color 本身已经改变 — 不是新对象
-color.toHex() // '#ff6666'，不再是 '#ff0000'
+color.toHex() // '#ff3333'，不再是 '#ff0000'
 ```
 
 这种设计避免了频繁创建对象，也让链式调用更加自然。
@@ -39,8 +39,8 @@ color.toHex() // '#ff6666'，不再是 '#ff0000'
 const brand = xcolor('#6366f1')
 
 // 生成一组配色，原色不受影响
-const light    = brand.clone().lighten(20).toHex()  // '#a5a7f6'
-const dark     = brand.clone().darken(20).toHex()   // '#2f3193'
+const light    = brand.clone().lighten(20).toHex()  // '#8285f4'
+const dark     = brand.clone().darken(20).toHex()   // '#2529eb'
 const muted    = brand.clone().desaturate(30).toHex()
 const inverted = brand.clone().negate().toHex()
 

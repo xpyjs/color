@@ -23,7 +23,7 @@ xcolor.use(oklabPlugin)
 
 ```ts
 xcolor('#ff0000').toOklab()
-// { l: 0.63, a: 0.22, b: 0.13 }
+// { l: 0.628, a: 0.2249, b: 0.1258 }
 ```
 
 ### toOklabString()
@@ -32,7 +32,7 @@ xcolor('#ff0000').toOklab()
 
 ```ts
 xcolor('#ff0000').toOklabString()
-// 'oklab(0.63 0.22 0.13)'
+// 'oklab(0.628 0.2249 0.1258)'
 ```
 
 ## Oklch 方法
@@ -47,7 +47,7 @@ xcolor('#ff0000').toOklabString()
 
 ```ts
 xcolor('#ff0000').toOklch()
-// { l: 0.63, c: 0.26, h: 29.23 }
+// { l: 0.628, c: 0.2577, h: 29.22 }
 ```
 
 ### toOklchString()
@@ -56,7 +56,7 @@ xcolor('#ff0000').toOklch()
 
 ```ts
 xcolor('#ff0000').toOklchString()
-// 'oklch(0.63 0.26 29.23)'
+// 'oklch(0.628 0.2577 29.22)'
 ```
 
 ## 输入解析
@@ -69,6 +69,6 @@ xcolor('oklch(0.63 0.26 29.23)').toHex()
 ## 格式化
 
 ```ts
-xcolor('#ff0000').toString('oklab')  // 'oklab(0.63 0.22 0.13)'
-xcolor('#ff0000').toString('oklch')  // 'oklch(0.63 0.26 29.23)'
+xcolor('#ff0000').toString('oklab')  // 'oklab(0.628 0.2249 0.1258)'
+xcolor('#ff0000').toString('oklch')  // 'oklch(0.628 0.2577 29.22)'
 ```

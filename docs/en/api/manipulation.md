@@ -6,18 +6,18 @@ All manipulation methods **modify the instance in place** and return `this`, sup
 
 ### lighten(amount?) {#lighten}
 
-Increase HSL lightness. `amount` is in percentage points (0–100), default `10`.
+Move HSL lightness toward white across the remaining range. `amount` is the percentage of the distance from the current lightness to 100% (0–100), default `10`; `50` moves halfway and `100` always produces white.
 
 ```ts
-xcolor('#ff0000').lighten(20).toHex()  // '#ff6666'
+xcolor('#ff0000').lighten(20).toHex()  // '#ff3333'
 ```
 
 ### darken(amount?) {#darken}
 
-Decrease HSL lightness. Default `10`.
+Move HSL lightness toward black across the current range. `amount` is the percentage of the distance from the current lightness to 0% (0–100), default `10`; `50` moves halfway and `100` always produces black. Equivalent to `lighten(-amount)`.
 
 ```ts
-xcolor('#ff0000').darken(20).toHex()  // '#990000'
+xcolor('#ff0000').darken(20).toHex()  // '#cc0000'
 ```
 
 ### brighten(amount?) {#brighten}
@@ -35,7 +35,7 @@ xcolor('#ff0000').brighten(50).toHex()  // '#ff8080'
 Increase HSL saturation. Default `10`, range 0–100.
 
 ```ts
-xcolor('#bf4040').saturate(40).toHex()  // '#ff0000'
+xcolor('#bf4040').saturate(40).toHex()  // '#f20d0d'
 ```
 
 ### desaturate(amount?) {#desaturate}

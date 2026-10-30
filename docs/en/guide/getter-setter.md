@@ -49,7 +49,7 @@ Get or set the opacity (0–1).
 ```ts
 xcolor('#3b82f6').alpha()    // 1
 xcolor('#3b82f6').alpha(0.5) // set to semi-transparent
-xcolor('#3b82f680').a()      // 0.5 — 8-digit hex automatically parses alpha
+xcolor('#3b82f680').a()      // ≈ 0.5 — 8-digit hex parses alpha (128 / 255)
 ```
 
 ## HSL Channels

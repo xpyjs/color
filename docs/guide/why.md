@@ -42,7 +42,7 @@ import xcolor from '@xpyjs/color'
 import lab from '@xpyjs/color/plugins/lab'
 
 xcolor.use(lab)
-xcolor('#ff0000').toLab() // { l: 53.23, a: 80.11, b: 67.22 }
+xcolor('#ff0000').toLab() // { l: 53.24, a: 80.09, b: 67.2 }
 ```
 
 提供多款官方插件，涵盖 10+ 种色彩空间和多种实用功能。同时提供开发模板，用户可以轻松创建和分享自己的插件。

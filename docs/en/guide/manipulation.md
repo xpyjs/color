@@ -12,11 +12,11 @@ If you need to preserve the original color, call `.clone()` first.
 
 ### lighten(amount)
 
-Increase HSL lightness. `amount` is the percentage points to add, default `10`, range 0–100.
+Move HSL lightness toward white across the remaining range. `amount` is the percentage of the distance from the current lightness to 100%, default `10`, range 0–100; `50` moves halfway and `100` always produces white.
 
 ```ts
-xcolor('#ff0000').lighten(20).toHex() // '#ff6666'
-xcolor('#ff0000').lighten().toHex()   // '#ff3333' (default +10)
+xcolor('#ff0000').lighten(20).toHex() // '#ff3333'
+xcolor('#ff0000').lighten().toHex()   // '#ff1a1a' (default 10)
 ```
 
 <div class="color-demo">
@@ -24,15 +24,15 @@ xcolor('#ff0000').lighten().toHex()   // '#ff3333' (default +10)
   <span class="color-demo-arrow">→</span>
   <span class="color-demo-label">lighten(20)</span>
   <span class="color-demo-arrow">→</span>
-  <div class="color-demo-swatch" style="background: #ff6666"></div>
+  <div class="color-demo-swatch" style="background: #ff3333"></div>
 </div>
 
 ### darken(amount)
 
-Decrease HSL lightness. Equivalent to `lighten(-amount)`, default `10`.
+Move HSL lightness toward black across the current range. `amount` is the percentage of the distance from the current lightness to 0%, default `10`, range 0–100; `100` always produces black. Equivalent to `lighten(-amount)`.
 
 ```ts
-xcolor('#ff0000').darken(20).toHex() // '#990000'
+xcolor('#ff0000').darken(20).toHex() // '#cc0000'
 ```
 
 <div class="color-demo">
@@ -40,7 +40,7 @@ xcolor('#ff0000').darken(20).toHex() // '#990000'
   <span class="color-demo-arrow">→</span>
   <span class="color-demo-label">darken(20)</span>
   <span class="color-demo-arrow">→</span>
-  <div class="color-demo-swatch" style="background: #990000"></div>
+  <div class="color-demo-swatch" style="background: #cc0000"></div>
 </div>
 
 ### brighten(amount)
@@ -70,7 +70,7 @@ xcolor('#ff0000').brighten(50).toHex() // '#ff8080'
 Increase HSL saturation. Default `10`, range 0–100.
 
 ```ts
-xcolor('#bf4040').saturate(40).toHex() // '#ff0000'
+xcolor('#bf4040').saturate(40).toHex() // '#f20d0d'
 ```
 
 ### desaturate(amount)

@@ -45,10 +45,11 @@ function kelvinToRgb(kelvin: number): { r: number; g: number; b: number } {
 /**
  * Estimate the color temperature in Kelvin that best matches an RGB color.
  *
- * Uses a 25-iteration binary search over the `[1000, 40000]` Kelvin range,
- * converging on the temperature whose {@link kelvinToRgb} output most closely
- * matches the given RGB values. The result is approximate and best suited
- * for colors near the Planckian locus (warm whites, neutral whites, cool blues).
+ * Scans the `[1000, 40000]` Kelvin range and returns the temperature whose
+ * {@link kelvinToRgb} output has the smallest RGB distance from the input.
+ * Neutral grays have no meaningful hue, so they resolve to the D65 daylight
+ * reference (6500 K). The result is approximate and best suited for colors
+ * near the Planckian locus (warm whites, neutral whites, cool blues).
  *
  * @param r - Red channel (0–255)
  * @param g - Green channel (0–255)
@@ -56,21 +57,33 @@ function kelvinToRgb(kelvin: number): { r: number; g: number; b: number } {
  * @returns Estimated color temperature in Kelvin (`1000–40000`)
  */
 function rgbToKelvin(r: number, g: number, b: number): number {
-  let lo = 1000;
-  let hi = 40000;
+  if (r === g && g === b) return 6500;
 
-  for (let i = 0; i < 25; i++) {
-    const mid = (lo + hi) / 2;
-    const rgb = kelvinToRgb(mid);
+  const distanceAt = (kelvin: number): number => {
+    const rgb = kelvinToRgb(kelvin);
+    return (rgb.r - r) ** 2 + (rgb.g - g) ** 2 + (rgb.b - b) ** 2;
+  };
 
-    if (rgb.b / Math.max(1, rgb.r) >= b / Math.max(1, r) && rgb.g >= g) {
-      hi = mid;
-    } else {
-      lo = mid;
+  let best = 6500;
+  let bestDistance = Infinity;
+
+  // Coarse scan, then refine around the best candidate for 1 K precision.
+  for (let kelvin = 1000; kelvin <= 40000; kelvin += 100) {
+    const distance = distanceAt(kelvin);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = kelvin;
+    }
+  }
+  for (let kelvin = Math.max(1000, best - 100); kelvin <= Math.min(40000, best + 100); kelvin++) {
+    const distance = distanceAt(kelvin);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = kelvin;
     }
   }
 
-  return Math.round((lo + hi) / 2);
+  return best;
 }
 
 declare module "@xpyjs/color" {
@@ -80,7 +93,7 @@ declare module "@xpyjs/color" {
      * @returns Temperature in Kelvin (1000-40000)
      * @example
      * ```ts
-     * xcolor('#ff8000').temperature() // ~2200
+     * xcolor('#ff8000').temperature() // ~1800
      * ```
      */
     temperature(): number;

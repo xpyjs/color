@@ -24,10 +24,16 @@ declare module "@xpyjs/color" {
   }
 
   interface XColor {
-    /** Convert to CIE XYZ D65. */
-    toXyz(): XYZ;
-    /** Output as `color(xyz-d65 x y z)` string. */
-    toXyzString(): string;
+    /**
+     * Convert to CIE XYZ.
+     * @param illuminant - Reference illuminant (default `"D65"`)
+     */
+    toXyz(illuminant?: "D65" | "D50"): XYZ;
+    /**
+     * Output as `color(xyz-d65 x y z)` or `color(xyz-d50 x y z)`.
+     * @param illuminant - Reference illuminant (default `"D65"`)
+     */
+    toXyzString(illuminant?: "D65" | "D50"): string;
   }
 }
 
@@ -137,17 +143,20 @@ const xyz: XColorPlugin = {
     });
 
     // ── Output methods ──
-    defineMethod(cls, 'toXyz', function (this: InstanceType<typeof cls>): XYZ {
+    defineMethod(cls, 'toXyz', function (this: InstanceType<typeof cls>, illuminant: "D65" | "D50" = "D65"): XYZ {
       const rl = srgbToLinear(this.red());
       const gl = srgbToLinear(this.green());
       const bl = srgbToLinear(this.blue());
-      const [x, y, z] = mat3Mul(SRGB_TO_XYZ, rl, gl, bl);
+      let [x, y, z] = mat3Mul(SRGB_TO_XYZ, rl, gl, bl);
+      if (illuminant === "D50") {
+        [x, y, z] = mat3Mul(D65_TO_D50, x, y, z);
+      }
       return { x: round4(x), y: round4(y), z: round4(z) };
     });
 
-    defineMethod(cls, 'toXyzString', function (this: InstanceType<typeof cls>): string {
-      const { x, y, z } = this.toXyz();
-      return `color(xyz-d65 ${x} ${y} ${z})`;
+    defineMethod(cls, 'toXyzString', function (this: InstanceType<typeof cls>, illuminant: "D65" | "D50" = "D65"): string {
+      const { x, y, z } = this.toXyz(illuminant);
+      return `color(${illuminant === "D50" ? "xyz-d50" : "xyz-d65"} ${x} ${y} ${z})`;
     });
 
     registerStringFormatter(cls, "xyz", color => color.toXyzString());

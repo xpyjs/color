@@ -147,7 +147,7 @@ export type XColorOptions = {
  * c.lighten(20).toHex() // '#ff3333'
  * c.rgb()               // { r: 255, g: 0, b: 0, a: 1 }
  * c.rgb(0, 255, 0)      // set to green, returns this
- * c.r(128).darken(10).rgb() // { r: 115, g: 255, b: 0, a: 1 }
+ * c.r(128).darken(10).rgb() // { r: 115, g: 230, b: 0, a: 1 }
  * ```
  */
 export class XColor {
@@ -859,32 +859,39 @@ export class XColor {
   // =======================================
 
   /**
-   * Lighten the color by increasing its HSL lightness.
-   * The result is clamped to `[0, 100]` lightness.
+   * Lighten the color by moving its HSL lightness toward white.
+   * The amount is a percentage of the remaining distance to 100% lightness,
+   * so `50` moves halfway toward white and `100` always produces white.
    * All manipulation methods mutate and return the current instance for chaining.
    *
-   * @param amount - Points to add to HSL lightness (0–100), default `10`
+   * @param amount - Percentage of the remaining lightness range (0–100), default `10`
    * @returns Current instance (chainable)
    * @example
    * ```ts
-   * xcolor('#ff0000').lighten(20).toHex()   // '#ff6666'
-   * xcolor('#ff0000').lighten().toHex()      // '#ff3333' (default 10)
+   * xcolor('#ff0000').lighten(20).toHex()   // '#ff3333'
+   * xcolor('#ff0000').lighten().toHex()      // '#ff1a1a' (default 10)
    * ```
    */
   lighten(amount: number = 10): this {
-    return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.l = clamp(hsl.l + amount, 0, 100); });
+    const factor = clamp(Math.abs(amount), 0, 100) / 100;
+    const target = amount < 0 ? 0 : 100;
+    return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => {
+      hsl.l += (target - hsl.l) * factor;
+    });
   }
 
   /**
-   * Darken the color by decreasing its HSL lightness.
+   * Darken the color by moving its HSL lightness toward black.
+   * The amount is a percentage of the current distance to 0% lightness,
+   * so `50` moves halfway toward black and `100` always produces black.
    * Equivalent to `lighten(-amount)`.
    *
-   * @param amount - Points to subtract from HSL lightness (0–100), default `10`
+   * @param amount - Percentage of the current lightness range (0–100), default `10`
    * @returns Current instance (chainable)
    * @example
    * ```ts
-   * xcolor('#ff0000').darken(20).toHex()   // '#990000'
-   * xcolor('#ff0000').darken().toHex()      // '#cc0000' (default 10)
+   * xcolor('#ff0000').darken(20).toHex()   // '#cc0000'
+   * xcolor('#ff0000').darken().toHex()      // '#e60000' (default 10)
    * ```
    */
   darken(amount: number = 10): this {
@@ -922,7 +929,7 @@ export class XColor {
    * @returns Current instance (chainable)
    * @example
    * ```ts
-   * xcolor('#bf4040').saturate(40).toHex()   // '#ff0000'
+   * xcolor('#bf4040').saturate(40).toHex()   // '#f20d0d'
    * ```
    */
   saturate(amount: number = 10): this {
@@ -1307,7 +1314,7 @@ export class XColor {
    * const copy = original.clone();
    * copy.darken(20);
    * original.toHex()   // '#ff0000'  (unchanged)
-   * copy.toHex()       // '#990000'
+   * copy.toHex()       // '#cc0000'
    * ```
    */
   clone(): XColor {
@@ -1336,7 +1343,7 @@ export class XColor {
    * import labPlugin from '@xpyjs/color/plugins/lab'
    *
    * xcolor.extend(labPlugin)
-   * xcolor('#ff0000').toLab() // { l: 53.23, a: 80.11, b: 67.22 }
+   * xcolor('#ff0000').toLab() // { l: 53.24, a: 80.09, b: 67.2 }
    * ```
    */
   static extend<T = unknown>(plugin: XColorPlugin<T>, option?: T): typeof XColor {
@@ -1540,7 +1547,7 @@ export interface XColorFactory {
    * import labPlugin from '@xpyjs/color/plugins/lab'
    *
    * xcolor.extend(labPlugin)
-   * xcolor('#ff0000').toLab()   // { l: 53.23, a: 80.11, b: 67.22 }
+   * xcolor('#ff0000').toLab()   // { l: 53.24, a: 80.09, b: 67.2 }
    * ```
    */
   extend<T = unknown>(plugin: XColorPlugin<T>, option?: T): typeof XColor;
@@ -1657,7 +1664,7 @@ export interface XColorFactory {
  *
  * // Chain operations
  * xcolor('#ff0000').lighten(20).desaturate(10).toHex()
- * // '#ff6666' → then desaturated
+ * // '#ff3333' → then desaturated
  *
  * // Getter / setter overloads
  * const c = xcolor('#ff0000')

@@ -19,7 +19,7 @@ xcolor.use(a98RgbPlugin)
 
 ```ts
 xcolor('#ff0000').toA98Rgb()
-// { r: 0.86, g: 0, b: 0 }
+// { r: 0.8586, g: 0, b: 0 }
 ```
 
 ### toA98RgbString()
@@ -28,7 +28,7 @@ xcolor('#ff0000').toA98Rgb()
 
 ```ts
 xcolor('#ff0000').toA98RgbString()
-// 'color(a98-rgb 0.86 0 0)'
+// 'color(a98-rgb 0.8586 0 0)'
 ```
 
 ## 输入解析
@@ -40,5 +40,5 @@ xcolor('color(a98-rgb 0.86 0 0)').toHex()
 ## 格式化
 
 ```ts
-xcolor('#ff0000').toString('a98Rgb')  // 'color(a98-rgb 0.86 0 0)'
+xcolor('#ff0000').toString('a98Rgb')  // 'color(a98-rgb 0.8586 0 0)'
 ```

@@ -19,7 +19,7 @@ Returns a Display P3 object. Each channel value ranges from 0–1.
 
 ```ts
 xcolor('#ff0000').toDisplayP3()
-// { r: 0.92, g: 0.20, b: 0.14 }
+// { r: 0.9175, g: 0.2003, b: 0.1386 }
 ```
 
 ### toDisplayP3String()
@@ -28,7 +28,7 @@ Returns a `color(display-p3 ...)` format string.
 
 ```ts
 xcolor('#ff0000').toDisplayP3String()
-// 'color(display-p3 0.92 0.20 0.14)'
+// 'color(display-p3 0.9175 0.2003 0.1386)'
 ```
 
 ## Input Parsing
@@ -40,5 +40,5 @@ xcolor('color(display-p3 0.92 0.20 0.14)').toHex()
 ## Formatting
 
 ```ts
-xcolor('#ff0000').toString('displayP3')  // 'color(display-p3 0.92 0.20 0.14)'
+xcolor('#ff0000').toString('displayP3')  // 'color(display-p3 0.9175 0.2003 0.1386)'
 ```

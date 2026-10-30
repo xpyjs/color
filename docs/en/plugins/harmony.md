@@ -1,6 +1,6 @@
 # harmony - Color Schemes
 
-Generate classic color schemes based on color theory. All methods return arrays containing `XColor` instances.
+Generate classic color schemes based on color theory. Except for `complement()`, which returns a single `XColor`, all methods return arrays of `XColor` instances.
 
 ## Install
 
@@ -17,13 +17,13 @@ xcolor.use(harmonyPlugin)
 
 ### complement()
 
-Complementary colors — two colors 180° apart on the color wheel.
+The complementary color — the color 180° from the original on the color wheel.
 
-**Returns**: `[XColor, XColor]` (original + complement)
+**Returns**: `XColor` (the complement, original excluded)
 
 ```ts
-xcolor('#ff0000').complement().map(c => c.toHex())
-// ['#ff0000', '#00ffff']
+xcolor('#ff0000').complement().toHex()
+// '#00ffff'
 ```
 
 <div class="color-demo">

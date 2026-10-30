@@ -35,7 +35,7 @@ Determine whether the input at creation time was a valid color.
 xcolor('#ff0000').isValid()  // true
 xcolor('rgb(255,0,0)').isValid()  // true
 xcolor('not-a-color').isValid()   // false
-xcolor().isValid()                // false
+xcolor().isValid()                // true (omitting the argument uses the valid default black)
 ```
 
 ::: info
@@ -67,7 +67,7 @@ Calculate relative luminance (0–1), based on the WCAG 2.0 specification.
 ```ts
 xcolor('#ffffff').luminance()  // 1
 xcolor('#000000').luminance()  // 0
-xcolor('#ff0000').luminance()  // 0.21
+xcolor('#ff0000').luminance()  // 0.2126
 ```
 
 ## contrast(other) {#contrast}
@@ -97,7 +97,7 @@ Use the [a11y plugin](/en/plugins/a11y) to directly check `isReadable()` and sel
 
 ## equals(other) {#equals}
 
-Determine whether two colors are the same (based on RGBA values).
+Determine whether two colors are the same (based on RGBA values; an alpha difference below `0.01` is treated as equal).
 
 | Param | Type | Description |
 | --- | --- | --- |

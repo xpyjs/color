@@ -62,22 +62,25 @@ const b = xcolor(a)  // 克隆，b 与 a 独立
 #### null / undefined / 无效值
 
 ```ts
-xcolor()         // 黑色 #000000，isValid() = false
-xcolor(null)     // 黑色 #000000，isValid() = false
-xcolor('nope')   // 黑色 #000000，isValid() = false
+xcolor()         // 黑色 #000000，isValid() = true（省略参数的默认色）
+xcolor(null)     // 黑色 #000000，isValid() = true（空值使用默认色）
+xcolor('nope')   // 黑色 #000000，isValid() = false（无效输入）
 ```
 
 ### 配置选项
 
 ```ts
 interface XColorOptions {
-  useDecimal?: boolean  // true 时 RGB 通道使用 0–1 范围（默认 0–255）
+  useDecimal?: boolean  // true 时保留 RGB 通道的小数精度（范围仍为 0–255）
 }
 ```
 
 ```ts
-xcolor({ r: 1, g: 0, b: 0 }, { useDecimal: true })
-// 等价于 xcolor('#ff0000')
+xcolor({ r: 255, g: 0, b: 0 }, { useDecimal: true })  // 等价于 xcolor('#ff0000')
+
+const c = xcolor('#000000', { useDecimal: true })
+c.rgb(127.5, 64.25, 0)
+c.rgb()  // { r: 127.5, g: 64.25, b: 0, a: 1 }
 ```
 
 ## new XColor(input?, options?)
@@ -102,7 +105,7 @@ const b = a.clone()
 b.lighten(20)
 
 a.toHex() // '#ff0000' — 不受影响
-b.toHex() // '#ff6666'
+b.toHex() // '#ff3333'
 ```
 
 **返回值**：新的 `XColor` 实例

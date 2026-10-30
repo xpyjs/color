@@ -12,11 +12,11 @@ xcolor 提供了一系列基于 HSL 和 RGB 色彩空间的操作方法。所有
 
 ### lighten(amount)
 
-增加 HSL 亮度。`amount` 为添加的百分点数，默认 `10`，范围 0–100。
+将 HSL 亮度按剩余区间推向白色。`amount` 为当前亮度到 100% 之间距离的百分比，默认 `10`，范围 0–100；`50` 走到剩余距离的一半，`100` 必定为白色。
 
 ```ts
-xcolor('#ff0000').lighten(20).toHex() // '#ff6666'
-xcolor('#ff0000').lighten().toHex()   // '#ff3333' (默认 +10)
+xcolor('#ff0000').lighten(20).toHex() // '#ff3333'
+xcolor('#ff0000').lighten().toHex()   // '#ff1a1a' (默认 10)
 ```
 
 <div class="color-demo">
@@ -24,15 +24,15 @@ xcolor('#ff0000').lighten().toHex()   // '#ff3333' (默认 +10)
   <span class="color-demo-arrow">→</span>
   <span class="color-demo-label">lighten(20)</span>
   <span class="color-demo-arrow">→</span>
-  <div class="color-demo-swatch" style="background: #ff6666"></div>
+  <div class="color-demo-swatch" style="background: #ff3333"></div>
 </div>
 
 ### darken(amount)
 
-减少 HSL 亮度。等价于 `lighten(-amount)`，默认 `10`。
+将 HSL 亮度按当前区间推向黑色。`amount` 为当前亮度到 0% 之间距离的百分比，默认 `10`，范围 0–100；`100` 必定为黑色。等价于 `lighten(-amount)`。
 
 ```ts
-xcolor('#ff0000').darken(20).toHex() // '#990000'
+xcolor('#ff0000').darken(20).toHex() // '#cc0000'
 ```
 
 <div class="color-demo">
@@ -40,7 +40,7 @@ xcolor('#ff0000').darken(20).toHex() // '#990000'
   <span class="color-demo-arrow">→</span>
   <span class="color-demo-label">darken(20)</span>
   <span class="color-demo-arrow">→</span>
-  <div class="color-demo-swatch" style="background: #990000"></div>
+  <div class="color-demo-swatch" style="background: #cc0000"></div>
 </div>
 
 ### brighten(amount)
@@ -70,7 +70,7 @@ xcolor('#ff0000').brighten(50).toHex() // '#ff8080'
 增加 HSL 饱和度。默认 `10`，范围 0–100。
 
 ```ts
-xcolor('#bf4040').saturate(40).toHex() // '#ff0000'
+xcolor('#bf4040').saturate(40).toHex() // '#f20d0d'
 ```
 
 ### desaturate(amount)

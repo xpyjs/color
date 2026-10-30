@@ -18,7 +18,7 @@ xcolor.use(namePlugin)
 注册后，新方法会直接挂载到所有 xcolor 实例上：
 
 ```ts
-xcolor('#ff0000').toLab()     // { l: 53.23, a: 80.11, b: 67.22 }
+xcolor('#ff0000').toLab()     // { l: 53.24, a: 80.09, b: 67.2 }
 xcolor('#ff0000').toName()    // 'red'
 ```
 

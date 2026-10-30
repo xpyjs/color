@@ -10,7 +10,7 @@ describe("temperature plugin", () => {
   it("should get and set temperature", () => {
     const c = xcolor("#ffffff");
     const t = c.temperature();
-    expect(typeof t).toBe("number");
+    expect(t).toBe(6500);
 
     c.temperature(3000);
     expect(c.red()).toBeGreaterThan(c.blue());
@@ -36,6 +36,10 @@ describe("temperature plugin", () => {
     it("should return high temperature for cool (bluish) colors", () => {
       const t = xcolor("#8080ff").temperature();
       expect(t).toBeGreaterThan(8000);
+    });
+
+    it("should resolve neutral white to the D65 daylight reference", () => {
+      expect(xcolor("#ffffff").temperature()).toBe(6500);
     });
   });
 
@@ -84,18 +88,10 @@ describe("temperature plugin", () => {
 
   describe("round-trip", () => {
     it("should approximate original kelvin after set→get", () => {
-      // The binary search rgbToKelvin is a rough approximation.
-      // It works best in the warm range where blue/red ratio varies significantly.
-      // Use low temperatures (1500, 2500, 4500) for reliable monotonicity.
-      const c1 = xcolor("#000").temperature(1500);
-      const c2 = xcolor("#000").temperature(2500);
-      const c3 = xcolor("#000").temperature(4500);
-      const t1 = c1.temperature();
-      const t2 = c2.temperature();
-      const t3 = c3.temperature();
-      // Monotonically increasing
-      expect(t1).toBeLessThan(t2);
-      expect(t2).toBeLessThan(t3);
+      for (const kelvin of [1500, 2500, 4500, 6500, 10000]) {
+        const actual = xcolor("#000").temperature(kelvin).temperature();
+        expect(Math.abs(actual - kelvin)).toBeLessThan(200);
+      }
     });
 
     it("should return values within the valid range", () => {

@@ -35,7 +35,7 @@ xcolor('#ffffff').isDark()  // false
 xcolor('#ff0000').isValid()  // true
 xcolor('rgb(255,0,0)').isValid()  // true
 xcolor('not-a-color').isValid()   // false
-xcolor().isValid()                // false
+xcolor().isValid()                // true（省略参数会使用有效的默认黑色）
 ```
 
 ::: info
@@ -67,7 +67,7 @@ xcolor('#ff0000').brightness()  // 76.245
 ```ts
 xcolor('#ffffff').luminance()  // 1
 xcolor('#000000').luminance()  // 0
-xcolor('#ff0000').luminance()  // 0.21
+xcolor('#ff0000').luminance()  // 0.2126
 ```
 
 ## contrast(other) {#contrast}
@@ -97,7 +97,7 @@ xcolor('#ff0000').contrast('#ffffff')  // 4（约）
 
 ## equals(other) {#equals}
 
-判断两个颜色是否相同（基于 RGBA 值）。
+判断两个颜色是否相同（基于 RGBA 值；alpha 差值小于 `0.01` 视为相同）。
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |

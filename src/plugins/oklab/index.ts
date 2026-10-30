@@ -60,13 +60,13 @@ declare module "@xpyjs/color" {
      * @returns OKLab object with `l` (0-1), `a`, `b`
      * @example
      * ```ts
-     * xcolor('#ff0000').toOklab() // { l: 0.63, a: 0.22, b: 0.13 }
+     * xcolor('#ff0000').toOklab() // { l: 0.628, a: 0.2249, b: 0.1258 }
      * ```
      */
     toOklab(): OKLab;
     /**
      * Output as CSS `oklab()` string.
-     * @returns e.g. `oklab(0.63 0.22 0.13)`
+     * @returns e.g. `oklab(0.628 0.2249 0.1258)`
      */
     toOklabString(): string;
     /**
@@ -76,7 +76,7 @@ declare module "@xpyjs/color" {
     toOklch(): OKLCh;
     /**
      * Output as CSS `oklch()` string.
-     * @returns e.g. `oklch(0.63 0.26 30.77)`
+     * @returns e.g. `oklch(0.628 0.2577 29.22)`
      */
     toOklchString(): string;
   }

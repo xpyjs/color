@@ -19,7 +19,7 @@ Returns a ProPhoto RGB object. Each channel value ranges from 0–1.
 
 ```ts
 xcolor('#ff0000').toProPhotoRgb()
-// { r: 0.70, g: 0.28, b: 0.10 }
+// { r: 0.7022, g: 0.2757, b: 0.1036 }
 ```
 
 ### toProPhotoRgbString()
@@ -28,7 +28,7 @@ Returns a `color(prophoto-rgb ...)` format string.
 
 ```ts
 xcolor('#ff0000').toProPhotoRgbString()
-// 'color(prophoto-rgb 0.70 0.28 0.10)'
+// 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
 ```
 
 ## Input Parsing
@@ -40,5 +40,5 @@ xcolor('color(prophoto-rgb 0.70 0.28 0.10)').toHex()
 ## Formatting
 
 ```ts
-xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.70 0.28 0.10)'
+xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
 ```

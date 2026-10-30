@@ -22,15 +22,15 @@ getter/setter 模式。不传参返回当前颜色对应的近似色温（K）�
 #### 读取色温
 
 ```ts
-xcolor('#ff8000').temperature()   // ≈ 2000（暖光）
-xcolor('#ffffff').temperature()   // ≈ 6500（日光）
+xcolor('#ff8000').temperature()   // ≈ 1800（暖光）
+xcolor('#ffffff').temperature()   // 6500（D65 日光中性色）
 xcolor('#80b0ff').temperature()   // > 10000（冷光）
 ```
 
 #### 设置色温
 
 ```ts
-xcolor('#000000').temperature(2700).toHex()  // 暖白光 ≈ '#ffb46b'
+xcolor('#000000').temperature(2700).toHex()  // '#ffa757'（暖白光）
 xcolor('#000000').temperature(5500).toHex()  // 日光
 xcolor('#000000').temperature(9000).toHex()  // 冷蓝光
 ```

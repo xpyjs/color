@@ -1,6 +1,6 @@
 # harmony - 配色方案
 
-基于色彩理论生成经典配色方案。所有方法返回包含 `XColor` 实例的数组。
+基于色彩理论生成经典配色方案。除 `complement()` 返回单个 `XColor` 外，其余方法返回包含 `XColor` 实例的数组。
 
 ## 安装
 
@@ -17,13 +17,13 @@ xcolor.use(harmonyPlugin)
 
 ### complement()
 
-互补色——色轮上相隔 180° 的两个颜色。
+互补色——色轮上相隔 180° 的那个颜色。
 
-**返回值**：`[XColor, XColor]`（原色 + 互补色）
+**返回值**：`XColor`（互补色，不含原色）
 
 ```ts
-xcolor('#ff0000').complement().map(c => c.toHex())
-// ['#ff0000', '#00ffff']
+xcolor('#ff0000').complement().toHex()
+// '#00ffff'
 ```
 
 <div class="color-demo">

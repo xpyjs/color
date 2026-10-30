@@ -107,7 +107,7 @@ a.toHex()  // '#ff0000' — a 不受影响
 xcolor()          // 黑色 #000000，isValid() → true
 xcolor(null)      // 黑色 #000000，isValid() → true
 xcolor(undefined) // 黑色 #000000，isValid() → true
-xcolor('abc123')  // 黑色 #000000，isValid() → false
+xcolor('#ggg')    // 黑色 #000000，isValid() → false
 ```
 
 无效输入不会抛出异常，而是创建一个黑色实例并将 `isValid()` 标记为 `false`，可以据此做容错处理。

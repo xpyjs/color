@@ -26,7 +26,7 @@ const color = xcolor('#ff0000')
 color.lighten(20)
 
 // color itself has changed — it's not a new object
-color.toHex() // '#ff6666', no longer '#ff0000'
+color.toHex() // '#ff3333', no longer '#ff0000'
 ```
 
 This design avoids frequent object creation and makes chaining more natural.
@@ -39,8 +39,8 @@ When you want to create multiple variants from the same base color, call `.clone
 const brand = xcolor('#6366f1')
 
 // Generate a set of color variants without affecting the original
-const light    = brand.clone().lighten(20).toHex()  // '#a5a7f6'
-const dark     = brand.clone().darken(20).toHex()   // '#2f3193'
+const light    = brand.clone().lighten(20).toHex()  // '#8285f4'
+const dark     = brand.clone().darken(20).toHex()   // '#2529eb'
 const muted    = brand.clone().desaturate(30).toHex()
 const inverted = brand.clone().negate().toHex()
 

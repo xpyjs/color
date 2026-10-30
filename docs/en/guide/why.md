@@ -42,7 +42,7 @@ import xcolor from '@xpyjs/color'
 import lab from '@xpyjs/color/plugins/lab'
 
 xcolor.use(lab)
-xcolor('#ff0000').toLab() // { l: 53.23, a: 80.11, b: 67.22 }
+xcolor('#ff0000').toLab() // { l: 53.24, a: 80.09, b: 67.2 }
 ```
 
 Multiple official plugins are available, covering 10+ color spaces and various utility features. Development templates are also provided, making it easy for users to create and share their own plugins.

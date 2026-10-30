@@ -23,10 +23,10 @@ Returns an XYZ object. Uses the D65 illuminant by default.
 
 ```ts
 xcolor('#ff0000').toXyz()
-// { x: 0.4124, y: 0.2126, z: 0.0193 }
+// { x: 0.4124, y: 0.2126, z: 0.0193 } (D65)
 
 xcolor('#ff0000').toXyz('D50')
-// XYZ values under D50 illuminant
+// { x: 0.436, y: 0.2225, z: 0.0139 }
 ```
 
 ### toXyzString(illuminant?)
@@ -35,7 +35,10 @@ Returns a `color(xyz ...)` format string.
 
 ```ts
 xcolor('#ff0000').toXyzString()
-// 'color(xyz 0.4124 0.2126 0.0193)'
+// 'color(xyz-d65 0.4124 0.2126 0.0193)'
+
+xcolor('#ff0000').toXyzString('D50')
+// 'color(xyz-d50 0.436 0.2225 0.0139)'
 ```
 
 ## Input Parsing
@@ -49,5 +52,5 @@ xcolor('color(xyz-d50 0.4360 0.2225 0.0139)').toHex()
 ## Formatting
 
 ```ts
-xcolor('#ff0000').toString('xyz')  // 'color(xyz 0.4124 0.2126 0.0193)'
+xcolor('#ff0000').toString('xyz')  // 'color(xyz-d65 0.4124 0.2126 0.0193)'
 ```

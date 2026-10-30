@@ -4,7 +4,7 @@
 
 ## xcolor.use(plugin, option?) {#use}
 
-注册插件。同名插件只安装一次。
+注册插件。同名插件再次注册时会重新安装，并输出覆盖警告。
 
 ```ts
 import xcolor from '@xpyjs/color'
@@ -40,26 +40,28 @@ xcolor.isColor(null)              // false
 xcolor.random().toHex()  // '#a3c74f'（每次不同）
 ```
 
-## xcolor.config(options?) {#config}
+## xcolor.config(options) {#config}
 
-获取或设置全局默认配置。不传参返回当前配置，传参则合并更新。
+设置全局默认配置。传入的对象会整体替换当前全局配置，传 `{}` 可恢复默认值；无参调用不会返回配置。
 
 ```ts
-// 读取当前全局配置
-xcolor.config()  // { useDecimal: false }
-
-// 设置全局默认使用小数模式
+// 设置全局默认保留 RGB 小数精度
 xcolor.config({ useDecimal: true })
 
-// 之后创建的实例默认使用小数
-xcolor({ r: 1, g: 0, b: 0 }).toHex()  // '#ff0000'
+// 之后创建的实例默认保留小数
+const c = xcolor('#000000')
+c.rgb(127.5, 64.25, 0)
+c.rgb()  // { r: 127.5, g: 64.25, b: 0, a: 1 }
+
+// 恢复默认配置
+xcolor.config({})
 ```
 
 ### 配置项
 
 | 选项 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `useDecimal` | `boolean` | `false` | RGB 通道使用 0–1 范围而非 0–255 |
+| `useDecimal` | `boolean` | `false` | 保留 RGB 通道的小数精度；通道范围仍为 0–255 |
 
 ::: tip
 单个实例的 `options` 参数优先于全局配置。

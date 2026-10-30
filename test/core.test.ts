@@ -370,10 +370,18 @@ describe("xcolor output methods", () => {
 
 describe("xcolor manipulation methods", () => {
   describe("lighten", () => {
-    it("should lighten color", () => {
+    it("should move through the remaining lightness range", () => {
       const c = new XColor("#ff0000");
       c.lighten(20);
-      expect(c.lightness()).toBeCloseTo(70, 0);
+      expect(c.lightness()).toBeCloseTo(60, 0);
+      expect(c.toHex()).toBe("#ff3333");
+    });
+
+    it("should reach white only at 100 for any in-gamut color", () => {
+      const base = new XColor("#3498db");
+      expect(base.clone().lighten(40).toHex()).not.toBe("#ffffff");
+      expect(base.clone().lighten(50).lightness()).toBeCloseTo(76.67, 1);
+      expect(base.clone().lighten(100).toHex()).toBe("#ffffff");
     });
 
     it("should not exceed 100% lightness", () => {
@@ -385,21 +393,35 @@ describe("xcolor manipulation methods", () => {
     it("should default to 10", () => {
       const c = new XColor("#ff0000");
       c.lighten();
-      expect(c.lightness()).toBeCloseTo(60, 0);
+      expect(c.lightness()).toBeCloseTo(55, 0);
+      expect(c.toHex()).toBe("#ff1a1a");
     });
   });
 
   describe("darken", () => {
-    it("should darken color", () => {
+    it("should move through the current lightness range", () => {
       const c = new XColor("#ff0000");
       c.darken(20);
-      expect(c.lightness()).toBeCloseTo(30, 0);
+      expect(c.lightness()).toBeCloseTo(40, 0);
+      expect(c.toHex()).toBe("#cc0000");
+    });
+
+    it("should reach black only at 100 for any in-gamut color", () => {
+      const base = new XColor("#3498db");
+      expect(base.clone().darken(40).toHex()).not.toBe("#000000");
+      expect(base.clone().darken(50).lightness()).toBeCloseTo(26.47, 1);
+      expect(base.clone().darken(100).toHex()).toBe("#000000");
     });
 
     it("should not go below 0%", () => {
       const c = new XColor("#ff0000");
       c.darken(200);
       expect(c.lightness()).toBe(0);
+    });
+
+    it("should remain equivalent to lighten with a negative amount", () => {
+      expect(new XColor("#3498db").darken(30).toHex())
+        .toBe(new XColor("#3498db").lighten(-30).toHex());
     });
   });
 
@@ -1205,7 +1227,7 @@ describe("xcolor compound Getter/Setter", () => {
 
     it("hex() setter should support chaining", () => {
       const c = xcolor("#000").hex("#ff0000").lighten(10);
-      expect(c.lightness()).toBeCloseTo(60, 0);
+      expect(c.lightness()).toBeCloseTo(55, 0);
     });
 
     it("hex() setter should throw for named colors without name plugin", () => {

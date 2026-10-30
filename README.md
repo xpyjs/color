@@ -155,13 +155,13 @@ c.toHexString()      // Alias for toHex()
 c.toRgb()            // { r: 255, g: 128, b: 64, a: 1 }
 c.toRgbString()      // 'rgb(255, 128, 64)'
 c.toRgbArray()       // [255, 128, 64, 1]
-c.toHsl()            // { h: 20, s: 100, l: 62.55, a: 1 }
+c.toHsl()            // { h: 20.1, s: 100, l: 62.55, a: 1 }
 c.toHslString()      // 'hsl(20, 100%, 63%)'
-c.toHsv()            // { h: 20, s: 74.9, v: 100, a: 1 }
+c.toHsv()            // { h: 20.1, s: 74.9, v: 100, a: 1 }
 c.toHsvString()      // 'hsv(20, 75%, 100%)'
 c.toNumber()         // 16744512 (0xFF8040)
-c.toPercentageRgb()  // { r: '100%', g: '50%', b: '25%', a: 1 }
-c.toName()           // CSS name if exact match, or undefined
+c.toPercentageRgb()  // { r: '100%', g: '50%', b: '25%', a: 1 }  (percentageRgb plugin)
+c.toName()           // CSS name if exact match, or undefined  (name plugin)
 c.toObject()         // Alias for toRgb()
 c.toString()         // Auto-selects best format
 c.toString('hex')    // Force format: 'hex' | 'hex3' | 'hex8' | 'rgb' | 'hsl' | 'hsv' | 'name'
@@ -176,8 +176,8 @@ All manipulation methods modify the instance and return `this` for chaining.
 const c = xcolor('#ff0000')
 
 // Lightness
-c.lighten(20)     // Increase HSL lightness by 20
-c.darken(20)      // Decrease HSL lightness by 20
+c.lighten(20)     // Cover 20% of the remaining HSL lightness gap toward 100
+c.darken(20)      // Cover 20% of the current HSL lightness gap toward 0
 c.brighten(20)    // Additive brightening (toward white)
 
 // Saturation
@@ -325,8 +325,8 @@ xcolor('#ff0000').toString('cmyk') // 'cmyk(0%, 100%, 100%, 0%)'
 import lab from '@xpyjs/color/plugins/lab'
 xcolor.use(lab)
 
-xcolor('#ff0000').toLab()          // { l: 53.23, a: 80.11, b: 67.22 }
-xcolor('#ff0000').toLabString()    // 'lab(53.23% 80.11 67.22)'
+xcolor('#ff0000').toLab()          // { l: 53.24, a: 80.09, b: 67.2 }
+xcolor('#ff0000').toLabString()    // 'lab(53.24% 80.09 67.2)'
 xcolor('#ff0000').deltaE('#fe0000') // Color difference (0-100+)
 ```
 
@@ -347,7 +347,7 @@ import percentageRgb from '@xpyjs/color/plugins/percentageRgb'
 xcolor.use(percentageRgb)
 
 xcolor('#ff8000').toPercentageRgb() // { r: '100%', g: '50%', b: '0%', a: 1 }
-xcolor('#ff8000').toString('percentageRgb') // 'rgba(100%, 50%, 0%, 1)'
+xcolor('#ff8000').toString('percentageRgb') // 'rgb(100%, 50%, 0%)'
 ```
 
 > 📚 **20+ plugins available.** See the [full plugin documentation](https://docs.xiaopangying.com/color/plugins/overview) for all plugins including HWB, OKLab, XYZ, Display P3, Rec2020, Scale, Simulate, Temperature, Theme, Palette and more.

@@ -118,6 +118,13 @@ export function hslToRgb(h: number, s: number, l: number): { r: number; g: numbe
   const sn = s / 100;
   const ln = l / 100;
 
+  /**
+   * 通道取整。`hue2rgb` 里的 `t ± 1/3` 会引入 ±1e-16 量级的浮点误差，
+   * 恰好落在 x.5 上时会向下偏 1（例如 h=270 的 r 得 127 而非 128）。
+   * 先加一个远大于该误差、又远小于 0.5 的 epsilon，保证半数按四舍五入进位。
+   */
+  const toChannel = (value: number): number => Math.round(value * 255 + 1e-9);
+
   if (sn === 0) {
     const val = Math.round(ln * 255);
     return { r: val, g: val, b: val };
@@ -137,9 +144,9 @@ export function hslToRgb(h: number, s: number, l: number): { r: number; g: numbe
   const p = 2 * ln - q;
 
   return {
-    r: Math.round(hue2rgb(p, q, hn + 1 / 3) * 255),
-    g: Math.round(hue2rgb(p, q, hn) * 255),
-    b: Math.round(hue2rgb(p, q, hn - 1 / 3) * 255)
+    r: toChannel(hue2rgb(p, q, hn + 1 / 3)),
+    g: toChannel(hue2rgb(p, q, hn)),
+    b: toChannel(hue2rgb(p, q, hn - 1 / 3))
   };
 }
 

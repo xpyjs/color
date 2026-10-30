@@ -49,7 +49,7 @@ xcolor('#3b82f6').blue(0)  // 设置蓝色为 0
 ```ts
 xcolor('#3b82f6').alpha()    // 1
 xcolor('#3b82f6').alpha(0.5) // 设置为半透明
-xcolor('#3b82f680').a()      // 0.5 — 8 位 hex 自动解析 alpha
+xcolor('#3b82f680').a()      // ≈ 0.5 — 8 位 hex 自动解析 alpha（128 / 255）
 ```
 
 ## HSL 通道

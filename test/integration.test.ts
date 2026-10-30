@@ -284,7 +284,7 @@ describe("full plugin integration", () => {
 
     it("create color → manipulate → query", () => {
       const c = xcolor("#ff0000")
-        .lighten(20)
+        .lighten(50)
         .saturate(10);
       expect(c.isValid()).toBe(true);
       expect(c.isLight()).toBe(true);

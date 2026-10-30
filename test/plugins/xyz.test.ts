@@ -32,12 +32,25 @@ describe("xyz plugin", () => {
       expect(r.y).toBeCloseTo(0.2126, 2);
       expect(r.z).toBeCloseTo(0.0193, 2);
     });
+
+    it("should convert to D50 when requested", () => {
+      const d50 = xcolor("#ff0000").toXyz("D50");
+      const d65 = xcolor("#ff0000").toXyz("D65");
+      expect(d50.x).toBeCloseTo(0.436, 2);
+      expect(d50.y).toBeCloseTo(0.2225, 2);
+      expect(d50.z).toBeCloseTo(0.0139, 2);
+      expect(d50).not.toEqual(d65);
+    });
   });
 
   describe("toXyzString", () => {
     it("should output correct format", () => {
       const str = xcolor("#ff0000").toXyzString();
       expect(str).toMatch(/^color\(xyz-d65 /);
+    });
+
+    it("should output D50 notation when requested", () => {
+      expect(xcolor("#ff0000").toXyzString("D50")).toMatch(/^color\(xyz-d50 /);
     });
   });
 

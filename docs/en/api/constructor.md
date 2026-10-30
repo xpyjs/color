@@ -62,22 +62,25 @@ const b = xcolor(a)  // clone, b is independent from a
 #### null / undefined / Invalid Values
 
 ```ts
-xcolor()         // black #000000, isValid() = false
-xcolor(null)     // black #000000, isValid() = false
-xcolor('nope')   // black #000000, isValid() = false
+xcolor()         // black #000000, isValid() = true (default color when omitted)
+xcolor(null)     // black #000000, isValid() = true (null uses the default color)
+xcolor('nope')   // black #000000, isValid() = false (invalid input)
 ```
 
 ### Configuration Options
 
 ```ts
 interface XColorOptions {
-  useDecimal?: boolean  // when true, RGB channels use 0–1 range (default 0–255)
+  useDecimal?: boolean  // when true, preserve fractional RGB channels (range stays 0–255)
 }
 ```
 
 ```ts
-xcolor({ r: 1, g: 0, b: 0 }, { useDecimal: true })
-// equivalent to xcolor('#ff0000')
+xcolor({ r: 255, g: 0, b: 0 }, { useDecimal: true })  // equivalent to xcolor('#ff0000')
+
+const c = xcolor('#000000', { useDecimal: true })
+c.rgb(127.5, 64.25, 0)
+c.rgb()  // { r: 127.5, g: 64.25, b: 0, a: 1 }
 ```
 
 ## new XColor(input?, options?)
@@ -102,7 +105,7 @@ const b = a.clone()
 b.lighten(20)
 
 a.toHex() // '#ff0000' — unaffected
-b.toHex() // '#ff6666'
+b.toHex() // '#ff3333'
 ```
 
 **Returns**: a new `XColor` instance

@@ -148,13 +148,13 @@ c.toHexString()      // toHex() 的别名
 c.toRgb()            // { r: 255, g: 128, b: 64, a: 1 }
 c.toRgbString()      // 'rgb(255, 128, 64)'
 c.toRgbArray()       // [255, 128, 64, 1]
-c.toHsl()            // { h: 20, s: 100, l: 62.55, a: 1 }
+c.toHsl()            // { h: 20.1, s: 100, l: 62.55, a: 1 }
 c.toHslString()      // 'hsl(20, 100%, 63%)'
-c.toHsv()            // { h: 20, s: 74.9, v: 100, a: 1 }
+c.toHsv()            // { h: 20.1, s: 74.9, v: 100, a: 1 }
 c.toHsvString()      // 'hsv(20, 75%, 100%)'
 c.toNumber()         // 16744512 (0xFF8040)
-c.toPercentageRgb()  // { r: '100%', g: '50%', b: '25%', a: 1 }
-c.toName()           // 精确匹配返回 CSS 颜色名，否则 undefined
+c.toPercentageRgb()  // { r: '100%', g: '50%', b: '25%', a: 1 }（需 percentageRgb 插件）
+c.toName()           // 精确匹配返回 CSS 颜色名，否则 undefined（需 name 插件）
 c.toObject()         // toRgb() 的别名
 c.toString()         // 自动选择最佳格式
 c.toString('hex')    // 强制格式：'hex' | 'hex3' | 'hex8' | 'rgb' | 'hsl' | 'hsv' | 'name'
@@ -169,8 +169,8 @@ c.toString('hex')    // 强制格式：'hex' | 'hex3' | 'hex8' | 'rgb' | 'hsl' |
 const c = xcolor('#ff0000')
 
 // 亮度
-c.lighten(20)     // HSL 亮度增加 20
-c.darken(20)      // HSL 亮度降低 20
+c.lighten(20)     // 向白色方向走完剩余 HSL 亮度区间的 20%
+c.darken(20)      // 向黑色方向走完当前 HSL 亮度区间的 20%
 c.brighten(20)    // 加性增亮（趋向白色）
 
 // 饱和度
@@ -317,8 +317,8 @@ xcolor('#ff0000').toString('cmyk') // 'cmyk(0%, 100%, 100%, 0%)'
 import lab from '@xpyjs/color/plugins/lab'
 xcolor.use(lab)
 
-xcolor('#ff0000').toLab()           // { l: 53.23, a: 80.11, b: 67.22 }
-xcolor('#ff0000').toLabString()     // 'lab(53.23% 80.11 67.22)'
+xcolor('#ff0000').toLab()           // { l: 53.24, a: 80.09, b: 67.2 }
+xcolor('#ff0000').toLabString()     // 'lab(53.24% 80.09 67.2)'
 xcolor('#ff0000').deltaE('#fe0000') // 色差（(0-100+)
 ```
 
@@ -341,7 +341,7 @@ import percentageRgb from '@xpyjs/color/plugins/percentageRgb'
 xcolor.use(percentageRgb)
 
 xcolor('#ff8000').toPercentageRgb() // { r: '100%', g: '50%', b: '0%', a: 1 }
-xcolor('#ff8000').toString('percentageRgb') // 'rgba(100%, 50%, 0%, 1)'
+xcolor('#ff8000').toString('percentageRgb') // 'rgb(100%, 50%, 0%)'
 ```
 
 > 📚 **提供 20+ 个插件。** 查看[完整插件文档](https://docs.xiaopangying.com/color/plugins/overview)了解所有可用插件，包括 HWB、OKLab、XYZ、Display P3、Rec2020、Scale、Simulate、Temperature、Theme、Palette 等。

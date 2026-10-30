@@ -26,7 +26,7 @@ import {
  *
  * @example
  * ```ts
- * const red: Lab   = { l: 53.23, a: 80.11, b: 67.22 };
+ * const red: Lab   = { l: 53.24, a: 80.09, b: 67.2 };
  * const white: Lab = { l: 100,   a: 0,     b: 0 };
  * const black: Lab = { l: 0,     a: 0,     b: 0 };
  * ```
@@ -60,9 +60,9 @@ export interface LCH {
 declare module "@xpyjs/color" {
   /** Adds `'lab'` and `'lch'` as valid {@link XColorStringFormat} keys. */
   interface XColorStringFormatMap {
-    /** CIE Lab functional notation, e.g. `lab(53.23% 80.11 67.22)`. */
+    /** CIE Lab functional notation, e.g. `lab(53.24% 80.09 67.2)`. */
     lab: true;
-    /** CIE LCH functional notation, e.g. `lch(53.23% 104.55 40)`. */
+    /** CIE LCH functional notation, e.g. `lch(53.24% 104.55 40)`. */
     lch: true;
   }
 
@@ -72,16 +72,16 @@ declare module "@xpyjs/color" {
      * @returns Lab object with `l` (lightness 0-100), `a` (green-red), `b` (blue-yellow)
      * @example
      * ```ts
-     * xcolor('#ff0000').toLab() // { l: 53.23, a: 80.11, b: 67.22 }
+     * xcolor('#ff0000').toLab() // { l: 53.24, a: 80.09, b: 67.2 }
      * ```
      */
     toLab(): Lab;
     /**
      * Output as CSS Lab string.
-     * @returns Formatted lab string, e.g. `lab(53.23% 80.11 67.22)`
+     * @returns Formatted lab string, e.g. `lab(53.24% 80.09 67.2)`
      * @example
      * ```ts
-     * xcolor('#ff0000').toLabString() // 'lab(53.23% 80.11 67.22)'
+     * xcolor('#ff0000').toLabString() // 'lab(53.24% 80.09 67.2)'
      * ```
      */
     toLabString(): string;
@@ -103,16 +103,16 @@ declare module "@xpyjs/color" {
      * @returns LCH object with `l` (lightness 0-100), `c` (chroma), `h` (hue 0-360)
      * @example
      * ```ts
-     * xcolor('#ff0000').toLch() // { l: 53.23, c: 104.55, h: 40.0 }
+     * xcolor('#ff0000').toLch() // { l: 53.24, c: 104.55, h: 40 }
      * ```
      */
     toLch(): LCH;
     /**
      * Output as CSS LCH string.
-     * @returns Formatted lch string, e.g. `lch(53.23% 104.55 40)`
+     * @returns Formatted lch string, e.g. `lch(53.24% 104.55 40)`
      * @example
      * ```ts
-     * xcolor('#ff0000').toLchString() // 'lch(53.23% 104.55 40)'
+     * xcolor('#ff0000').toLchString() // 'lch(53.24% 104.55 40)'
      * ```
      */
     toLchString(): string;

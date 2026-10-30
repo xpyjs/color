@@ -6,18 +6,18 @@
 
 ### lighten(amount?) {#lighten}
 
-增加 HSL 亮度。`amount` 为百分点数（0–100），默认 `10`。
+将 HSL 亮度按剩余区间推向白色。`amount` 为当前亮度到 100% 之间距离的百分比（0–100），默认 `10`；`50` 走到剩余距离的一半，`100` 必定为白色。
 
 ```ts
-xcolor('#ff0000').lighten(20).toHex()  // '#ff6666'
+xcolor('#ff0000').lighten(20).toHex()  // '#ff3333'
 ```
 
 ### darken(amount?) {#darken}
 
-减少 HSL 亮度。默认 `10`。
+将 HSL 亮度按当前区间推向黑色。`amount` 为当前亮度到 0% 之间距离的百分比（0–100），默认 `10`；`50` 走到剩余距离的一半，`100` 必定为黑色。等价于 `lighten(-amount)`。
 
 ```ts
-xcolor('#ff0000').darken(20).toHex()  // '#990000'
+xcolor('#ff0000').darken(20).toHex()  // '#cc0000'
 ```
 
 ### brighten(amount?) {#brighten}
@@ -35,7 +35,7 @@ xcolor('#ff0000').brighten(50).toHex()  // '#ff8080'
 增加 HSL 饱和度。默认 `10`，范围 0–100。
 
 ```ts
-xcolor('#bf4040').saturate(40).toHex()  // '#ff0000'
+xcolor('#bf4040').saturate(40).toHex()  // '#f20d0d'
 ```
 
 ### desaturate(amount?) {#desaturate}

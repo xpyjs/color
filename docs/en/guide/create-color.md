@@ -107,7 +107,7 @@ a.toHex()  // '#ff0000' — a is unaffected
 xcolor()          // black #000000, isValid() → true
 xcolor(null)      // black #000000, isValid() → true
 xcolor(undefined) // black #000000, isValid() → true
-xcolor('abc123')  // black #000000, isValid() → false
+xcolor('#ggg')    // black #000000, isValid() → false
 ```
 
 Invalid input does not throw an exception. Instead, it creates a black instance and marks `isValid()` as `false`, which can be used for error handling.

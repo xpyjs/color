@@ -23,7 +23,7 @@ xcolor.use(labPlugin)
 
 ```ts
 xcolor('#ff0000').toLab()
-// { l: 53.23, a: 80.11, b: 67.22 }
+// { l: 53.24, a: 80.09, b: 67.2 }
 ```
 
 ### toLabString()
@@ -32,7 +32,7 @@ xcolor('#ff0000').toLab()
 
 ```ts
 xcolor('#ff0000').toLabString()
-// 'lab(53.23 80.11 67.22)'
+// 'lab(53.24% 80.09 67.2)'
 ```
 
 ## LCH 方法
@@ -47,7 +47,7 @@ xcolor('#ff0000').toLabString()
 
 ```ts
 xcolor('#ff0000').toLch()
-// { l: 53.23, c: 104.55, h: 40.0 }
+// { l: 53.24, c: 104.55, h: 40 }
 ```
 
 ### toLchString()
@@ -56,7 +56,7 @@ xcolor('#ff0000').toLch()
 
 ```ts
 xcolor('#ff0000').toLchString()
-// 'lch(53.23 104.55 40.0)'
+// 'lch(53.24% 104.55 40)'
 ```
 
 ## 色差
@@ -88,13 +88,13 @@ xcolor('#ff0000').deltaE('#0000ff')  // ≈ 176（差异巨大）
 ## 输入解析
 
 ```ts
-xcolor('lab(53.23 80.11 67.22)').toHex()   // '#ff0000'
-xcolor('lch(53.23 104.55 40.0)').toHex()   // '#ff0000'
+xcolor('lab(53.24 80.09 67.2)').toHex()   // '#ff0000'
+xcolor('lch(53.24 104.55 40)').toHex()   // '#ff0000'
 ```
 
 ## 格式化
 
 ```ts
-xcolor('#ff0000').toString('lab')  // 'lab(53.23 80.11 67.22)'
-xcolor('#ff0000').toString('lch')  // 'lch(53.23 104.55 40.0)'
+xcolor('#ff0000').toString('lab')  // 'lab(53.24% 80.09 67.2)'
+xcolor('#ff0000').toString('lch')  // 'lch(53.24% 104.55 40)'
 ```

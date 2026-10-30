@@ -28,7 +28,7 @@ xcolor('#ff0000').toHwb()
 // { h: 0, w: 0, b: 0 }
 
 xcolor('#ff8080').toHwb()
-// { h: 0, w: 50, b: 0 }
+// { h: 0, w: 50.2, b: 0 }
 ```
 
 ### toHwbString()
