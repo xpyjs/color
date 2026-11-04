@@ -1,6 +1,7 @@
 import typescript from "@rollup/plugin-typescript";
 import { babel } from "@rollup/plugin-babel";
 import terser from "@rollup/plugin-terser";
+import ts from "typescript";
 import { dts } from "rollup-plugin-dts";
 import { readdirSync, statSync } from "fs";
 import { join, dirname } from "path";
@@ -10,11 +11,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const terserOptions = {
+    toplevel: true,
+    mangle: { properties: { regex: /^_(?:a|valid|roundCh|applyCS|channel|pluginCleanups)$/ } },
     compress: {
-        passes: 2,
+        passes: 4,
         pure_getters: true,
-        unsafe_comps: true,
-        unsafe_math: true
+        unsafe_comps: false,
+        unsafe_math: false
     },
     format: {
         comments: false
@@ -27,7 +30,7 @@ const babelOptions = {
         [
             "@babel/preset-env",
             {
-                targets: "> 0.25%, not dead",
+                targets: ["> 0.25%, not dead", "node 14"],
                 modules: false
             }
         ]
@@ -58,6 +61,66 @@ function getPluginEntries() {
 
 const plugins = getPluginEntries();
 
+// The Node ESM entry shares the callable CommonJS export and its registries.
+function nodeEntry() {
+    return {
+        name: "node-entry",
+        generateBundle(output, bundle) {
+            if (output.format !== "es") return;
+            const entry = bundle["index.esm.js"];
+            const names = entry.exports.filter((name) => name !== "default");
+            this.emitFile({
+                type: "asset",
+                fileName: "index.node.js",
+                source: [
+                    'import core from "./index.cjs";',
+                    "export default core;",
+                    ...names.map((name) => `export const ${name} = core.${name};`)
+                ].join("\n")
+            });
+        }
+    };
+}
+
+// Rollup's bundled declarations retain JSDoc and list every public export.
+function commonJsDeclarations(isCore = false) {
+    return {
+        name: "commonjs-declarations",
+        generateBundle(_output, bundle) {
+            const entry = Object.values(bundle)[0];
+            const source = ts.createSourceFile(entry.fileName, entry.code, ts.ScriptTarget.Latest, true);
+            const typeNames = new Set();
+            for (const statement of source.statements) {
+                if (!ts.isExportDeclaration(statement) || !statement.exportClause ||
+                    !ts.isNamedExports(statement.exportClause)) continue;
+                for (const specifier of statement.exportClause.elements) {
+                    if (statement.isTypeOnly || specifier.isTypeOnly ||
+                        (isCore && specifier.name.text === "XColor")) {
+                        typeNames.add(specifier.name.text);
+                    }
+                }
+            }
+            this.emitFile({
+                type: "asset",
+                fileName: "index.d.cts",
+                source: [
+                    'import type * as exports from "./index.js" with { "resolution-mode": "import" };',
+                    "declare const entry: typeof exports.default & Omit<typeof exports, \"default\"> & { default: typeof entry };",
+                    ...(typeNames.size ? [
+                        "declare namespace entry {",
+                        ...Array.from(typeNames, (name) => name === "XColorPlugin"
+                            ? "    export type XColorPlugin<T = unknown> = exports.XColorPlugin<T>;"
+                            : `    export type ${name} = exports.${name};`),
+                        "}"
+                    ] : []),
+                    "export = entry;"
+                ].join("\n")
+            });
+
+        }
+    };
+}
+
 // Main library build
 const mainConfig = [
     {
@@ -85,14 +148,15 @@ const mainConfig = [
                 inlineSources: false
             }),
             babel(babelOptions),
-            terser(terserOptions)
+            terser(terserOptions),
+            nodeEntry()
         ]
     },
     // Type declarations
     {
         input: "src/index.ts",
         output: { file: "dist/types/index.d.ts", format: "esm" },
-        plugins: [dts()]
+        plugins: [dts(), commonJsDeclarations(true)]
     },
     // UMD build for direct browser usage: window.xcolor(...)
     {
@@ -163,8 +227,8 @@ const pluginConfigs = plugins.flatMap((plugin) => [
     {
         input: plugin.input,
         output: { file: `dist/types/plugins/${plugin.name}/index.d.ts`, format: "esm" },
-        external: ["@xpyjs/color"],
-        plugins: [dts({ respectExternal: true })]
+        external: ["@xpyjs/color", "@xpyjs/color/plugins/palette"],
+        plugins: [dts({ respectExternal: true }), commonJsDeclarations()]
     }
 ]);
 

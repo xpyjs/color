@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
@@ -11,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20, 22]
+        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -44,10 +45,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
@@ -56,12 +57,54 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check source types
+        run: npx tsc --noEmit
+      - name: Pack library
+        run: npm pack
+      - name: Check published types and browser entry points
+        run: npm run test:package -- --tarball "$(ls xpyjs-color-*.tgz)" --browser
+      - name: Check Electron main and renderer
+        run: xvfb-run -a npm exec --yes --package=electron@39 -c 'npm run test:package -- --runtime-only --tarball "$(ls xpyjs-color-*.tgz)" --electron'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: xpyjs-color-*.tgz
+          if-no-files-found: error
       - name: Check bundle size
-        run: |
-          echo "Bundle sizes:"
-          ls -la dist/index.*.js
-          echo ""
-          echo "Gzipped sizes:"
-          for f in dist/index.*.js; do
-            gzip -c "$f" | wc -c | xargs -I {} echo "$f: {} bytes (gzipped)"
-          done
+        run: node scripts/check-bundle-size.mjs
+
+  consume:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        node-version: ['14.0.0', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Check the packed library
+        run: npm run test:package -- --runtime-only --tarball "$(ls xpyjs-color-*.tgz)"
+
+
+  runtimes:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: oven-sh/setup-bun@v2
+      - name: Check Deno and Bun consumers
+        run: npm run test:package -- --runtime-only --deno --bun --tarball "$(ls xpyjs-color-*.tgz)"

@@ -6,31 +6,32 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
   release:
+    needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24 for npm Trusted Publishing
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '24'
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org/
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
 
       - name: Determine npm tag
         id: npm_tag
@@ -44,10 +45,22 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to npm
-        run: npm publish --access public --tag ${{ steps.npm_tag.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # npm Trusted Publisher: xpyjs/color, release.yml, Allow npm publish.
+      - name: Publish to npm via OIDC
+        run: npm publish "$(ls xpyjs-color-*.tgz)" --access public --tag ${{ steps.npm_tag.outputs.tag }}
+
+      - name: Verify published prerelease on jsDelivr
+        if: steps.npm_tag.outputs.prerelease == 'true'
+        run: |
+          npm ci
+          version="$(node -p "require('./package.json').version")"
+          for attempt in 1 2 3 4 5; do
+            if npm run test:package -- --runtime-only --tarball "$(ls xpyjs-color-*.tgz)" --cdn-version "$version"; then
+              exit 0
+            fi
+            sleep 30
+          done
+          exit 1
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

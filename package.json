@@ -18,21 +18,157 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
       "browser": {
-        "types": "./dist/types/index.d.ts",
-        "import": "./dist/index.esm.js",
-        "require": "./dist/index.cjs",
+        "import": {
+          "types": "./dist/types/index.d.ts",
+          "default": "./dist/index.esm.js"
+        },
+        "require": {
+          "types": "./dist/types/index.d.cts",
+          "default": "./dist/index.cjs"
+        },
         "default": "./dist/index.esm.js"
       },
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs",
+      "node": {
+        "import": {
+          "types": "./dist/types/index.d.ts",
+          "default": "./dist/index.node.js"
+        },
+        "require": {
+          "types": "./dist/types/index.d.cts",
+          "default": "./dist/index.cjs"
+        }
+      },
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/index.esm.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
       "default": "./dist/index.esm.js"
     },
+    "./plugins/a11y": {
+      "import": {"types": "./dist/types/plugins/a11y/index.d.ts", "default": "./dist/plugins/a11y/index.js"},
+      "require": {"types": "./dist/types/plugins/a11y/index.d.cts", "default": "./dist/plugins/a11y/index.cjs"},
+      "default": "./dist/plugins/a11y/index.js"
+    },
+    "./plugins/a98Rgb": {
+      "import": {"types": "./dist/types/plugins/a98Rgb/index.d.ts", "default": "./dist/plugins/a98Rgb/index.js"},
+      "require": {"types": "./dist/types/plugins/a98Rgb/index.d.cts", "default": "./dist/plugins/a98Rgb/index.cjs"},
+      "default": "./dist/plugins/a98Rgb/index.js"
+    },
+    "./plugins/blend": {
+      "import": {"types": "./dist/types/plugins/blend/index.d.ts", "default": "./dist/plugins/blend/index.js"},
+      "require": {"types": "./dist/types/plugins/blend/index.d.cts", "default": "./dist/plugins/blend/index.cjs"},
+      "default": "./dist/plugins/blend/index.js"
+    },
+    "./plugins/cmyk": {
+      "import": {"types": "./dist/types/plugins/cmyk/index.d.ts", "default": "./dist/plugins/cmyk/index.js"},
+      "require": {"types": "./dist/types/plugins/cmyk/index.d.cts", "default": "./dist/plugins/cmyk/index.cjs"},
+      "default": "./dist/plugins/cmyk/index.js"
+    },
+    "./plugins/displayP3": {
+      "import": {"types": "./dist/types/plugins/displayP3/index.d.ts", "default": "./dist/plugins/displayP3/index.js"},
+      "require": {"types": "./dist/types/plugins/displayP3/index.d.cts", "default": "./dist/plugins/displayP3/index.cjs"},
+      "default": "./dist/plugins/displayP3/index.js"
+    },
+    "./plugins/gradient": {
+      "import": {"types": "./dist/types/plugins/gradient/index.d.ts", "default": "./dist/plugins/gradient/index.js"},
+      "require": {"types": "./dist/types/plugins/gradient/index.d.cts", "default": "./dist/plugins/gradient/index.cjs"},
+      "default": "./dist/plugins/gradient/index.js"
+    },
+    "./plugins/harmony": {
+      "import": {"types": "./dist/types/plugins/harmony/index.d.ts", "default": "./dist/plugins/harmony/index.js"},
+      "require": {"types": "./dist/types/plugins/harmony/index.d.cts", "default": "./dist/plugins/harmony/index.cjs"},
+      "default": "./dist/plugins/harmony/index.js"
+    },
+    "./plugins/hwb": {
+      "import": {"types": "./dist/types/plugins/hwb/index.d.ts", "default": "./dist/plugins/hwb/index.js"},
+      "require": {"types": "./dist/types/plugins/hwb/index.d.cts", "default": "./dist/plugins/hwb/index.cjs"},
+      "default": "./dist/plugins/hwb/index.js"
+    },
+    "./plugins/lab": {
+      "import": {"types": "./dist/types/plugins/lab/index.d.ts", "default": "./dist/plugins/lab/index.js"},
+      "require": {"types": "./dist/types/plugins/lab/index.d.cts", "default": "./dist/plugins/lab/index.cjs"},
+      "default": "./dist/plugins/lab/index.js"
+    },
+    "./plugins/name": {
+      "import": {"types": "./dist/types/plugins/name/index.d.ts", "default": "./dist/plugins/name/index.js"},
+      "require": {"types": "./dist/types/plugins/name/index.d.cts", "default": "./dist/plugins/name/index.cjs"},
+      "default": "./dist/plugins/name/index.js"
+    },
+    "./plugins/oklab": {
+      "import": {"types": "./dist/types/plugins/oklab/index.d.ts", "default": "./dist/plugins/oklab/index.js"},
+      "require": {"types": "./dist/types/plugins/oklab/index.d.cts", "default": "./dist/plugins/oklab/index.cjs"},
+      "default": "./dist/plugins/oklab/index.js"
+    },
+    "./plugins/palette": {
+      "import": {"types": "./dist/types/plugins/palette/index.d.ts", "default": "./dist/plugins/palette/index.js"},
+      "require": {"types": "./dist/types/plugins/palette/index.d.cts", "default": "./dist/plugins/palette/index.cjs"},
+      "default": "./dist/plugins/palette/index.js"
+    },
+    "./plugins/percentageRgb": {
+      "import": {"types": "./dist/types/plugins/percentageRgb/index.d.ts", "default": "./dist/plugins/percentageRgb/index.js"},
+      "require": {"types": "./dist/types/plugins/percentageRgb/index.d.cts", "default": "./dist/plugins/percentageRgb/index.cjs"},
+      "default": "./dist/plugins/percentageRgb/index.js"
+    },
+    "./plugins/proPhotoRgb": {
+      "import": {"types": "./dist/types/plugins/proPhotoRgb/index.d.ts", "default": "./dist/plugins/proPhotoRgb/index.js"},
+      "require": {"types": "./dist/types/plugins/proPhotoRgb/index.d.cts", "default": "./dist/plugins/proPhotoRgb/index.cjs"},
+      "default": "./dist/plugins/proPhotoRgb/index.js"
+    },
+    "./plugins/rec2020": {
+      "import": {"types": "./dist/types/plugins/rec2020/index.d.ts", "default": "./dist/plugins/rec2020/index.js"},
+      "require": {"types": "./dist/types/plugins/rec2020/index.d.cts", "default": "./dist/plugins/rec2020/index.cjs"},
+      "default": "./dist/plugins/rec2020/index.js"
+    },
+    "./plugins/scale": {
+      "import": {"types": "./dist/types/plugins/scale/index.d.ts", "default": "./dist/plugins/scale/index.js"},
+      "require": {"types": "./dist/types/plugins/scale/index.d.cts", "default": "./dist/plugins/scale/index.cjs"},
+      "default": "./dist/plugins/scale/index.js"
+    },
+    "./plugins/simulate": {
+      "import": {"types": "./dist/types/plugins/simulate/index.d.ts", "default": "./dist/plugins/simulate/index.js"},
+      "require": {"types": "./dist/types/plugins/simulate/index.d.cts", "default": "./dist/plugins/simulate/index.cjs"},
+      "default": "./dist/plugins/simulate/index.js"
+    },
+    "./plugins/temperature": {
+      "import": {"types": "./dist/types/plugins/temperature/index.d.ts", "default": "./dist/plugins/temperature/index.js"},
+      "require": {"types": "./dist/types/plugins/temperature/index.d.cts", "default": "./dist/plugins/temperature/index.cjs"},
+      "default": "./dist/plugins/temperature/index.js"
+    },
+    "./plugins/theme": {
+      "import": {"types": "./dist/types/plugins/theme/index.d.ts", "default": "./dist/plugins/theme/index.js"},
+      "require": {"types": "./dist/types/plugins/theme/index.d.cts", "default": "./dist/plugins/theme/index.cjs"},
+      "default": "./dist/plugins/theme/index.js"
+    },
+    "./plugins/xyz": {
+      "import": {"types": "./dist/types/plugins/xyz/index.d.ts", "default": "./dist/plugins/xyz/index.js"},
+      "require": {"types": "./dist/types/plugins/xyz/index.d.cts", "default": "./dist/plugins/xyz/index.cjs"},
+      "default": "./dist/plugins/xyz/index.js"
+    },
     "./plugins/*": {
-      "types": "./dist/types/plugins/*/index.d.ts",
-      "import": "./dist/plugins/*/index.js",
-      "require": "./dist/plugins/*/index.cjs",
+      "browser": {
+        "import": {
+          "types": "./dist/types/plugins/*/index.d.ts",
+          "default": "./dist/plugins/*/index.js"
+        },
+        "require": {
+          "types": "./dist/types/plugins/*/index.d.cts",
+          "default": "./dist/plugins/*/index.cjs"
+        },
+        "default": "./dist/plugins/*/index.js"
+      },
+      "import": {
+        "types": "./dist/types/plugins/*/index.d.ts",
+        "default": "./dist/plugins/*/index.js"
+      },
+      "require": {
+        "types": "./dist/types/plugins/*/index.d.cts",
+        "default": "./dist/plugins/*/index.cjs"
+      },
       "default": "./dist/plugins/*/index.js"
     },
     "./package.json": "./package.json"
@@ -40,6 +176,7 @@
   "files": [
     "dist",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
   "scripts": {
@@ -57,7 +194,8 @@
     "release:minor": "npm test && npm version minor",
     "release:major": "npm test && npm version major",
     "release:alpha": "npm test && npm version prerelease --preid=alpha",
-    "release:beta": "npm test && npm version prerelease --preid=beta"
+    "release:beta": "npm test && npm version prerelease --preid=beta",
+    "test:package": "node scripts/test-package.mjs"
   },
   "keywords": [
     "color",

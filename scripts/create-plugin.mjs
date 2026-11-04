@@ -5,7 +5,7 @@
 // Usage: node scripts/create-plugin.mjs <plugin-name>
 // =======================================
 
-import { mkdirSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -137,6 +137,14 @@ describe("Plugin: ${pluginName}", () => {
 `;
 
 writeFileSync(join(testDir, `${pluginName}.test.ts`), testSource);
+
+// Node 14.0 requires an exact export for each plugin subpath.
+const manifest = join(ROOT, "package.json");
+const pkg = JSON.parse(readFileSync(manifest, "utf8"));
+const entry = JSON.parse(JSON.stringify(pkg.exports["./plugins/*"]).replace(/\*/g, pluginName));
+delete entry.browser;
+pkg.exports[`./plugins/${pluginName}`] = entry;
+writeFileSync(manifest, JSON.stringify(pkg, null, 2) + "\n");
 
 // ---- Print success ----
 console.log("");
