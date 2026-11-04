@@ -8,7 +8,9 @@ export {
   registerStringFormatter,
   type XColorFactory,
   type XColorInput,
+  type XColorInputNative,
   type XColorInputObjectMap,
+  type XColorObjectInput,
   type XColorOptions,
   type XColorStringFormat,
   type XColorStringFormatMap
@@ -40,7 +42,8 @@ export {
   parseRgbChannel,
   parseAlphaChannel,
   parsePercent,
-  parseHue
+  parseHue,
+  type XColorFunctionalChannelsResult
 } from "./parse";
 
 // Default export is the factory function
