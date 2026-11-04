@@ -46,24 +46,26 @@ export const Logger = {
 
 /**
  * Clamp a numeric value between min and max (inclusive).
- * If any argument is NaN/Infinity, returns min if finite, else 0.
+ * `NaN` resolves to the lower bound; `+Infinity` and `-Infinity` resolve to
+ * the upper and lower bound respectively. Non-finite bounds fall back to `min`
+ * when it is finite, otherwise `0`.
  * @param value - The value to clamp
  * @param min - Minimum bound
  * @param max - Maximum bound
  * @returns Clamped value
  * @example clamp(150, 0, 100) // 100
  * @example clamp(-5, 0, 255) // 0
+ * @example clamp(Infinity, 0, 255) // 255
  */
 export function clamp(value: number, min: number, max: number): number {
-  if (
-    !Number.isFinite(value) ||
-    !Number.isFinite(min) ||
-    !Number.isFinite(max)
-  ) {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
     return Number.isFinite(min) ? min : 0;
   }
   const lo = Math.min(min, max);
   const hi = Math.max(min, max);
+  if (Number.isNaN(value)) return lo;
+  if (value === Infinity) return hi;
+  if (value === -Infinity) return lo;
   return Math.min(Math.max(lo, value), hi);
 }
 

@@ -77,6 +77,17 @@ describe("xcolor published behavior regressions", () => {
     }
   );
 
+  it("keeps alpha consistent across object, array, and string serializers", () => {
+    const color = xcolor("#f00").alpha(0.995);
+    expect(color.toRgb().a).toBe(0.995);
+    expect(color.toRgbArray()[3]).toBe(0.995);
+    expect(color.toHsl().a).toBe(0.995);
+    expect(color.toHsv().a).toBe(0.995);
+    expect(color.toRgbString()).toContain("0.995");
+    expect(color.toHslString()).toContain("0.995");
+    expect(color.toHsvString()).toContain("0.995");
+  });
+
   it("blends alpha before applying source-over and preserves the transparent-source identity", () => {
     expect(xcolor("#f000").blend("#00f", "multiply").toHex()).toBe("#0000ff");
     expect(xcolor("#f008").blend("#00f0", "multiply").toHex()).toBe("#ff000088");

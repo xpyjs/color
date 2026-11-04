@@ -25,14 +25,17 @@ let _globalOpts: XColorOptions = {};
 /**
  * Internal map that associates short key names with the corresponding partial
  * color-object shapes accepted by the constructor.
- * Plugins can augment this interface (e.g. the CMYK plugin adds `cmyk: Partial<CMYK>`)
+ * Plugins can augment this interface (e.g. the CMYK plugin adds `cmyk: CMYKInput`)
  * so that the object-input union automatically widens.
+ *
+ * RGB is the only built-in model that accepts partial channel objects; HSL,
+ * HSV and CMYK require all color channels. `a` is optional for every model.
  * @internal
  */
 export interface XColorInputObjectMap {
   rgba: Partial<RGBA>;
-  hsla: Partial<HSLA>;
-  hsva: Partial<HSVA>;
+  hsla: Omit<HSLA, "a"> & { a?: number };
+  hsva: Omit<HSVA, "a"> & { a?: number };
 }
 
 /**
@@ -43,7 +46,7 @@ export interface XColorInputObjectMap {
  * @example
  * ```ts
  * const a: XColorObjectInput = { r: 255, g: 0, b: 0 };    // partial RGBA
- * const b: XColorObjectInput = { h: 120, s: 100, l: 50 }; // partial HSLA
+ * const b: XColorObjectInput = { h: 120, s: 100, l: 50 }; // complete HSL
  * ```
  */
 export type XColorObjectInput = XColorInputObjectMap[keyof XColorInputObjectMap];
@@ -407,7 +410,8 @@ export class XColor {
   }
 
   /**
-   * Get the saturation value (0-100) in HSL/HSV color space.
+   * Get the HSL saturation value (0-100).
+   * HSV saturation is available through {@link toHsv()} / {@link hsv()}.
    * @returns Saturation percentage
    * @example xcolor('#ff0000').saturation() // 100
    */
@@ -505,15 +509,16 @@ export class XColor {
    */
   rgb(): RGBA;
   /**
-   * Set the RGB(A) channels.
+   * Set the RGB(A) channels. Omitted channels keep their current values.
    * @param r Red channel (0-255)
    * @param g Green channel (0-255)
    * @param b Blue channel (0-255)
    * @param a Alpha channel (0-1)
    * @return Current instance
    * @example xcolor('#000').rgb(255, 128, 0).toHex() // '#ff8000'
+   * @example xcolor('#112233').rgb(255).toHex() // '#ff2233'
    */
-  rgb(r: number, g: number, b: number, a?: number): this;
+  rgb(r: number, g?: number, b?: number, a?: number): this;
   rgb(r?: number, g?: number, b?: number, a?: number): RGBA | this {
     if (r === undefined) return this.toRgb();
     const nextG = g ?? this._g;
@@ -533,15 +538,16 @@ export class XColor {
    */
   hsl(): HSLA;
   /**
-   * Set the HSL(A) channels.
+   * Set the HSL(A) channels. Omitted channels keep their current values.
    * @param h Hue (0-360)
    * @param s Saturation (0-100)
    * @param l Lightness (0-100)
    * @param a Alpha (0-1)
    * @returns Current instance
    * @example xcolor('#000').hsl(0, 100, 50).toHex() // '#ff0000'
+   * @example xcolor('hsl(0, 80%, 40%)').hsl(180).toHsl() // hue 180, s/l unchanged
    */
-  hsl(h: number, s: number, l: number, a?: number): this;
+  hsl(h: number, s?: number, l?: number, a?: number): this;
   hsl(h?: number, s?: number, l?: number, a?: number): HSLA | this {
     if (h === undefined) return this.toHsl();
     if (!Number.isFinite(h)) return this;
@@ -567,15 +573,16 @@ export class XColor {
    */
   hsv(): HSVA;
   /**
-   * Set the HSV(A) channels.
+   * Set the HSV(A) channels. Omitted channels keep their current values.
    * @param h Hue (0-360)
    * @param s Saturation (0-100)
    * @param v Value (0-100)
    * @param a Alpha (0-1)
    * @returns Current instance
    * @example xcolor('#000').hsv(0, 100, 100).toHex() // '#ff0000'
+   * @example xcolor('hsv(0, 60%, 70%)').hsv(240).toHsv() // hue 240, s/v unchanged
    */
-  hsv(h: number, s: number, v: number, a?: number): this;
+  hsv(h: number, s?: number, v?: number, a?: number): this;
   hsv(h?: number, s?: number, v?: number, a?: number): HSVA | this {
     if (h === undefined) return this.toHsv();
     if (!Number.isFinite(h)) return this;
@@ -665,7 +672,7 @@ export class XColor {
 
   /**
    * Serialize the color to an {@link RGBA} object `{ r, g, b, a }`.
-   * Alpha is rounded to 2 decimal places.
+   * Alpha preserves the stored value and matches the string serializers.
    * @returns RGBA color object
    * @example
    * ```ts
@@ -674,7 +681,7 @@ export class XColor {
    * ```
    */
   toRgb(): RGBA {
-    return { r: this._r, g: this._g, b: this._b, a: round(this._a, 2) };
+    return { r: this._r, g: this._g, b: this._b, a: this._a };
   }
 
   /**
@@ -696,7 +703,7 @@ export class XColor {
 
   /**
    * Serialize the color to a `[r, g, b, a]` tuple.
-   * Alpha is rounded to 2 decimal places.
+   * Alpha preserves the stored value.
    * @returns Array with red, green, blue (0–255) and alpha (0–1)
    * @example
    * ```ts
@@ -711,7 +718,7 @@ export class XColor {
 
   /**
    * Serialize the color to an {@link HSLA} object `{ h, s, l, a }`.
-   * Alpha is rounded to 2 decimal places.
+   * Alpha preserves the stored value.
    * @returns HSLA color object
    * @example
    * ```ts
@@ -721,7 +728,7 @@ export class XColor {
    */
   toHsl(): HSLA {
     const _hsl = rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal);
-    return { h: _hsl.h, s: _hsl.s, l: _hsl.l, a: round(this._a, 2) };
+    return { h: _hsl.h, s: _hsl.s, l: _hsl.l, a: this._a };
   }
 
   /**
@@ -753,7 +760,7 @@ export class XColor {
 
   /**
    * Serialize the color to an {@link HSVA} object `{ h, s, v, a }`.
-   * Alpha is rounded to 2 decimal places.
+   * Alpha preserves the stored value.
    * @returns HSVA color object
    * @example
    * ```ts
@@ -763,7 +770,7 @@ export class XColor {
    */
   toHsv(): HSVA {
     const _hsv = rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal);
-    return { h: _hsv.h, s: _hsv.s, v: _hsv.v, a: round(this._a, 2) };
+    return { h: _hsv.h, s: _hsv.s, v: _hsv.v, a: this._a };
   }
 
   /**

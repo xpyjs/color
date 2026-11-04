@@ -70,7 +70,7 @@ declare module "@xpyjs/color" {
 
   /** Adds CMYK object literal as a valid color input. */
   interface XColorInputObjectMap {
-    cmyk: Partial<CMYK>;
+    cmyk: Omit<CMYK, "a"> & { a?: number };
   }
 
   /** Adds `'cmyk'` as a valid {@link XColorStringFormat} key. */

@@ -64,63 +64,52 @@ export function registerColorParser(
 
 /**
  * Parse an RGB channel value. Supports plain numbers and percentages.
+ * Returns `NaN` for malformed input, matching the strict parser pipeline.
  * @param val - Channel value (e.g. `"128"`, `"50%"`, `200`)
- * @returns Integer 0-255
+ * @returns Integer 0-255, or `NaN`
  * @example parseRgbChannel("50%") // 128
  * @example parseRgbChannel(200)   // 200
  */
 export function parseRgbChannel(val: string | number): number {
-  const str = typeof val === "string" ? val.trim() : `${val}`;
-  return Math.round(clamp(
-    str.endsWith("%") ? (parseFloat(str) / 100) * 255 : parseFloat(str),
-    0, 255
-  ));
+  const number = numericToken(val, 255);
+  return Number.isFinite(number) ? Math.round(clamp(number, 0, 255)) : NaN;
 }
 
 /**
  * Parse an alpha channel value. Supports plain numbers and percentages.
+ * Returns `NaN` for malformed input, matching the strict parser pipeline.
  * @param val - Alpha value (e.g. `"50%"`, `"0.8"`, `0.8`)
- * @returns Number 0-1
+ * @returns Number 0-1, or `NaN`
  * @example parseAlphaChannel("50%") // 0.5
  * @example parseAlphaChannel(0.8)   // 0.8
  */
 export function parseAlphaChannel(val: string | number): number {
-  const str = typeof val === "string" ? val.trim() : `${val}`;
-  return clamp(
-    str.endsWith("%") ? parseFloat(str) / 100 : parseFloat(str),
-    0, 1
-  );
+  const number = numericToken(val, 1);
+  return Number.isFinite(number) ? clamp(number, 0, 1) : NaN;
 }
 
 /**
  * Parse a percentage channel value (for saturation, lightness, value, etc.).
+ * Returns `NaN` for malformed input, matching the strict parser pipeline.
  * @param val - Value (e.g. `"50%"`, `"50"`, `50`)
- * @returns Number 0-100
+ * @returns Number 0-100, or `NaN`
  * @example parsePercent("50%") // 50
  */
 export function parsePercent(val: string | number): number {
-  const str = typeof val === "string" ? val.trim() : `${val}`;
-  return clamp(parseFloat(str), 0, 100);
+  const number = numericToken(val, 100);
+  return Number.isFinite(number) ? clamp(number, 0, 100) : NaN;
 }
 
 /**
  * Parse a hue value with optional unit (deg, grad, rad, turn).
+ * Returns `NaN` for malformed input, matching the strict parser pipeline.
  * @param val - Hue (e.g. `"0.5turn"`, `"200grad"`, `180`)
- * @returns Degrees 0-360
+ * @returns Degrees 0-360, or `NaN`
  * @example parseHue("0.5turn") // 180
  * @example parseHue("200grad") // 180
  */
 export function parseHue(val: string | number): number {
-  if (typeof val === "number") return ((val % 360) + 360) % 360;
-  const m = String(val).trim().toLowerCase()
-    .match(/^([+-]?[\d.]+)(deg|grad|rad|turn)?$/);
-  if (!m) return 0;
-  const n = parseFloat(m[1]);
-  const deg = m[2] === "turn" ? n * 360
-    : m[2] === "grad" ? n * 0.9
-    : m[2] === "rad" ? (n * 180) / Math.PI
-    : n;
-  return ((deg % 360) + 360) % 360;
+  return hueToken(val);
 }
 
 // ---- Functional channel string parser ----

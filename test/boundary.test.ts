@@ -18,16 +18,24 @@ describe("utils boundary tests", () => {
       expect(clamp(NaN, NaN, NaN)).toBe(0);
     });
 
-    it("should handle negative Infinity", () => {
+    it("should clamp infinite values to the corresponding bound", () => {
       expect(clamp(-Infinity, 0, 255)).toBe(0);
+      expect(clamp(Infinity, 0, 255)).toBe(255);
+      expect(clamp(Infinity, 0, 1)).toBe(1);
     });
 
-    it("should handle positive Infinity as min", () => {
+    it("should handle non-finite bounds", () => {
       expect(clamp(10, Infinity, 255)).toBe(0);
     });
 
     it("should handle -0", () => {
       expect(clamp(-0, 0, 255)).toBe(0);
+    });
+
+    it("should clamp infinite channel setters instead of returning the minimum", () => {
+      const c = xcolor("#000");
+      expect(c.red(Infinity).red()).toBe(255);
+      expect(c.alpha(Infinity).alpha()).toBe(1);
     });
   });
 

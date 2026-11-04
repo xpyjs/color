@@ -236,7 +236,14 @@ export function resolveThemeConfig(
  * @param source - Partial object to merge in
  * @returns A new merged object
  */
-export function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Record<string, any> ? DeepPartial<T[K]> : T[K];
+};
+
+export function deepMerge<T extends Record<string, any>>(
+  target: T,
+  source: DeepPartial<T> & Record<string, any>
+): T {
   var result = {} as any;
   var targetKeys = Object.keys(target);
   for (var i = 0; i < targetKeys.length; i++) {

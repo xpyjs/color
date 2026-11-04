@@ -410,6 +410,11 @@ describe("parseRgbChannel", () => {
     expect(parseRgbChannel(300)).toBe(255);
     expect(parseRgbChannel(-10)).toBe(0);
   });
+
+  it("should return NaN for malformed input", () => {
+    expect(Number.isNaN(parseRgbChannel("foo"))).toBe(true);
+    expect(Number.isNaN(parseRgbChannel(""))).toBe(true);
+  });
 });
 
 describe("parseAlphaChannel", () => {
@@ -427,6 +432,11 @@ describe("parseAlphaChannel", () => {
     expect(parseAlphaChannel(1.5)).toBe(1);
     expect(parseAlphaChannel(-0.1)).toBe(0);
   });
+
+  it("should return NaN for malformed input", () => {
+    expect(Number.isNaN(parseAlphaChannel("foo"))).toBe(true);
+    expect(Number.isNaN(parseAlphaChannel(""))).toBe(true);
+  });
 });
 
 describe("parsePercent", () => {
@@ -439,6 +449,11 @@ describe("parsePercent", () => {
   it("should clamp to 0-100", () => {
     expect(parsePercent("150%")).toBe(100);
     expect(parsePercent(-10)).toBe(0);
+  });
+
+  it("should return NaN for malformed input", () => {
+    expect(Number.isNaN(parsePercent("foo"))).toBe(true);
+    expect(Number.isNaN(parsePercent(""))).toBe(true);
   });
 });
 
@@ -464,5 +479,10 @@ describe("parseHue", () => {
 
   it("should handle negative values via modulo", () => {
     expect(parseHue(-90)).toBe(270);
+  });
+
+  it("should return NaN for malformed input", () => {
+    expect(Number.isNaN(parseHue("foo"))).toBe(true);
+    expect(Number.isNaN(parseHue(""))).toBe(true);
   });
 });

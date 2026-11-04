@@ -32,7 +32,8 @@ describe("clamp", () => {
     expect(clamp(NaN, 0, 255)).toBe(0);
     expect(clamp(100, NaN, 255)).toBe(0);
     expect(clamp(100, 0, Infinity)).toBe(0);
-    expect(clamp(Infinity, 0, 255)).toBe(0);
+    expect(clamp(Infinity, 0, 255)).toBe(255);
+    expect(clamp(-Infinity, 0, 255)).toBe(0);
     expect(clamp(100, 5, NaN)).toBe(5);
   });
 
