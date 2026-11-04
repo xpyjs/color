@@ -3,7 +3,7 @@ import { babel } from "@rollup/plugin-babel";
 import terser from "@rollup/plugin-terser";
 import ts from "typescript";
 import { dts } from "rollup-plugin-dts";
-import { readdirSync, statSync } from "fs";
+import { readdirSync, readFileSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -24,13 +24,21 @@ const terserOptions = {
     }
 };
 
+// Support floor: the first engines with full ES2015 support, plus Node 14.
+// The list lives in package.json#browserslist so the build and the published
+// metadata cannot drift apart. Explicit versions instead of a market-share query
+// ("> 0.25%, not dead"): that query dragged in legacy engines such as UC 15.5 and
+// changed the emitted code whenever browserslist data was refreshed, so the
+// bundle size drifted with it.
+const browserTargets = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8")).browserslist;
+
 const babelOptions = {
     babelHelpers: "bundled",
     presets: [
         [
             "@babel/preset-env",
             {
-                targets: ["> 0.25%, not dead", "node 14"],
+                targets: browserTargets,
                 modules: false
             }
         ]
