@@ -57,6 +57,7 @@ async function testPackage() {
         const samples = [
           ["guide/custom-plugin.md", ": XColorPlugin"],
           ["plugins/a11y.md", "foreground.isReadable(background)"],
+          ["plugins/name.md", "NAMED_COLORS"],
           ["plugins/theme.md", "const light = generateTheme"],
           ["plugins/displayP3.md", "const color = parseWideColor"]
         ];

@@ -4,13 +4,20 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { XColor, xcolor } from "../../src/core";
-import name from "../../src/plugins/name";
+import name, { NAMED_COLORS } from "../../src/plugins/name";
 
 beforeAll(() => {
   XColor.extend(name);
 });
 
 describe("name plugin", () => {
+  it("should expose the complete name map", () => {
+    expect(NAMED_COLORS.red).toBe("#ff0000");
+    expect(NAMED_COLORS.coral).toBe("#ff7f50");
+    expect(NAMED_COLORS.transparent).toBe("#00000000");
+    expect(Object.keys(NAMED_COLORS)).toHaveLength(149);
+  });
+
   describe("toName / toString(name)", () => {
     it("should return named color if exact match", () => {
       expect(xcolor("#ff0000").toName()).toBe("red");

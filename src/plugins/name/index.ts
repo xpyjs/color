@@ -76,8 +76,8 @@ let namedColorsRgbCache: Record<string, {r:number,g:number,b:number}> | null = n
 function getNamedColorsRgb(cls: any): Record<string, {r:number,g:number,b:number}> {
   if (namedColorsRgbCache) return namedColorsRgbCache;
   namedColorsRgbCache = {};
-  for (const [name, hex] of Object.entries(NAMED_COLORS)) {
-    const c = new cls(hex);
+  for (const name of Object.keys(NAMED_COLORS)) {
+    const c = new cls(NAMED_COLORS[name]);
     namedColorsRgbCache[name] = { r: c.red(), g: c.green(), b: c.blue() };
   }
   return namedColorsRgbCache;
@@ -137,4 +137,5 @@ const name: XColorPlugin = {
   }
 };
 
+export { NAMED_COLORS };
 export default name;

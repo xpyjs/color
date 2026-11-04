@@ -1,6 +1,8 @@
 # name - 颜色命名
 
-CSS 颜色名称支持。覆盖 CSS Color Level 4 规范中的全部 148 种命名颜色。
+CSS 颜色名称支持。覆盖 CSS Color Level 4 规范中的全部 148 种命名颜色，以及 `transparent`。
+
+[跳到全部颜色速查](#named-colors)
 
 ## 安装
 
@@ -52,4 +54,22 @@ xcolor('transparent').alpha()  // 0
 ```ts
 xcolor('#ff0000').toString('name')  // 'red'
 xcolor('#ff0001').toString('name')  // 回退到 hex（无精确匹配）
+```
+
+## 全部命名颜色 {#named-colors}
+
+以下列出 CSS Color Level 4 的全部 148 个命名颜色，以及特殊值 `transparent`。色块展示对应颜色，卡片中同时显示名称和 hex 值；**点击任意卡片会复制对应的 `name` 字段**，可直接用于 `xcolor('...')`。
+
+<NamedColors />
+
+### NAMED_COLORS
+
+插件同时导出名称到 hex 的完整映射，便于自行渲染选择器或做数据校验：
+
+```ts
+import { NAMED_COLORS } from '@xpyjs/color/plugins/name'
+
+NAMED_COLORS.red      // '#ff0000'
+NAMED_COLORS.coral    // '#ff7f50'
+NAMED_COLORS.transparent // '#00000000'
 ```

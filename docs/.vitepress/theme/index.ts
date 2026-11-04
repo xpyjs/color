@@ -6,6 +6,7 @@ import Toast from './components/Toast.vue'
 import HomeHero from './components/HomeHero.vue'
 import HomeLayout from './components/HomeLayout.vue'
 import ThemeStudio from './components/ThemeStudio.vue'
+import NamedColors from './components/NamedColors.vue'
 
 // SVG illustration components
 import SvgLightenDarken from './components/svg/SvgLightenDarken.vue'
@@ -47,6 +48,7 @@ export default {
     app.component('Toast', Toast)
     app.component('HomeHero', HomeHero)
     app.component('ThemeStudio', ThemeStudio)
+    app.component('NamedColors', NamedColors)
 
     // SVG illustrations
     app.component('SvgLightenDarken', SvgLightenDarken)
