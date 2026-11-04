@@ -57,8 +57,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check source types
-        run: npx tsc --noEmit
+      - name: Check source and test types
+        run: npm run typecheck
       - name: Pack library
         run: npm pack
       - name: Check published types and browser entry points
