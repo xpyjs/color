@@ -253,3 +253,15 @@ xcolor('#ff0000').shade(100).toHex() // '#000000'
 | `shade(amount)` | 50 | RGB | Mix with black | — |
 
 Want richer color operations? Check out the [Plugin System](/en/guide/plugins) — the blend plugin provides 11 blend modes, and the scale plugin supports color space interpolation with easing functions.
+
+## Choosing an operation
+
+| Goal | Methods | Result and alpha |
+| --- | --- | --- |
+| Lighten in HSL or RGB | `lighten`, `brighten` | Mutate the instance and preserve alpha |
+| Mix toward white or another color | `tint`, `mix` | Mutate the instance and interpolate alpha |
+| Composite layers | `blend` | Returns a new color, with source-over alpha |
+| Generate colors between endpoints | `gradient`, `scale` | Return new colors and interpolate alpha. Steps range from 2 to 10,000. |
+| Generate design tokens | `palette` | Returns a list keyed by the requested shade order. Built-in generators emit opaque colors. A custom generator must return one valid color per shade. |
+
+Creation returns an invalid black fallback when parsing fails. Check `isValid()` before using external inputs in operations. A failed `hex(value)` setter throws and retains the current channels while marking the instance invalid. An unknown blend mode throws.

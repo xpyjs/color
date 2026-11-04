@@ -14,7 +14,7 @@ xcolor.use(labPlugin)
 xcolor.use(labPlugin, { /* 选项 */ })
 ```
 
-别名：`xcolor.extend()`
+别名：`xcolor.extend()`。返回 `XColor` 类，可继续链式注册插件。
 
 ## xcolor.isColor(value) {#isColor}
 

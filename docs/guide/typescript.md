@@ -47,7 +47,7 @@ function getContrastColor(input: XColorInput): string {
 
 ## 插件类型增强
 
-安装官方插件后，导入即自动获得类型提示——插件内部已包含 `declare module` 声明：
+导入插件会让 TypeScript 识别它的模块增强。运行时调用插件方法前，需要先执行 `xcolor.use()`。
 
 ```ts
 import xcolor from '@xpyjs/color'
@@ -83,3 +83,25 @@ const myPlugin: XColorPlugin<{ threshold: number }> = {
 xcolor 编译目标为 ES2015。如果你的项目 `tsconfig.json` 设置了 `moduleResolution: "bundler"` 或 `"node16"`，子路径导入（`@xpyjs/color/plugins/*`）会自动解析。
 
 对于 `moduleResolution: "node"`（TypeScript 4.x 默认），可能需要配合 `paths` 映射。推荐升级到 `"bundler"` 以获得最佳体验。
+
+## ESM、CommonJS 与排错
+
+CommonJS 声明入口需要 TypeScript 5.3 或以上版本。
+
+```ts
+// example.mts
+import xcolor from '@xpyjs/color'
+import lab from '@xpyjs/color/plugins/lab'
+xcolor.use(lab)
+xcolor('#f00').toLab()
+```
+
+```ts
+// example.cts
+import xcolor = require('@xpyjs/color')
+import lab = require('@xpyjs/color/plugins/lab')
+xcolor.use(lab)
+xcolor('#f00').toLab()
+```
+
+同一个 Node 进程中的两种入口共享实例类型和插件状态。跨 Worker 或独立 bundle 时，传递颜色字符串或通道并在接收方重建实例。IDE 提示有插件方法而运行时报错时，检查对应运行环境是否执行了 `use()`。浏览器原生模块无法解析 `@xpyjs/color` 时，使用安装指南中的 import map。

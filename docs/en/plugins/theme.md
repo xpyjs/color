@@ -7,7 +7,7 @@ Want to see theme colors in action? Try [Theme Studio](/en/theme-studio) — ent
 :::
 
 ::: tip Plugin Dependencies
-This plugin depends on the [palette](/en/plugins/palette) plugin for shade palette generation.
+Theme reuses the [palette](/en/plugins/palette) algorithms. Registering the theme plugin is sufficient.
 :::
 
 ## Install
@@ -614,3 +614,15 @@ import type {
   XColorThemeDeriveOptions
 } from '@xpyjs/color/plugins/theme'
 ```
+
+## Generate CSS in SSR or build tools
+
+```ts
+import { generateTheme } from '@xpyjs/color/plugins/theme'
+
+const light = generateTheme({ colors: { primary: '#1890ff' } })
+const dark = generateTheme({ colors: { primary: '#177ddc' } })
+console.log(light.vars['--x-primary'], dark.vars['--x-primary'])
+```
+
+Each call returns a separate result. It uses the current color parsers and does not update the installed theme or the DOM. `getThemeVars()` returns a snapshot. Invalid updates or replacements leave an already injected theme in place. Treat selectors and raw CSS values passed to the theme generator as caller-controlled CSS.

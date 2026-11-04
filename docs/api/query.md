@@ -72,6 +72,8 @@ xcolor('#ff0000').luminance()  // 0.2126
 
 ## contrast(other) {#contrast}
 
+对比度按 RGB 通道计算，显示值保留两位小数。评估半透明颜色的实际显示效果前，先将它们合成到已知背景。
+
 计算与另一个颜色的 WCAG 对比度（1–21）。
 
 | 参数 | 类型 | 说明 |
@@ -96,6 +98,8 @@ xcolor('#ff0000').contrast('#ffffff')  // 4（约）
 :::
 
 ## equals(other) {#equals}
+
+任一颜色无效时返回 `false`。
 
 判断两个颜色是否相同（基于 RGBA 值；alpha 差值小于 `0.01` 视为相同）。
 

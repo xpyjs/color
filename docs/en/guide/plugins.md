@@ -39,7 +39,7 @@ xcolor.use(harmonyPlugin)
 ```
 
 ::: warning
-Registering the same plugin multiple times won't throw an error, but it won't install again either — plugins with the same name are only registered once.
+Registering a plugin with an existing name runs its installer again and logs a warning. A successful install replaces the previous parser and formatter registrations.
 :::
 
 ## Plugins with Options

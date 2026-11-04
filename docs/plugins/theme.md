@@ -7,7 +7,7 @@
 :::
 
 ::: tip 插件依赖
-该插件依赖 [palette](/plugins/palette) 插件的色阶生成算法。
+主题复用 [palette](/plugins/palette) 的色阶算法，使用时只需注册 theme。
 :::
 
 ## 安装
@@ -614,3 +614,15 @@ import type {
   XColorThemeDeriveOptions
 } from '@xpyjs/color/plugins/theme'
 ```
+
+## 在 SSR 或构建工具中生成 CSS
+
+```ts
+import { generateTheme } from '@xpyjs/color/plugins/theme'
+
+const light = generateTheme({ colors: { primary: '#1890ff' } })
+const dark = generateTheme({ colors: { primary: '#177ddc' } })
+console.log(light.vars['--x-primary'], dark.vars['--x-primary'])
+```
+
+每次调用返回独立结果。它使用当前颜色解析器，已注册主题与 DOM 不受调用影响。`getThemeVars()` 返回快照。主题更新或重装失败时，已注入的样式会保留。传给主题生成器的选择器和原样 CSS 值由调用方控制。

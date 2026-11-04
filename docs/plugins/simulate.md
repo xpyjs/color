@@ -17,13 +17,13 @@ xcolor.use(simulatePlugin)
 
 ### simulate(mode)
 
-模拟指定类型的色觉障碍。**原地修改**实例。
+模拟指定类型的色觉障碍。返回一个新的颜色实例。
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | `mode` | `SimulateMode` | 模拟类型 |
 
-**返回值**：`this`
+**返回值**：`XColor`
 
 ## 模拟类型
 

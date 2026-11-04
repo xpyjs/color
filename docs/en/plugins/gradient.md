@@ -45,7 +45,7 @@ Generate a tonal range of shades and tints centered on the current color.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
-| `steps` | `number` | `5` | Number of steps (≥ 2) |
+| `steps` | `number` | `5` | Colors on each side (2–10000) |
 
 **Returns**: `XColor[]`
 

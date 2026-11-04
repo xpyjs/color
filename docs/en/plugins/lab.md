@@ -2,6 +2,8 @@
 
 CIE Lab and CIE LCH perceptual color space support. Lab is designed based on human visual perception and is commonly used for color difference calculations.
 
+The plugin retains its D65 reference white for compatibility. CSS Color 4 Lab and LCH use D50, so equivalent coordinates may render differently.
+
 ## Install
 
 ```ts
@@ -70,7 +72,7 @@ Calculates the CIE76 color difference (Euclidean distance) between the current c
 | `other` | `XColorInput` | Target color for comparison |
 
 ```ts
-xcolor('#ff0000').deltaE('#ff0100')  // ≈ 0.5 (nearly identical)
+xcolor('#ff0000').deltaE('#ff0100')  // 0.07 (nearly identical)
 xcolor('#ff0000').deltaE('#0000ff')  // ≈ 176 (vastly different)
 ```
 

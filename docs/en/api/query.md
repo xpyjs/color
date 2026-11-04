@@ -72,6 +72,8 @@ xcolor('#ff0000').luminance()  // 0.2126
 
 ## contrast(other) {#contrast}
 
+Contrast compares RGB channels and displays a ratio rounded to two decimals. Composite translucent colors onto a known background before evaluating the rendered result.
+
 Calculate the WCAG contrast ratio (1–21) against another color.
 
 | Param | Type | Description |
@@ -96,6 +98,8 @@ Use the [a11y plugin](/en/plugins/a11y) to directly check `isReadable()` and sel
 :::
 
 ## equals(other) {#equals}
+
+Returns `false` when either color is invalid.
 
 Determine whether two colors are the same (based on RGBA values; an alpha difference below `0.01` is treated as equal).
 

@@ -93,3 +93,7 @@ xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 
 根据实际场景选择合适的插值空间。
+
+## 线性光、OKLab 与 alpha
+
+`space: 'srgb-linear'` 在光强线性的 sRGB 中插值，`space: 'oklab'` 在 OKLab 中插值。RGB 和 HSL 的默认行为保持一致。显式传入 `premultiplyAlpha: true` 可按不透明度加权通道。HSL 的色相仍按最短路径计算。

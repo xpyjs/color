@@ -2,6 +2,8 @@
 
 CIE XYZ color space support. XYZ is the foundation of all CIE color spaces and serves as an intermediate bridge for conversions between different color spaces.
 
+Inputs are converted to sRGB and clipped to its gamut. Values outside sRGB lose information during a round trip.
+
 ## Install
 
 ```ts
@@ -54,3 +56,7 @@ xcolor('color(xyz-d50 0.4360 0.2225 0.0139)').toHex()
 ```ts
 xcolor('#ff0000').toString('xyz')  // 'color(xyz-d65 0.4124 0.2126 0.0193)'
 ```
+
+## Preserve the original coordinates
+
+Use the plugin's named exports for a wide-gamut value that stays in its original space. `parseWideColor(input)` returns `{ space, coordinates, alpha }` or `null`. `formatWideColor(record)` serializes those coordinates, and `toSrgb(record)` explicitly converts and clips them. Calling these functions needs no plugin registration.

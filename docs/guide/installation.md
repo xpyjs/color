@@ -111,25 +111,58 @@ xcolor.use(gradient)
 </script>
 ```
 
+### 浏览器直接加载插件
+
+直接使用 CDN 原始文件时，通过 import map 将插件依赖的 `@xpyjs/color` 指向同一个核心模块。
+
+```html
+<script type="importmap">
+  { "imports": { "@xpyjs/color": "https://cdn.jsdelivr.net/npm/@xpyjs/color/dist/index.esm.js" } }
+</script>
+<script type="module">
+  import xcolor from '@xpyjs/color'
+  import name from 'https://cdn.jsdelivr.net/npm/@xpyjs/color/dist/plugins/name/index.js'
+  xcolor.use(name)
+  console.log(xcolor('red').toHex())
+</script>
+```
+
+经典脚本先加载 UMD 核心，再加载 UMD 插件。
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@xpyjs/color/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xpyjs/color/dist/plugins/name/index.umd.js"></script>
+<script>
+  xcolor.use(xcolorPlugins.name)
+  console.log(xcolor('red').toHex())
+</script>
+```
+
 ## 构建产物
 
 | 文件路径 | 格式 | 适用场景 |
 | --- | --- | --- |
 | `dist/index.esm.js` | ES Module | Vite、webpack、Rollup 等 |
+| `dist/index.node.js` | ES Module | Node.js `import` |
 | `dist/index.cjs` | CommonJS | Node.js `require()` |
 | `dist/index.umd.js` | UMD | `<script>` 标签 |
-| `dist/types/` | `.d.ts` | TypeScript 类型定义 |
+| `dist/types/` | `.d.ts` / `.d.cts` | TypeScript 类型定义 |
 
 ## 兼容性
 
-| 环境 | 最低版本 |
-| --- | --- |
-| Node.js | 14.0+ |
-| Chrome | 51+ |
-| Firefox | 54+ |
-| Safari | 10+ |
-| Edge | 15+ |
-| Deno | 1.0+ |
-| Bun | 1.0+ |
+- Node.js 使用端支持 Node 14.0 及以上版本。项目开发和构建使用 Node 20 或 22。
+- Web 打包器使用浏览器 ESM 产物。直接通过浏览器加载原生 ESM 插件时，需要支持原生模块和 import map。
+- Deno 和 Bun 可使用 npm 包。确定部署基线时，应按实际宿主和加载方式验证。
 
-编译目标为 **ES2015 (ES6)**，不使用更新的语法特性，保证了广泛的兼容性。库本身零依赖，不包含 polyfill。
+库无运行时依赖。浏览器加载 JavaScript 和渲染 CSS 颜色是两项独立的能力。输出较新的色彩空间时，请确认浏览器支持对应的 CSS 语法。
+
+## 已验证的加载方式
+
+| 环境 | 消费端测试 |
+| --- | --- |
+| Node.js 14.0 和 22 | 从同一份 tarball 安装后使用 ESM、CommonJS，以及两种混合加载顺序 |
+| Chrome | 打包器、带 import map 的原生模块、经典 UMD 脚本及模块 Worker |
+| Deno 与 Bun | npm 包导入、插件注册和服务端主题生成 |
+| Electron | 主进程 CommonJS 与 Chromium 渲染进程 |
+
+上表使用本地 tarball 验证。预发布后另有检查从 jsDelivr 加载指定版本。

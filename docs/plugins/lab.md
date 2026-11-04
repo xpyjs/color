@@ -2,6 +2,10 @@
 
 CIE Lab 和 CIE LCH 感知色彩空间支持。Lab 基于人眼感知设计，常用于色差计算。
 
+插件沿用 D65 参考白点。CSS Color 4 的 Lab 与 LCH 使用 D50，因此相同坐标的渲染结果可能不同。
+
+通过 `xcolor.use(labPlugin, { whitePoint: 'D50' })` 使用与 CSS 一致的 Lab/LCH 坐标。选项同时作用于解析、输出和色差计算。
+
 ## 安装
 
 ```ts
@@ -70,7 +74,7 @@ xcolor('#ff0000').toLchString()
 | `other` | `XColorInput` | 比较目标颜色 |
 
 ```ts
-xcolor('#ff0000').deltaE('#ff0100')  // ≈ 0.5（几乎相同）
+xcolor('#ff0000').deltaE('#ff0100')  // 0.07（几乎相同）
 xcolor('#ff0000').deltaE('#0000ff')  // ≈ 176（差异巨大）
 ```
 

@@ -130,3 +130,15 @@ Alias: `format()`
 | `'hsv'` | `hsv(0, 100%, 100%)` |
 
 Plugins can extend additional formats. For example, after registering the `cmyk` plugin, you can use `toString('cmyk')`.
+
+## Precision and round trips
+
+| Output | Precision and alpha |
+| --- | --- |
+| `alpha()` | Returns the stored alpha |
+| `toRgb()`, `toHsl()`, `toHsv()` and their array forms | Alpha is rounded to two decimals. `toHslArray()` returns `[h, s, l, a]` and `toHsvArray()` returns `[h, s, v, a]`. |
+| RGB, HSL and HSV strings | Retain stored alpha. HSL and HSV string coordinates are rounded to integers. |
+| Hex | Quantizes RGB and alpha to 8-bit channels |
+| `toNumber()` | Quantizes RGB and omits alpha |
+
+For example, alpha `0.004` is returned as `0` in `toRgb().a`, and as `0.004` in `toRgbString()`. The `useDecimal` option retains fractional RGB channels in the instance. Each serializer still applies its own rules. Wide-gamut inputs are clipped when converted to the stored sRGB channels. For Lab/LCH round trips use the same reference white for parsing and serialization.

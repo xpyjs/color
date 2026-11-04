@@ -14,7 +14,7 @@ xcolor.use(labPlugin)
 xcolor.use(labPlugin, { /* options */ })
 ```
 
-Alias: `xcolor.extend()`
+Alias: `xcolor.extend()`. Returns the `XColor` class for chaining plugin registration.
 
 ## xcolor.isColor(value) {#isColor}
 

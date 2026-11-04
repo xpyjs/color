@@ -2,6 +2,8 @@
 
 Adobe RGB (1998) wide gamut color space support. Commonly used in print and photography workflows.
 
+Inputs are converted to sRGB and clipped to its gamut. Values outside sRGB lose information during a round trip.
+
 ## Install
 
 ```ts
@@ -42,3 +44,7 @@ xcolor('color(a98-rgb 0.86 0 0)').toHex()
 ```ts
 xcolor('#ff0000').toString('a98Rgb')  // 'color(a98-rgb 0.8586 0 0)'
 ```
+
+## Preserve the original coordinates
+
+Use the plugin's named exports for a wide-gamut value that stays in its original space. `parseWideColor(input)` returns `{ space, coordinates, alpha }` or `null`. `formatWideColor(record)` serializes those coordinates, and `toSrgb(record)` explicitly converts and clips them. Calling these functions needs no plugin registration.

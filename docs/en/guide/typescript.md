@@ -33,7 +33,7 @@ function getContrastColor(input: XColorInput): string {
 
 ## Plugin Type Augmentation
 
-Official plugins include `declare module` declarations — types are available automatically after import:
+Importing a plugin exposes its module augmentation to TypeScript. Register it with `xcolor.use()` before calling the methods at runtime.
 
 ```ts
 import labPlugin from '@xpyjs/color/plugins/lab'
@@ -56,3 +56,25 @@ const myPlugin: XColorPlugin<{ threshold: number }> = {
   }
 }
 ```
+
+## ESM, CommonJS, and troubleshooting
+
+Use TypeScript 5.3 or later for the CommonJS declaration entry.
+
+```ts
+// example.mts
+import xcolor from '@xpyjs/color'
+import lab from '@xpyjs/color/plugins/lab'
+xcolor.use(lab)
+xcolor('#f00').toLab()
+```
+
+```ts
+// example.cts
+import xcolor = require('@xpyjs/color')
+import lab = require('@xpyjs/color/plugins/lab')
+xcolor.use(lab)
+xcolor('#f00').toLab()
+```
+
+Within a Node process, the two entry points share the class and plugin state. Between workers or separate bundle instances, send a color string or channels and reconstruct the instance. If the IDE offers a plugin method but calling it fails at runtime, check that `use()` ran in that runtime. If a native browser module cannot resolve `@xpyjs/color`, use the import map shown in the installation guide.

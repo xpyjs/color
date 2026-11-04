@@ -151,3 +151,26 @@ xcolor({ c: 0, m: 100, y: 100, k: 0 }) // CMYK object
 ```
 
 See [Plugin System](/en/guide/plugins) for details.
+
+## Input and output by format
+
+The table describes standalone values. Register the listed plugin before parsing or formatting. A dash in the object column means there is no object input for that model.
+
+| Model | Plugin | String input and units | Object input | Alpha | Format key and CSS output |
+| --- | --- | --- | --- | --- | --- |
+| Hex | Core | 3, 4, 6, or 8 digits, optional `#` | — | 4 or 8 digits | `hex`, `hex3`, `hex8` emit CSS hex |
+| RGB | Core | `rgb()`, `rgba()`, numeric or percentage channels | `{ r, g, b, a? }`, omitted RGB channels use 0 | Number or percent in strings | `rgb` emits CSS RGB |
+| HSL | Core | `hsl()`, `hsla()`, hue in degrees or with `deg`, `grad`, `rad`, `turn`; S/L in 0–100 | `{ h, s, l, a? }` | Number or percent in strings | `hsl` emits CSS HSL |
+| HSV | Core | `hsv()`, `hsva()`, same hue units as HSL; S/V in 0–100 | `{ h, s, v, a? }` | Number or percent in strings | `hsv` is xcolor notation |
+| sRGB | Core | `color(srgb …)` or `srgb()`, 0–1 or percent | — | Optional slash alpha | Use the `rgb` or hex output |
+| Named colors | `name` | CSS names and `transparent` | — | `transparent` has zero alpha | `name` emits a name when available, with hex fallback |
+| HWB | `hwb` | `hwb()`, angle units as in HSL and 0–100 W/B | — | Optional slash alpha | `hwb` emits CSS HWB |
+| CMYK | `cmyk` | `cmyk()`, 0–100 or percent | `{ c, m, y, k, a? }` | Optional alpha | `cmyk` is xcolor notation |
+| Lab / LCH | `lab` | `lab()` or `lch()`, numbers and model-specific percentages, LCH hue accepts angle units | — | Optional slash alpha | `lab`, `lch` use CSS coordinates with `whitePoint: 'D50'` |
+| OKLab / OKLCh | `oklab` | `oklab()` or `oklch()`, numbers and model-specific percentages, OKLCh hue accepts angle units | — | Optional slash alpha | `oklab`, `oklch` emit CSS functions |
+| Wide RGB and XYZ | `displayP3`, `a98Rgb`, `proPhotoRgb`, `rec2020`, `xyz` | `color()`, numeric or percentage coordinates | — | Optional slash alpha | Same key as plugin, emits a CSS `color()` value after sRGB conversion |
+| Percentage RGB | `percentageRgb` | Parsed by core RGB | — | Standard RGB alpha | `percentageRgb` emits CSS RGB with percentage channels |
+
+Object alpha uses 0–1. The numeric input is a 24-bit RGB integer with implicit alpha 1. Resolve context-dependent values such as `currentColor` and `var(--brand)` in the caller before passing a standalone color to xcolor. The library accepts a subset of CSS color syntax. Expressions such as `calc()` and missing components written as `none` require separate handling.
+
+Use `xcolor.isValidInput(value)` for quiet input validation. It checks the active parsers, returns false for nullish inputs, and reflects `isValid()` for an existing instance. Calling the factory with no input still creates the default black.

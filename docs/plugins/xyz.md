@@ -2,6 +2,8 @@
 
 CIE XYZ 色彩空间支持。XYZ 是所有 CIE 色彩空间的基础，也是不同色彩空间转换的中间桥梁。
 
+输入会转换为 sRGB 并裁剪到其色域。超出 sRGB 的颜色在往返转换时会丢失信息。
+
 ## 安装
 
 ```ts
@@ -54,3 +56,7 @@ xcolor('color(xyz-d50 0.4360 0.2225 0.0139)').toHex()
 ```ts
 xcolor('#ff0000').toString('xyz')  // 'color(xyz-d65 0.4124 0.2126 0.0193)'
 ```
+
+## 保留原始坐标
+
+需要保留广色域坐标时，使用插件的命名导出。`parseWideColor(input)` 返回 `{ space, coordinates, alpha }` 或 `null`。`formatWideColor(record)` 直接序列化记录，`toSrgb(record)` 显式转换并裁剪到 sRGB。调用这些函数无需注册插件。

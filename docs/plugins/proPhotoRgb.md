@@ -2,6 +2,8 @@
 
 ProPhoto RGB 广色域色彩空间支持。ProPhoto RGB 拥有极大的色域范围，覆盖了人眼可见色彩的约 90%，广泛用于专业摄影后期处理。
 
+输入会转换为 sRGB 并裁剪到其色域。超出 sRGB 的颜色在往返转换时会丢失信息。
+
 ## 安装
 
 ```ts
@@ -42,3 +44,7 @@ xcolor('color(prophoto-rgb 0.70 0.28 0.10)').toHex()
 ```ts
 xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
 ```
+
+## 保留原始坐标
+
+需要保留广色域坐标时，使用插件的命名导出。`parseWideColor(input)` 返回 `{ space, coordinates, alpha }` 或 `null`。`formatWideColor(record)` 直接序列化记录，`toSrgb(record)` 显式转换并裁剪到 sRGB。调用这些函数无需注册插件。

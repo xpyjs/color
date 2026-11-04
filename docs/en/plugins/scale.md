@@ -93,3 +93,7 @@ xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 
 Choose the appropriate interpolation space based on your actual use case.
+
+## Linear light, OKLab, and alpha
+
+Use `space: 'srgb-linear'` for linear-light interpolation or `space: 'oklab'` for interpolation in OKLab. Existing RGB and HSL defaults stay the same. Use `premultiplyAlpha: true` to weight channels by opacity. In HSL, hue still follows the shortest path without alpha weighting.

@@ -131,6 +131,8 @@ xcolor('#ff0000').hsv(120, 100, 80)  // set to a green tone
 
 Without arguments, returns a 6-digit hex string. With an argument, sets the color from a hex string.
 
+The setter accepts strings recognized by the active color parsers. A successful call marks the instance valid. A parse failure throws and marks it invalid while retaining its channels.
+
 ```ts
 xcolor('#ff0000').hex()          // '#ff0000'
 xcolor('#ff0000').hex('#00ff00') // becomes green

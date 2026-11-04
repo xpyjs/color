@@ -9,7 +9,7 @@ description: 核心技能。开发时需要参考该技能，包含核心功能�
 
 ## 1. 开发工具版本
 
-- Node.js: 18.x
+- Node.js: 20.x 或 22.x
 - TypeScript: 5.x
 - ESLint: 8.x
 - Prettier: 2.x
@@ -47,14 +47,11 @@ class XColor {
 
 // 工厂函数，作为用户创建颜色实例的入口，同时也是插件挂载的入口
 export const xcolor = (input: XColorInput, options?: XColorOptions): XColor => {
-  if (input instanceof XColor) {
-    return input; // 如果输入已经是 XColor 实例，直接返回
-  }
+  // 已有实例会被复制，并应用显式传入的选项。
   return new XColor(input, options);
 };
 
-// 导出 XColor 类型，供用户参考，但不直接导出 XColor 类
-export type { XColor } from './XColor';
+// 导出 XColor 类，常规使用推荐工厂函数。
 ```
 
 
@@ -164,7 +161,7 @@ class XColor {
 
 各种 to 方法，比如 `toRGB`, `toHex`, `toHSL` 等，会得到对应的输出格式，如 `RGB` 等。
 
-在 to 方法中，有特殊的 toString 方法，通过参数来返回不同显示结果，如 `toString('rgb')` 返回 RGB 格式的字符串，`toObject('hsl')` 返回 HSL 格式的对象等。需要确保输出结果的准确性和一致性。默认返回 hex 格式。 这些方法的参数应当是约束的聚合类型，而不是简单的 `string` 类型，以确保类型安全和正确性。在此情况下，因为插件的存在，需要运行时更新参数类型，而不能简单的只提示 `string` 类型。
+`toString('rgb')` 返回 RGB 字符串。`toObject()` 是 `toRgb()` 的别名，HSL 对象通过 `toHsl()` 获取。无参 `toString()` 对不透明色输出 hex，对透明色输出 RGBA 字符串。格式参数通过联合类型约束，插件导入后可增强类型，运行时通过 `use()` 注册格式。
 
 比如：
 

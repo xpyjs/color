@@ -10,7 +10,7 @@ An xcolor plugin is an object that implements the `XColorPlugin` interface:
 import type { XColorPlugin } from '@xpyjs/color'
 
 const myPlugin: XColorPlugin = {
-  name: 'my-plugin',          // unique identifier, used for deduplication
+  name: 'my-plugin',          // unique identifier for replacement
   install(option, cls, factory) {
     // cls       — the XColor class itself
     // factory   — the xcolor factory function (for creating instances inside the plugin)
@@ -21,7 +21,7 @@ const myPlugin: XColorPlugin = {
 export default myPlugin
 ```
 
-`install()` is called when `xcolor.use()` is invoked, and a plugin with the same name will only be installed once.
+Calling `xcolor.use()` runs `install()`. Reinstalling a plugin replaces its parser and formatter registrations after a successful install. Return a cleanup function to release additional resources when the plugin is replaced. Handle rollback of custom side effects inside the installer if it throws.
 
 ## Adding Instance Methods
 
@@ -59,6 +59,15 @@ If your plugin outputs a new string format, register it with `registerStringForm
 ```ts
 import { defineMethod, registerStringFormatter } from '@xpyjs/color'
 import type { XColorPlugin } from '@xpyjs/color'
+
+declare module '@xpyjs/color' {
+  interface XColor {
+    toMyString(): string
+  }
+  interface XColorStringFormatMap {
+    my: true
+  }
+}
 
 const myPlugin: XColorPlugin = {
   name: 'my-plugin',
@@ -131,6 +140,9 @@ unregister()
 The third argument of `install`, `factory`, is the `xcolor` factory function. Use it when your plugin needs to create color instances internally:
 
 ```ts
+import { defineMethod } from '@xpyjs/color'
+import type { XColorPlugin } from '@xpyjs/color'
+
 const plugin: XColorPlugin = {
   name: 'my-plugin',
   install(_option, cls, factory) {
@@ -292,3 +304,7 @@ const brightnessPlugin: XColorPlugin = {
 
 export default brightnessPlugin
 ```
+
+## Replacement and cleanup
+
+A same-name reinstall keeps its parser position. If installation throws, parser registrations, string formatters, and methods installed through `defineMethod()` are restored. The installer owns any direct mutations or external effects. Its optional cleanup callback releases resources after a successful replacement.

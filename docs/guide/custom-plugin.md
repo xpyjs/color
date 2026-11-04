@@ -10,7 +10,7 @@
 import type { XColorPlugin } from '@xpyjs/color'
 
 const myPlugin: XColorPlugin = {
-  name: 'my-plugin',          // 唯一标识，用于去重
+  name: 'my-plugin',          // 唯一标识，用于替换注册
   install(option, cls, factory) {
     // cls       — XColor 类本身
     // factory   — xcolor 工厂函数（可用于在插件内部创建实例）
@@ -21,7 +21,7 @@ const myPlugin: XColorPlugin = {
 export default myPlugin
 ```
 
-`install()` 在 `xcolor.use()` 时被调用，且同名插件只会安装一次。
+调用 `xcolor.use()` 会执行 `install()`。同名插件重装成功后会替换旧的解析器和格式化器。可返回清理函数，在插件被替换时释放其他资源。安装器抛错时，自定义副作用由安装器负责回滚。
 
 ## 添加实例方法
 
@@ -59,6 +59,15 @@ const myPlugin: XColorPlugin = {
 ```ts
 import { defineMethod, registerStringFormatter } from '@xpyjs/color'
 import type { XColorPlugin } from '@xpyjs/color'
+
+declare module '@xpyjs/color' {
+  interface XColor {
+    toMyString(): string
+  }
+  interface XColorStringFormatMap {
+    my: true
+  }
+}
 
 const myPlugin: XColorPlugin = {
   name: 'my-plugin',
@@ -131,6 +140,9 @@ unregister()
 `install` 的第三个参数 `factory` 是 `xcolor` 工厂函数。当你的插件需要内部创建颜色实例时使用它：
 
 ```ts
+import { defineMethod } from '@xpyjs/color'
+import type { XColorPlugin } from '@xpyjs/color'
+
 const plugin: XColorPlugin = {
   name: 'my-plugin',
   install(_option, cls, factory) {
@@ -292,3 +304,7 @@ const brightnessPlugin: XColorPlugin = {
 
 export default brightnessPlugin
 ```
+
+## 重装与清理
+
+同名插件重装时保留原来的解析位置。安装抛错时，库回滚解析器、字符串格式化器以及通过 `defineMethod()` 写入的方法。安装器自行管理直接修改和外部副作用。可返回清理函数，在成功替换时释放资源。

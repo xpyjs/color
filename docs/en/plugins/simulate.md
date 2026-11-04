@@ -13,7 +13,7 @@ xcolor.use(simulatePlugin)
 
 <SvgColorBlindness />
 
-Simulate a color vision deficiency. Modifies in place.
+Simulate a color vision deficiency. Returns a new color instance.
 
 | Mode | Description | Prevalence |
 | --- | --- | --- |

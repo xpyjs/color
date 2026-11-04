@@ -45,13 +45,13 @@ xcolor('#ff0000').gradient('#0000ff', 5).map(c => c.toHex())
 
 | 参数 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `steps` | `number` | `5` | 步数（≥ 2）|
+| `steps` | `number` | `5` | 每侧的色数（2–10000）|
 
 **返回值**：`XColor[]`
 
 ```ts
 xcolor('#3b82f6').tones(5).map(c => c.toHex())
-// 从深色到浅色的 5 步变化
+// 11 色，由 5 个暗色、原色和 5 个浅色组成
 ```
 
 <SvgTonesBar />

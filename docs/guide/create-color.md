@@ -151,3 +151,26 @@ xcolor({ c: 0, m: 100, y: 100, k: 0 }) // CMYK 对象
 ```
 
 详见 [插件系统](/guide/plugins)。
+
+## 输入与输出能力表
+
+表中列的是独立色值。插件格式需要先注册对应插件。对象列的「—」表示该模型没有对象输入。
+
+| 模型 | 插件 | 字符串输入与单位 | 对象输入 | Alpha | 格式键与 CSS 输出 |
+| --- | --- | --- | --- | --- | --- |
+| Hex | 核心 | 3、4、6、8 位十六进制，可省略 `#` | — | 4、8 位格式支持 | `hex`、`hex3`、`hex8` 输出 CSS Hex |
+| RGB | 核心 | `rgb()`、`rgba()`，通道用数字或百分比 | `{ r, g, b, a? }`，缺少的 RGB 通道为 0 | 字符串支持数字或百分比 | `rgb` 输出 CSS RGB |
+| HSL | 核心 | `hsl()`、`hsla()`，色相支持度数及 `deg`、`grad`、`rad`、`turn`，S/L 为 0–100 | `{ h, s, l, a? }` | 字符串支持数字或百分比 | `hsl` 输出 CSS HSL |
+| HSV | 核心 | `hsv()`、`hsva()`，角度同 HSL，S/V 为 0–100 | `{ h, s, v, a? }` | 字符串支持数字或百分比 | `hsv` 是库内写法 |
+| sRGB | 核心 | `color(srgb …)` 或 `srgb()`，0–1 或百分比 | — | 支持斜线 alpha | 使用 `rgb` 或 Hex 输出 |
+| 命名色 | `name` | CSS 命名色与 `transparent` | — | `transparent` 的 alpha 为 0 | `name` 可输出名称，无法匹配时回退到 Hex |
+| HWB | `hwb` | `hwb()`，角度同 HSL，W/B 为 0–100 | — | 支持斜线 alpha | `hwb` 输出 CSS HWB |
+| CMYK | `cmyk` | `cmyk()`，0–100 或百分比 | `{ c, m, y, k, a? }` | 支持可选 alpha | `cmyk` 是库内写法 |
+| Lab / LCH | `lab` | `lab()`、`lch()`，支持数字和各通道定义的百分比，LCH 色相支持角度单位 | — | 支持斜线 alpha | `lab`、`lch` 在 `whitePoint: 'D50'` 下使用 CSS 坐标 |
+| OKLab / OKLCh | `oklab` | `oklab()`、`oklch()`，支持数字和各通道定义的百分比，OKLCh 色相支持角度单位 | — | 支持斜线 alpha | `oklab`、`oklch` 输出 CSS 函数 |
+| 广色域 RGB 与 XYZ | `displayP3`、`a98Rgb`、`proPhotoRgb`、`rec2020`、`xyz` | `color()`，坐标为数字或百分比 | — | 支持斜线 alpha | 格式键同插件名，先经 sRGB 转换再输出 CSS `color()` |
+| 百分比 RGB | `percentageRgb` | 由核心 RGB 解析 | — | 使用 RGB 的 alpha 规则 | `percentageRgb` 输出百分比通道的 CSS RGB |
+
+对象 alpha 为 0–1。数字输入是 24 位 RGB 整数，alpha 默认为 1。调用方应先解析依赖上下文的 `currentColor` 和 `var(--brand)`，再传入确定的色值。xcolor 支持一部分 CSS 颜色语法，`calc()` 和以 `none` 表示的缺失通道需要另行处理。
+
+输入框可以用 `xcolor.isValidInput(value)` 静默校验。它使用已安装的解析器，空值返回 `false`，已有实例按 `isValid()` 判断。无参调用工厂依然会创建默认黑色。

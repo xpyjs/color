@@ -68,7 +68,7 @@ description: 涉及到整个库的核心设计原则、命名规范、API 设计
 > **重要**：所有修改方法（Setter）必须返回 `this`，以支持链式调用。这是本库的核心设计原则之一，确保用户能够流畅地进行多步颜色操作。
 
 - 所有修改方法（Setter）返回 `this`，支持链式调用
-- 所有操作**原地修改**当前实例（mutable），不创建新实例
+- 核心修改方法**原地修改**当前实例。配色、混合模式和模拟插件可以提供返回新实例的操作
 - 如需保留原始值，用户应主动调用 `.clone()`
 
 ### 获取颜色数据
@@ -124,7 +124,7 @@ description: 涉及到整个库的核心设计原则、命名规范、API 设计
 
 ### 与 tinycolor2 保持一致
 
-- 操作方法名和默认值与 tinycolor2 完全一致（lighten/darken/saturate/desaturate 默认值 = 10）
+- 常用操作方法名与 tinycolor2 类似，lighten/darken/saturate/desaturate 默认值为 10
 - 配色方案方法签名一致：`complement()`、`triad()`、`tetrad()`、`analogous(6, 30)`、`monochromatic(6)`、`splitComplement()`
 - **区别**：`toHex()` 始终返回带 `#` 的字符串（tinycolor2 的 `toHex()` 不带 `#`）
 
@@ -136,7 +136,7 @@ description: 涉及到整个库的核心设计原则、命名规范、API 设计
 
 ### 与 color 的差异
 
-- color 使用比例制（`lighten(0.2)` = 相对 20%）；我们使用绝对值（`lighten(20)` = +20 百分点）
+- xcolor 的 `lighten(20)` 沿 HSL 亮度到白色的剩余距离移动 20%。`darken(20)` 沿当前亮度到黑色的距离移动 20%。
 - color 是不可变的（Object.freeze）；我们是可变的（原地修改 + 链式调用）
 
 ---
@@ -148,9 +148,9 @@ description: 涉及到整个库的核心设计原则、命名规范、API 设计
 | 文件 | 格式 | 用途 |
 | --- | --- | --- |
 | `dist/index.esm.js` | ES Module | 现代打包工具 (Vite, webpack, Rollup) |
-| `dist/index.cjs.js` | CommonJS | Node.js `require()` |
+| `dist/index.cjs` | CommonJS | Node.js `require()` |
 | `dist/index.umd.js` | UMD | 浏览器 `<script>` 标签 |
-| `dist/types/` | `.d.ts` | TypeScript 类型定义 |
+| `dist/types/` | `.d.ts` / `.d.cts` | TypeScript 类型定义 |
 
 ### 支持的导入环境
 

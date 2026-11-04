@@ -2,6 +2,8 @@
 
 ProPhoto RGB wide gamut color space support. ProPhoto RGB has an extremely large gamut range, covering approximately 90% of human-visible colors, and is widely used in professional photography post-processing.
 
+Inputs are converted to sRGB and clipped to its gamut. Values outside sRGB lose information during a round trip.
+
 ## Install
 
 ```ts
@@ -42,3 +44,7 @@ xcolor('color(prophoto-rgb 0.70 0.28 0.10)').toHex()
 ```ts
 xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
 ```
+
+## Preserve the original coordinates
+
+Use the plugin's named exports for a wide-gamut value that stays in its original space. `parseWideColor(input)` returns `{ space, coordinates, alpha }` or `null`. `formatWideColor(record)` serializes those coordinates, and `toSrgb(record)` explicitly converts and clips them. Calling these functions needs no plugin registration.

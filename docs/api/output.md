@@ -130,3 +130,15 @@ xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 | `'hsv'` | `hsv(0, 100%, 100%)` |
 
 插件可以扩展更多格式，如注册 `cmyk` 插件后可使用 `toString('cmyk')`。
+
+## 精度与往返
+
+| 输出 | 精度和 alpha |
+| --- | --- |
+| `alpha()` | 返回实例保存的 alpha |
+| `toRgb()`、`toHsl()`、`toHsv()` 和对应数组 | alpha 保留两位小数。`toHslArray()` 为 `[h, s, l, a]`，`toHsvArray()` 为 `[h, s, v, a]`。 |
+| RGB、HSL、HSV 字符串 | 保留实例 alpha，HSL 和 HSV 的颜色坐标在字符串中取整 |
+| Hex | RGB 与 alpha 均量化为 8 位通道 |
+| `toNumber()` | RGB 取整，输出省略 alpha |
+
+例如 alpha 为 `0.004` 时，`toRgb().a` 返回 `0`，`toRgbString()` 保留 `0.004`。`useDecimal` 保留实例内的 RGB 小数，各输出仍按自己的精度规则处理。广色域输入转换到实例的 sRGB 通道时会裁剪，Lab/LCH 往返应使用同一个参考白点。
