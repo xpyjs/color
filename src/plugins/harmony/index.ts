@@ -69,6 +69,10 @@ declare module "@xpyjs/color" {
   }
 }
 
+function normalizeResults(results: number): number {
+  return Number.isFinite(results) ? Math.min(10000, Math.max(1, Math.floor(results))) : 6;
+}
+
 const harmony: XColorPlugin = {
   name: "@xpyjs/color/plugins/harmony",
   install(_option, cls, _factory) {
@@ -102,9 +106,9 @@ const harmony: XColorPlugin = {
     });
 
     defineMethod(cls, 'analogous', function (this: InstanceType<typeof cls>, results: number = 6, slices: number = 30) {
-      results = Math.max(1, results);
+      results = normalizeResults(results);
       const colors: InstanceType<typeof cls>[] = [];
-      const part = 360 / slices;
+      const part = 360 / (Number.isFinite(slices) && slices >= 1 ? Math.floor(slices) : 30);
       let hueOffset = 0;
 
       for (let i = 0; i < results; i++) {
@@ -115,7 +119,7 @@ const harmony: XColorPlugin = {
     });
 
     defineMethod(cls, 'monochromatic', function (this: InstanceType<typeof cls>, results: number = 6) {
-      results = Math.max(1, results);
+      results = normalizeResults(results);
       const colors: InstanceType<typeof cls>[] = [];
       const step = 100 / results;
 

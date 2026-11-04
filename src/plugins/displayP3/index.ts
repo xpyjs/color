@@ -1,12 +1,15 @@
+import { parseCoordinates, type WideColorRecord } from "../wide-color";
+export { formatWideColor } from "../wide-color";
+import { srgbToLinear, linearToSrgb, type Mat3, mat3Mul, SRGB_TO_XYZ, XYZ_TO_SRGB } from "../../color-math";
+import { alphaSuffix } from "../../tokens";
 // =======================================
 // Plugin: displayP3 - Display P3 color space
 // =======================================
 
-import type { XColorPlugin } from "@xpyjs/color";
+import type { RGBA, XColorPlugin } from "@xpyjs/color";
 import {
   registerStringFormatter,
   registerColorParser,
-  parseAlphaChannel,
   defineMethod,
   clamp
 } from "@xpyjs/color";
@@ -31,44 +34,7 @@ declare module "@xpyjs/color" {
   }
 }
 
-// ── sRGB transfer functions ──
-
-function srgbToLinear(c: number): number {
-  c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-
-function linearToSrgb(c: number): number {
-  return c <= 0.0031308
-    ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
-
-// ── Matrix helpers ──
-
-type Mat3 = [number, number, number, number, number, number, number, number, number];
-
-function mat3Mul(m: Mat3, x: number, y: number, z: number): [number, number, number] {
-  return [
-    m[0] * x + m[1] * y + m[2] * z,
-    m[3] * x + m[4] * y + m[5] * z,
-    m[6] * x + m[7] * y + m[8] * z
-  ];
-}
-
 // ── Matrices ──
-
-const SRGB_TO_XYZ: Mat3 = [
-  0.4123907993, 0.3575843394, 0.1804807884,
-  0.2126390059, 0.7151686788, 0.0721923154,
-  0.0193308187, 0.1191947798, 0.9505321522
-];
-
-const XYZ_TO_SRGB: Mat3 = [
-  3.2409699419, -1.5373831776, -0.4986107603,
-  -0.9692436363, 1.8759675015, 0.0415550574,
-  0.0556300797, -0.2039769589, 1.0569715142
-];
 
 const P3_TO_XYZ: Mat3 = [
   0.4865709486, 0.2656676932, 0.1982172852,
@@ -89,7 +55,43 @@ function round4(n: number): number {
 }
 
 function srgbChannelFromLinear(c: number): number {
-  return Math.round(clamp(linearToSrgb(c) * 255, 0, 255));
+  return clamp(linearToSrgb(c) * 255, 0, 255);
+}
+
+/** Color data retained in the original coordinate space. */
+export type WideColor = WideColorRecord<"display-p3">;
+
+/**
+ * Parse this plugin's CSS color() syntax without clipping its coordinates to sRGB.
+ * @param input - Color string
+ * @returns A wide-gamut record, or null for invalid syntax or another color space
+ */
+export function parseWideColor(input: string): WideColor | null {
+  return parseCoordinates(input, "display-p3");
+}
+
+/**
+ * Explicitly convert to sRGB, clipping out-of-gamut channels.
+ * @param color - A wide-gamut record from parseWideColor()
+ * @returns RGB channels in 0–255 and alpha in 0–1
+ */
+export function toSrgb(color: WideColor): RGBA {
+  const channels = color.coordinates;
+  // Linearize (Display P3 uses sRGB gamma)
+  const rl = channels[0] <= 0.04045 ? channels[0] / 12.92 : ((channels[0] + 0.055) / 1.055) ** 2.4;
+  const gl = channels[1] <= 0.04045 ? channels[1] / 12.92 : ((channels[1] + 0.055) / 1.055) ** 2.4;
+  const bl = channels[2] <= 0.04045 ? channels[2] / 12.92 : ((channels[2] + 0.055) / 1.055) ** 2.4;
+
+  // P3 → XYZ D65 → sRGB linear → sRGB
+  const [x, y, z] = mat3Mul(P3_TO_XYZ, rl, gl, bl);
+  const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
+
+  return {
+    r: srgbChannelFromLinear(sr),
+    g: srgbChannelFromLinear(sg),
+    b: srgbChannelFromLinear(sb),
+    a: color.alpha
+  };
 }
 
 const displayP3: XColorPlugin = {
@@ -97,34 +99,8 @@ const displayP3: XColorPlugin = {
   install(_option, cls, _factory) {
     // ── Parser for color(display-p3 r g b [/ a]) ──
     registerColorParser((value) => {
-      if (typeof value !== "string") return null;
-      const str = value.trim().toLowerCase();
-      if (!str.startsWith("color(") || !str.endsWith(")")) return null;
-
-      const inner = str.slice(6, -1).trim();
-      if (!inner.startsWith("display-p3")) return null;
-
-      const rest = inner.slice(10).trim();
-      const parts = rest.split("/").map(s => s.trim());
-      const channels = parts[0].split(/\s+/).map(Number);
-      if (channels.length < 3 || channels.some(isNaN)) return null;
-
-      // Linearize (Display P3 uses sRGB gamma)
-      const rl = channels[0] <= 0.04045 ? channels[0] / 12.92 : ((channels[0] + 0.055) / 1.055) ** 2.4;
-      const gl = channels[1] <= 0.04045 ? channels[1] / 12.92 : ((channels[1] + 0.055) / 1.055) ** 2.4;
-      const bl = channels[2] <= 0.04045 ? channels[2] / 12.92 : ((channels[2] + 0.055) / 1.055) ** 2.4;
-
-      // P3 → XYZ D65 → sRGB linear → sRGB
-      const [x, y, z] = mat3Mul(P3_TO_XYZ, rl, gl, bl);
-      const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
-
-      const alpha = parts[1] !== undefined ? parseAlphaChannel(parts[1].trim()) : 1;
-      return {
-        r: srgbChannelFromLinear(sr),
-        g: srgbChannelFromLinear(sg),
-        b: srgbChannelFromLinear(sb),
-        a: alpha
-      };
+      const color = typeof value === "string" ? parseWideColor(value) : null;
+      return color ? toSrgb(color) : null;
     });
 
     // ── Output methods ──
@@ -143,7 +119,7 @@ const displayP3: XColorPlugin = {
 
     defineMethod(cls, 'toDisplayP3String', function (this: InstanceType<typeof cls>): string {
       const { r, g, b } = this.toDisplayP3();
-      return `color(display-p3 ${r} ${g} ${b})`;
+      return `color(display-p3 ${r} ${g} ${b}${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "displayP3", color => color.toDisplayP3String());

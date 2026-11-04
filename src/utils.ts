@@ -1,3 +1,5 @@
+import { luminanceRatio } from "./color-math";
+import { onInstallRollback } from "./registration";
 // =======================================
 // Utility functions for @xpyjs/color
 // =======================================
@@ -97,12 +99,14 @@ function rgbNorm(r: number, g: number, b: number) {
  * @param r - Red channel (0-255)
  * @param g - Green channel (0-255)
  * @param b - Blue channel (0-255)
+ * @param useDecimal - Preserve full precision when true
  * @returns HSL object with h (0-360), s (0-100), l (0-100)
  */
-export function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+export function rgbToHsl(r: number, g: number, b: number, useDecimal = false): { h: number; s: number; l: number } {
   const { max, min, d, h } = rgbNorm(r, g, b);
   const l = (max + min) / 2;
   const s = d === 0 ? 0 : l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  if (useDecimal) return { h: h * 360, s: s * 100, l: l * 100 };
   return { h: round(h * 360, 2), s: round(s * 100, 2), l: round(l * 100, 2) };
 }
 
@@ -111,9 +115,10 @@ export function rgbToHsl(r: number, g: number, b: number): { h: number; s: numbe
  * @param h - Hue (0-360)
  * @param s - Saturation (0-100)
  * @param l - Lightness (0-100)
+ * @param useDecimal - Preserve fractional RGB channels when true
  * @returns RGB object with r, g, b (0-255)
  */
-export function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+export function hslToRgb(h: number, s: number, l: number, useDecimal = false): { r: number; g: number; b: number } {
   const hn = h / 360;
   const sn = s / 100;
   const ln = l / 100;
@@ -123,10 +128,10 @@ export function hslToRgb(h: number, s: number, l: number): { r: number; g: numbe
    * 恰好落在 x.5 上时会向下偏 1（例如 h=270 的 r 得 127 而非 128）。
    * 先加一个远大于该误差、又远小于 0.5 的 epsilon，保证半数按四舍五入进位。
    */
-  const toChannel = (value: number): number => Math.round(value * 255 + 1e-9);
+  const toChannel = (value: number): number => useDecimal ? value * 255 : Math.round(value * 255 + 1e-9);
 
   if (sn === 0) {
-    const val = Math.round(ln * 255);
+    const val = toChannel(ln);
     return { r: val, g: val, b: val };
   }
 
@@ -155,11 +160,13 @@ export function hslToRgb(h: number, s: number, l: number): { r: number; g: numbe
  * @param r - Red channel (0-255)
  * @param g - Green channel (0-255)
  * @param b - Blue channel (0-255)
+ * @param useDecimal - Preserve full precision when true
  * @returns HSV object with h (0-360), s (0-100), v (0-100)
  */
-export function rgbToHsv(r: number, g: number, b: number): { h: number; s: number; v: number } {
+export function rgbToHsv(r: number, g: number, b: number, useDecimal = false): { h: number; s: number; v: number } {
   const { max, d, h } = rgbNorm(r, g, b);
   const s = max === 0 ? 0 : d / max;
+  if (useDecimal) return { h: h * 360, s: s * 100, v: max * 100 };
   return { h: round(h * 360, 2), s: round(s * 100, 2), v: round(max * 100, 2) };
 }
 
@@ -168,9 +175,10 @@ export function rgbToHsv(r: number, g: number, b: number): { h: number; s: numbe
  * @param h - Hue (0-360)
  * @param s - Saturation (0-100)
  * @param v - Value/Brightness (0-100)
+ * @param useDecimal - Preserve fractional RGB channels when true
  * @returns RGB object with r, g, b (0-255)
  */
-export function hsvToRgb(h: number, s: number, v: number): { r: number; g: number; b: number } {
+export function hsvToRgb(h: number, s: number, v: number, useDecimal = false): { r: number; g: number; b: number } {
   const hn = h / 360;
   const sn = s / 100;
   const vn = v / 100;
@@ -192,6 +200,7 @@ export function hsvToRgb(h: number, s: number, v: number): { r: number; g: numbe
     default: r = 0; g = 0; b = 0;
   }
 
+  if (useDecimal) return { r: r * 255, g: g * 255, b: b * 255 };
   return {
     r: Math.round(r * 255),
     g: Math.round(g * 255),
@@ -262,7 +271,7 @@ export function clampByte(value: number): number {
 
 /**
  * Normalize a step count for gradient/scale operations.
- * Ensures the result is an integer >= 2.
+ * Ensures the result is an integer from 2 to 10000.
  * @param steps - Requested step count
  * @param fallback - Default value if steps is not finite (default 5)
  * @returns Normalized step count (integer >= 2)
@@ -271,8 +280,7 @@ export function clampByte(value: number): number {
  * @example normalizeSteps(1) // 2
  */
 export function normalizeSteps(steps: number | undefined, fallback: number = 5): number {
-  if (!Number.isFinite(steps as number)) return fallback;
-  return Math.max(2, Math.floor(steps as number));
+  return Math.min(10000, Math.max(2, Math.floor(Number.isFinite(steps) ? steps! : Number.isFinite(fallback) ? fallback : 5)));
 }
 
 // ---- Luminance & Contrast ----
@@ -301,9 +309,7 @@ export function relativeLuminance(r: number, g: number, b: number): number {
  * @see https://www.w3.org/TR/WCAG20/#contrast-ratiodef
  */
 export function contrastRatio(lum1: number, lum2: number): number {
-  const lighter = Math.max(lum1, lum2);
-  const darker = Math.min(lum1, lum2);
-  return round((lighter + 0.05) / (darker + 0.05), 2);
+  return round(luminanceRatio(lum1, lum2), 2);
 }
 
 /**
@@ -315,15 +321,20 @@ export function contrastRatio(lum1: number, lum2: number): number {
  * @param name - The method name to add
  * @param fn - The method implementation (must use `function`, not arrow syntax, to receive `this`)
  */
-export function defineMethod(
-  cls: new (...args: any[]) => any,
+export function defineMethod<T extends object>(
+  cls: { prototype: T },
   name: string,
-  fn: Function
+  fn: (this: T, ...args: any[]) => unknown
 ): void {
+  const previous = Object.getOwnPropertyDescriptor(cls.prototype, name);
   Object.defineProperty(cls.prototype, name, {
     value: fn,
     writable: true,
     configurable: true,
     enumerable: false
+  });
+  onInstallRollback(() => {
+    if (previous) Object.defineProperty(cls.prototype, name, previous);
+    else Reflect.deleteProperty(cls.prototype, name);
   });
 }

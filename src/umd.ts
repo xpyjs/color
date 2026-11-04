@@ -16,34 +16,11 @@ import {
   parseRgbChannel, parseAlphaChannel, parsePercent, parseHue
 } from "./parse";
 
-const exp = xcolor as typeof xcolor & Record<string, unknown>;
-
-// Core class
-exp.XColor = XColor;
-exp.registerStringFormatter = registerStringFormatter;
-
-// Parse pipeline
-exp.parseColor = parseColor;
-exp.registerColorParser = registerColorParser;
-exp.parseFunctionalChannels = parseFunctionalChannels;
-exp.parseRgbChannel = parseRgbChannel;
-exp.parseAlphaChannel = parseAlphaChannel;
-exp.parsePercent = parsePercent;
-exp.parseHue = parseHue;
-
-// Utilities
-exp.clamp = clamp;
-exp.round = round;
-exp.clampByte = clampByte;
-exp.normalizeSteps = normalizeSteps;
-exp.rgbaToHex = rgbaToHex;
-exp.rgbToHsl = rgbToHsl;
-exp.hslToRgb = hslToRgb;
-exp.rgbToHsv = rgbToHsv;
-exp.hsvToRgb = hsvToRgb;
-exp.relativeLuminance = relativeLuminance;
-exp.contrastRatio = contrastRatio;
-exp.defineMethod = defineMethod;
-exp.Logger = Logger;
-
-export default exp;
+export default Object.assign(xcolor, {
+  XColor, registerStringFormatter,
+  parseColor, registerColorParser, parseFunctionalChannels,
+  parseRgbChannel, parseAlphaChannel, parsePercent, parseHue,
+  clamp, round, clampByte, normalizeSteps, rgbaToHex,
+  rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb,
+  relativeLuminance, contrastRatio, defineMethod, Logger
+});

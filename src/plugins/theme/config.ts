@@ -2,6 +2,7 @@
 // Plugin: theme - Configuration resolver
 // =======================================
 
+import type { XColor } from "@xpyjs/color";
 import type { XColorThemeOptions, ColorConfig, Shade, ThemeResult } from "./types";
 import { DEFAULT_SHADES } from "./types";
 import { generatePalette } from "@xpyjs/color/plugins/palette/generate";
@@ -14,7 +15,7 @@ import { resolveDeriveOptions, deriveRoleColors } from "./derive";
  * Check whether a ColorConfig object has a DEFAULT base color.
  */
 function hasDefault(config: ColorConfig): config is { DEFAULT: string; [key: string]: string | ColorConfig } {
-  return typeof config === "object" && typeof (config as any).DEFAULT === "string";
+  return config !== null && typeof config === "object" && typeof (config as any).DEFAULT === "string";
 }
 
 /**
@@ -48,7 +49,7 @@ export function flattenColors(
 
     if (typeof value === "string") {
       result[varName] = value;
-    } else {
+    } else if (value && typeof value === "object") {
       // Recurse into nested objects
       var nested = flattenColors(value as Record<string, string | ColorConfig>, varName);
       var nkeys = Object.keys(nested);
@@ -104,13 +105,11 @@ export function normalizePrefix(raw?: string): string {
  *
  * @param options - Theme configuration
  * @param cls - XColor class constructor
- * @param factory - xcolor factory function
  * @returns ThemeResult with CSS string, variable map, and color palettes
  */
 export function resolveThemeConfig(
   options: XColorThemeOptions,
-  cls: new (...args: any[]) => any,
-  factory: (...args: any[]) => any
+  cls: typeof XColor
 ): ThemeResult {
   var prefix = normalizePrefix(options.prefix);
   var type = options.type || "antd";
@@ -145,7 +144,7 @@ export function resolveThemeConfig(
 
     if (baseColor) {
       // Generate palette from base color
-      var base = new (cls as any)(baseColor);
+      var base = new cls(baseColor);
       var palette = generatePalette(base, type, shades, cls);
       colorPalettes[colorName] = palette;
 
@@ -164,7 +163,7 @@ export function resolveThemeConfig(
         var semanticColors = generateSemantic(palette, shades);
 
         // If the value is an object, user overrides take priority
-        if (typeof colorValue === "object") {
+        if (colorValue && typeof colorValue === "object") {
           var userOverrides = flattenColors(colorValue as Record<string, string | ColorConfig>, colorPrefix);
           var okeys = Object.keys(userOverrides);
           for (var oi = 0; oi < okeys.length; oi++) {
@@ -186,7 +185,7 @@ export function resolveThemeConfig(
             vars[colorPrefix + "-" + semKeys2[ski2]] = semanticColors[semKeys2[ski2]];
           }
         }
-      } else if (typeof colorValue === "object") {
+      } else if (colorValue && typeof colorValue === "object") {
         // No semantic but has user overrides
         var userOnly = flattenColors(colorValue as Record<string, string | ColorConfig>, colorPrefix);
         var ukeys = Object.keys(userOnly);
@@ -196,7 +195,7 @@ export function resolveThemeConfig(
       }
 
       // Dark mode
-      if (darkMode) {
+      if (darkMode && palette.length > 0) {
         var darkPalette = generateDarkPalette(palette, shades, cls);
         for (var di = 0; di < shades.length; di++) {
           darkVars[colorPrefix + "-" + shades[di]] = darkPalette[di].toHex();
@@ -214,7 +213,7 @@ export function resolveThemeConfig(
       }
     } else {
       // No base color — pure custom nesting, just flatten
-      if (typeof colorValue === "object") {
+      if (colorValue && typeof colorValue === "object") {
         var custom = flattenColors(colorValue as Record<string, string | ColorConfig>, colorPrefix);
         var ckeys = Object.keys(custom);
         for (var cki = 0; cki < ckeys.length; cki++) {
@@ -224,7 +223,7 @@ export function resolveThemeConfig(
     }
   }
 
-  var css = buildCssString(vars, darkMode ? darkVars : null, options);
+  var css = buildCssString(vars, darkMode ? darkVars : null, options, cls);
 
   return { css: css, vars: vars, colors: colorPalettes };
 }

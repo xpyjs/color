@@ -36,10 +36,11 @@ export interface XColorPlugin<T = unknown> {
    *
    * @param option  - Optional configuration object forwarded from the `use()` / `extend()` call.
    * @param cls     - The `XColor` class itself. Use `cls.prototype` to add instance methods.
+   * @returns An optional cleanup function called when a replacement is installed.
    * @param factory - The `xcolor` factory function, useful when the plugin needs
    *   to construct new `XColor` instances internally.
    */
-  install(option: T, cls: typeof XColor, factory: typeof xcolor): void;
+  install(option: T, cls: typeof XColor, factory: typeof xcolor): void | (() => void);
   /** Allow arbitrary metadata fields for plugin authors. */
   [key: string]: unknown;
 }

@@ -1,12 +1,15 @@
+import { parseCoordinates, type WideColorRecord } from "../wide-color";
+export { formatWideColor } from "../wide-color";
+import { srgbToLinear, linearToSrgb, type Mat3, mat3Mul, SRGB_TO_XYZ, XYZ_TO_SRGB, D65_TO_D50, D50_TO_D65 } from "../../color-math";
+import { alphaSuffix } from "../../tokens";
 // =======================================
 // Plugin: xyz - CIE XYZ color space (D65 / D50)
 // =======================================
 
-import type { XColorPlugin } from "@xpyjs/color";
+import type { RGBA, XColorPlugin } from "@xpyjs/color";
 import {
   registerStringFormatter,
   registerColorParser,
-  parseAlphaChannel,
   defineMethod,
   clamp
 } from "@xpyjs/color";
@@ -37,56 +40,7 @@ declare module "@xpyjs/color" {
   }
 }
 
-// ── sRGB transfer functions ──
-
-function srgbToLinear(c: number): number {
-  c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-
-function linearToSrgb(c: number): number {
-  return c <= 0.0031308
-    ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
-
-// ── Matrix helpers ──
-
-type Mat3 = [number, number, number, number, number, number, number, number, number];
-
-function mat3Mul(m: Mat3, x: number, y: number, z: number): [number, number, number] {
-  return [
-    m[0] * x + m[1] * y + m[2] * z,
-    m[3] * x + m[4] * y + m[5] * z,
-    m[6] * x + m[7] * y + m[8] * z
-  ];
-}
-
 // ── Matrices ──
-
-const SRGB_TO_XYZ: Mat3 = [
-  0.4123907993, 0.3575843394, 0.1804807884,
-  0.2126390059, 0.7151686788, 0.0721923154,
-  0.0193308187, 0.1191947798, 0.9505321522
-];
-
-const XYZ_TO_SRGB: Mat3 = [
-  3.2409699419, -1.5373831776, -0.4986107603,
-  -0.9692436363, 1.8759675015, 0.0415550574,
-  0.0556300797, -0.2039769589, 1.0569715142
-];
-
-const D65_TO_D50: Mat3 = [
-  1.0479298208, 0.0228474276, -0.0501922295,
-  0.0296278156, 0.9904344267, -0.0170738250,
-  -0.0092430581, 0.0150551448, 0.7521316354
-];
-
-const D50_TO_D65: Mat3 = [
-  0.9554734528, -0.0230985369, 0.0632593086,
-  -0.0283697069, 1.0099954580, 0.0210077073,
-  0.0123140016, -0.0205076964, 1.3303659366
-];
 
 // ── Conversion utilities ──
 
@@ -95,7 +49,39 @@ function round4(n: number): number {
 }
 
 function srgbChannelFromLinear(c: number): number {
-  return Math.round(clamp(linearToSrgb(c) * 255, 0, 255));
+  return clamp(linearToSrgb(c) * 255, 0, 255);
+}
+
+/** Color data retained in the original coordinate space. */
+export type WideColor = WideColorRecord<"xyz-d50" | "xyz-d65" | "xyz">;
+
+/**
+ * Parse this plugin's CSS color() syntax without clipping its coordinates to sRGB.
+ * @param input - Color string
+ * @returns A wide-gamut record, or null for invalid syntax or another color space
+ */
+export function parseWideColor(input: string): WideColor | null {
+  return parseCoordinates(input, "xyz-d50") ?? parseCoordinates(input, "xyz-d65") ?? parseCoordinates(input, "xyz");
+}
+
+/**
+ * Explicitly convert to sRGB, clipping out-of-gamut channels.
+ * @param color - A wide-gamut record from parseWideColor()
+ * @returns RGB channels in 0–255 and alpha in 0–1
+ */
+export function toSrgb(color: WideColor): RGBA {
+  let [x, y, z] = color.coordinates;
+  if (color.space === "xyz-d50") {
+    [x, y, z] = mat3Mul(D50_TO_D65, x, y, z);
+  }
+
+  const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
+  return {
+    r: srgbChannelFromLinear(sr),
+    g: srgbChannelFromLinear(sg),
+    b: srgbChannelFromLinear(sb),
+    a: color.alpha
+  };
 }
 
 const xyz: XColorPlugin = {
@@ -103,43 +89,8 @@ const xyz: XColorPlugin = {
   install(_option, cls, _factory) {
     // ── Parser for color(xyz ...) / color(xyz-d65 ...) / color(xyz-d50 ...) ──
     registerColorParser((value) => {
-      if (typeof value !== "string") return null;
-      const str = value.trim().toLowerCase();
-      if (!str.startsWith("color(") || !str.endsWith(")")) return null;
-
-      const inner = str.slice(6, -1).trim();
-      if (!inner.startsWith("xyz")) return null;
-
-      let rest: string;
-      let isD50 = false;
-      if (inner.startsWith("xyz-d50")) {
-        rest = inner.slice(7).trim();
-        isD50 = true;
-      } else if (inner.startsWith("xyz-d65")) {
-        rest = inner.slice(7).trim();
-      } else if (inner.startsWith("xyz ") || inner.startsWith("xyz/")) {
-        rest = inner.slice(3).trim();
-      } else {
-        return null;
-      }
-
-      const parts = rest.split("/").map(s => s.trim());
-      const channels = parts[0].split(/\s+/).map(Number);
-      if (channels.length < 3 || channels.some(isNaN)) return null;
-
-      let [x, y, z] = channels;
-      if (isD50) {
-        [x, y, z] = mat3Mul(D50_TO_D65, x, y, z);
-      }
-
-      const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
-      const alpha = parts[1] !== undefined ? parseAlphaChannel(parts[1].trim()) : 1;
-      return {
-        r: srgbChannelFromLinear(sr),
-        g: srgbChannelFromLinear(sg),
-        b: srgbChannelFromLinear(sb),
-        a: alpha
-      };
+      const color = typeof value === "string" ? parseWideColor(value) : null;
+      return color ? toSrgb(color) : null;
     });
 
     // ── Output methods ──
@@ -156,7 +107,7 @@ const xyz: XColorPlugin = {
 
     defineMethod(cls, 'toXyzString', function (this: InstanceType<typeof cls>, illuminant: "D65" | "D50" = "D65"): string {
       const { x, y, z } = this.toXyz(illuminant);
-      return `color(${illuminant === "D50" ? "xyz-d50" : "xyz-d65"} ${x} ${y} ${z})`;
+      return `color(${illuminant === "D50" ? "xyz-d50" : "xyz-d65"} ${x} ${y} ${z}${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "xyz", color => color.toXyzString());

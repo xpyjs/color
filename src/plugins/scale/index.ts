@@ -1,3 +1,4 @@
+import { interpolate, srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb } from "../../color-math";
 // =======================================
 // Plugin: scale - Interpolation and color scales
 // =======================================
@@ -8,12 +9,13 @@ import { normalizeSteps, defineMethod } from "@xpyjs/color";
 /**
  * Color interpolation space for the scale plugin.
  *
- * - `"rgb"` — Interpolate directly in RGB space (default). Produces a
- *   perceptually even spread but may pass through grey for complementary colors.
+ * - `"rgb"` — Interpolate directly in RGB space (default). Uses equal channel increments and may pass through grey for complementary colors.
  * - `"hsl"` — Interpolate in HSL space with shortest-path hue interpolation.
  *   Tends to produce more vibrant intermediate colors.
+ * - `"srgb-linear"` — Interpolate linear-light sRGB channels.
+ * - `"oklab"` — Interpolate OKLab coordinates.
  */
-type ScaleSpace = "rgb" | "hsl";
+type ScaleSpace = "rgb" | "hsl" | "srgb-linear" | "oklab";
 
 /**
  * Easing function applied to the interpolation factor `t ∈ [0, 1]`.
@@ -29,12 +31,14 @@ type ScaleEasing = "linear" | "easeIn" | "easeOut" | "easeInOut";
  * Options for {@link XColor.scale} and {@link XColor.at}.
  */
 interface ScaleOptions {
-  /** Number of colors to generate including start and end (default `5`, minimum `2`). */
+  /** Number of colors to generate including start and end (default `5`, range `2–10000`). */
   steps?: number;
   /** Color space for interpolation (default `"rgb"`). See {@link ScaleSpace}. */
   space?: ScaleSpace;
   /** Easing function for the interpolation factor (default `"linear"`). See {@link ScaleEasing}. */
   easing?: ScaleEasing;
+  /** Weight interpolated coordinates by opacity. Defaults to false. */
+  premultiplyAlpha?: boolean;
 }
 
 declare module "@xpyjs/color" {
@@ -43,9 +47,10 @@ declare module "@xpyjs/color" {
      * Interpolate to another color and return a color list.
      * @param to - Target color to interpolate towards
      * @param options - Interpolation options
-     * @param options.steps - Number of colors to generate (default 5, minimum 2)
-     * @param options.space - Color space for interpolation: `"rgb"` (default) or `"hsl"`
+     * @param options.steps - Number of colors to generate (default 5, range 2-10000)
+     * @param options.space - Color space for interpolation (default `"rgb"`)
      * @param options.easing - Easing function: `"linear"` (default), `"easeIn"`, `"easeOut"`, `"easeInOut"`
+     * @param options.premultiplyAlpha - Weight coordinates by opacity (default false)
      * @returns Array of new XColor instances
      * @example
      * ```ts
@@ -86,11 +91,20 @@ function clamp01(v: number): number {
 const scale: XColorPlugin = {
   name: "@xpyjs/color/plugins/scale",
   install(_option, cls, _factory) {
-    defineMethod(cls, 'at', function (this: InstanceType<typeof cls>, to: XColorInput, t: number, options: Omit<ScaleOptions, "steps"> = {}) {
-      const target = new cls(to);
-      const tt = (easingMap[options.easing || "linear"] || easingMap.linear)(clamp01(t));
+    function at(this: InstanceType<typeof cls>, target: InstanceType<typeof cls>, t: number, options: Omit<ScaleOptions, "steps">) {
+      const position = clamp01(t);
+      if (position === 0) return this.clone();
+      if (position === 1) return target.clone();
+
+      const easing = options.easing ?? "linear";
+      const tt = Object.prototype.hasOwnProperty.call(easingMap, easing)
+        ? easingMap[easing](position)
+        : position;
       const space = options.space || "rgb";
       const opts = this._opts;
+      const alpha = interpolate(this.alpha(), target.alpha(), tt);
+      const colorPosition = options.premultiplyAlpha && alpha > 0 ? target.alpha() * tt / alpha : tt;
+      const channel = (start: number, end: number) => interpolate(start, end, colorPosition);
 
       if (space === "hsl") {
         const start = this.toHsl();
@@ -101,28 +115,41 @@ const scale: XColorPlugin = {
         if (dh < -180) dh += 360;
 
         const h = (start.h + dh * tt + 360) % 360;
-        const s = start.s + (end.s - start.s) * tt;
-        const l = start.l + (end.l - start.l) * tt;
-        const a = this.alpha() + (target.alpha() - this.alpha()) * tt;
+        const s = start.s + (end.s - start.s) * colorPosition;
+        const l = start.l + (end.l - start.l) * colorPosition;
 
-        return new cls(undefined, opts).hsl(h, s, l, a);
+        return new cls(undefined, opts).hsl(h, s, l, alpha);
       }
 
-      const r = this.red() + (target.red() - this.red()) * tt;
-      const g = this.green() + (target.green() - this.green()) * tt;
-      const b = this.blue() + (target.blue() - this.blue()) * tt;
-      const a = this.alpha() + (target.alpha() - this.alpha()) * tt;
+      if (space === "oklab") {
+        const start = rgbToOklab(this.red(), this.green(), this.blue());
+        const end = rgbToOklab(target.red(), target.green(), target.blue());
+        const rgb = oklabToRgb(channel(start.l, end.l), channel(start.a, end.a), channel(start.b, end.b));
+        return new cls({ ...rgb, a: alpha }, opts);
+      }
+      const mix = space === "srgb-linear"
+        ? (start: number, end: number) => linearToSrgb(channel(srgbToLinear(start), srgbToLinear(end))) * 255
+        : channel;
+      return new cls({
+        r: mix(this.red(), target.red()),
+        g: mix(this.green(), target.green()),
+        b: mix(this.blue(), target.blue()),
+        a: alpha
+      }, opts);
+    }
 
-      return new cls({ r, g, b, a }, opts);
+    defineMethod(cls, 'at', function (this: InstanceType<typeof cls>, to: XColorInput, t: number, options: Omit<ScaleOptions, "steps"> = {}) {
+      return at.call(this, new cls(to, to instanceof cls ? undefined : this._opts), t, options);
     });
 
     defineMethod(cls, 'scale', function (this: InstanceType<typeof cls>, to: XColorInput, options: ScaleOptions = {}) {
+      const target = new cls(to, to instanceof cls ? undefined : this._opts);
       const steps = normalizeSteps(options.steps);
       const list: InstanceType<typeof cls>[] = [];
 
       for (let i = 0; i < steps; i++) {
         const t = i / (steps - 1);
-        list.push(this.at(to, t, options));
+        list.push(at.call(this, target, t, options));
       }
 
       return list;

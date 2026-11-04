@@ -3,7 +3,7 @@
 // =======================================
 
 import type { XColorPlugin, XColorInput } from "@xpyjs/color";
-import { clampByte, Logger, defineMethod } from "@xpyjs/color";
+import { Logger, defineMethod } from "@xpyjs/color";
 
 /**
  * Photoshop-compatible layer blend modes.
@@ -30,6 +30,7 @@ import { clampByte, Logger, defineMethod } from "@xpyjs/color";
  * ```
  */
 type BlendMode =
+  | "normal"
   | "multiply"
   | "screen"
   | "overlay"
@@ -62,14 +63,15 @@ declare module "@xpyjs/color" {
 }
 
 const blendFunctions: Record<BlendMode, (a: number, b: number) => number> = {
+  normal: (_a, b) => b,
   multiply: (a, b) => (a * b) / 255,
   screen: (a, b) => a + b - (a * b) / 255,
   overlay: (a, b) =>
     a < 128 ? (2 * a * b) / 255 : 255 - (2 * (255 - a) * (255 - b)) / 255,
   darken: (a, b) => Math.min(a, b),
   lighten: (a, b) => Math.max(a, b),
-  dodge: (a, b) => (b === 255 ? 255 : Math.min(255, (a * 255) / (255 - b))),
-  burn: (a, b) => (b === 0 ? 0 : Math.max(0, 255 - ((255 - a) * 255) / b)),
+  dodge: (a, b) => (a === 0 ? 0 : b === 255 ? 255 : Math.min(255, (a * 255) / (255 - b))),
+  burn: (a, b) => (a === 255 ? 255 : b === 0 ? 0 : Math.max(0, 255 - ((255 - a) * 255) / b)),
   hardLight: (a, b) =>
     b < 128 ? (2 * a * b) / 255 : 255 - (2 * (255 - a) * (255 - b)) / 255,
   softLight: (a, b) => {
@@ -89,29 +91,31 @@ const blend: XColorPlugin = {
   name: "@xpyjs/color/plugins/blend",
   install(_option, cls, _factory) {
     defineMethod(cls, 'blend', function (this: InstanceType<typeof cls>, color: XColorInput, mode: BlendMode) {
-      const other = new cls(color);
+      const other = new cls(color, color instanceof cls ? undefined : this._opts);
       const fn = blendFunctions[mode];
 
-      if (!fn) {
+      if (!Object.prototype.hasOwnProperty.call(blendFunctions, mode)) {
         throw Logger.createError(`Unknown blend mode: ${mode}`);
       }
 
       const result = this.clone();
-
+      const baseAlpha = this.alpha();
       const srcAlpha = other.alpha();
-      const outAlpha = this.alpha() + srcAlpha * (1 - this.alpha());
+      if (srcAlpha === 0) return result;
 
+      const baseWeight = baseAlpha * (1 - srcAlpha);
+      const outAlpha = srcAlpha + baseWeight;
       const blendChannel = (base: number, src: number) => {
-        const blended = fn(base, src);
-        return clampByte(base * (1 - srcAlpha) + blended * srcAlpha);
+        const mixedSource = (1 - baseAlpha) * src + baseAlpha * fn(base, src);
+        return (srcAlpha * mixedSource + baseWeight * base) / outAlpha;
       };
 
-      result.red(blendChannel(this.red(), other.red()));
-      result.green(blendChannel(this.green(), other.green()));
-      result.blue(blendChannel(this.blue(), other.blue()));
-      result.alpha(Math.min(1, Math.max(0, outAlpha)));
-
-      return result;
+      return result.rgb(
+        blendChannel(this.red(), other.red()),
+        blendChannel(this.green(), other.green()),
+        blendChannel(this.blue(), other.blue()),
+        outAlpha
+      );
     });
   }
 };

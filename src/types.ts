@@ -1,7 +1,7 @@
 /**
  * RGBA color object.
  *
- * - `r`, `g`, `b` are integers in `0–255`
+ * - `r`, `g`, `b` are numbers in `0–255`
  * - `a` (alpha) is a float in `0–1`, where `0` = fully transparent, `1` = fully opaque
  *
  * @example
@@ -11,11 +11,11 @@
  * ```
  */
 export interface RGBA {
-  /** Red channel — integer `0` (no red) to `255` (full red) */
+  /** Red channel — number `0` (no red) to `255` (full red) */
   r: number;
-  /** Green channel — integer `0` (no green) to `255` (full green) */
+  /** Green channel — number `0` (no green) to `255` (full green) */
   g: number;
-  /** Blue channel — integer `0` (no blue) to `255` (full blue) */
+  /** Blue channel — number `0` (no blue) to `255` (full blue) */
   b: number;
   /** Alpha (opacity) — float `0` (fully transparent) to `1` (fully opaque) */
   a: number;

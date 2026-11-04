@@ -3,7 +3,7 @@
 // =======================================
 
 import type { XColorPlugin } from "@xpyjs/color";
-import { clampByte, Logger, defineMethod } from "@xpyjs/color";
+import { Logger, defineMethod } from "@xpyjs/color";
 
 /**
  * Color vision deficiency modes for the simulate plugin.
@@ -75,7 +75,7 @@ const simulate: XColorPlugin = {
       }
 
       const matrix = MATRICES[mode as Exclude<SimulateMode, "grayscale">];
-      if (!matrix) {
+      if (!Object.prototype.hasOwnProperty.call(MATRICES, mode)) {
         Logger.warn(`Unknown simulate mode: "${mode}", returning clone.`);
         return this.clone();
       }
@@ -84,9 +84,9 @@ const simulate: XColorPlugin = {
       const g = this.green();
       const b = this.blue();
 
-      const nr = clampByte(r * matrix[0][0] + g * matrix[0][1] + b * matrix[0][2]);
-      const ng = clampByte(r * matrix[1][0] + g * matrix[1][1] + b * matrix[1][2]);
-      const nb = clampByte(r * matrix[2][0] + g * matrix[2][1] + b * matrix[2][2]);
+      const nr = r * matrix[0][0] + g * matrix[0][1] + b * matrix[0][2];
+      const ng = r * matrix[1][0] + g * matrix[1][1] + b * matrix[1][2];
+      const nb = r * matrix[2][0] + g * matrix[2][1] + b * matrix[2][2];
 
       return new cls({ r: nr, g: ng, b: nb, a: this.alpha() }, this._opts);
     });

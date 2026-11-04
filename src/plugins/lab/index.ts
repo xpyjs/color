@@ -1,3 +1,6 @@
+import { D65_TO_D50, D50_TO_D65, mat3Mul } from "../../color-math";
+import { srgbToLinear, linearToSrgb } from "../../color-math";
+import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 // =======================================
 // Plugin: lab - CIE Lab & LCH color space support
 // =======================================
@@ -119,17 +122,15 @@ declare module "@xpyjs/color" {
   }
 }
 
-// D65 reference white
-const Xn = 0.950489;
-const Yn = 1.0;
-const Zn = 1.08884;
+export interface LabOptions {
+  /** Reference white for Lab and LCH. D50 matches CSS Color 4. Defaults to D65. */
+  whitePoint?: "D65" | "D50";
+}
+
+const WHITE_D65: [number, number, number] = [0.950489, 1, 1.08884];
+const WHITE_D50: [number, number, number] = [0.9642956764, 1, 0.8251046025];
 
 // ── Forward pipeline: RGB → XYZ → Lab ──
-
-function srgbToLinear(c: number): number {
-  c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
 
 function rgbToXyz(r: number, g: number, b: number): [number, number, number] {
   const rl = srgbToLinear(r);
@@ -150,7 +151,7 @@ function labF(t: number): number {
     : t / (3 * delta * delta) + 4 / 29;
 }
 
-function xyzToLab(x: number, y: number, z: number): Lab {
+function xyzToLab([x, y, z]: [number, number, number], [Xn, Yn, Zn]: [number, number, number]): Lab {
   const fx = labF(x / Xn);
   const fy = labF(y / Yn);
   const fz = labF(z / Zn);
@@ -171,18 +172,12 @@ function labFInv(t: number): number {
     : 3 * delta * delta * (t - 4 / 29);
 }
 
-function labToXyz(l: number, a: number, b: number): [number, number, number] {
+function labToXyz(l: number, a: number, b: number, [Xn, Yn, Zn]: [number, number, number]): [number, number, number] {
   const fy = (l + 16) / 116;
   const fx = a / 500 + fy;
   const fz = fy - b / 200;
 
   return [Xn * labFInv(fx), Yn * labFInv(fy), Zn * labFInv(fz)];
-}
-
-function linearToSrgb(c: number): number {
-  return c <= 0.0031308
-    ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
 }
 
 function xyzToRgb(x: number, y: number, z: number): { r: number; g: number; b: number } {
@@ -191,15 +186,10 @@ function xyzToRgb(x: number, y: number, z: number): { r: number; g: number; b: n
   const bl = 0.0556434 * x - 0.2040259 * y + 1.0572252 * z;
 
   return {
-    r: Math.round(clamp(linearToSrgb(rl) * 255, 0, 255)),
-    g: Math.round(clamp(linearToSrgb(gl) * 255, 0, 255)),
-    b: Math.round(clamp(linearToSrgb(bl) * 255, 0, 255))
+    r: clamp(linearToSrgb(rl) * 255, 0, 255),
+    g: clamp(linearToSrgb(gl) * 255, 0, 255),
+    b: clamp(linearToSrgb(bl) * 255, 0, 255)
   };
-}
-
-function labToRgb(l: number, a: number, b: number): { r: number; g: number; b: number } {
-  const [x, y, z] = labToXyz(l, a, b);
-  return xyzToRgb(x, y, z);
 }
 
 // ── LCH ↔ Lab conversions ──
@@ -224,25 +214,26 @@ function lchToLab(l: number, c: number, h: number): Lab {
   };
 }
 
-function lchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
-  const labVal = lchToLab(l, c, h);
-  return labToRgb(labVal.l, labVal.a, labVal.b);
-}
-
-const lab: XColorPlugin = {
+const lab: XColorPlugin<LabOptions> = {
   name: "@xpyjs/color/plugins/lab",
-  install(_option, cls, _factory) {
+  install(option, cls, _factory) {
+    const d50 = option?.whitePoint === "D50";
+    const white = d50 ? WHITE_D50 : WHITE_D65;
+
+    function labToRgb(l: number, a: number, b: number) {
+      const xyz = labToXyz(d50 ? clamp(l, 0, 100) : l, a, b, white);
+      return xyzToRgb(...(d50 ? mat3Mul(D50_TO_D65, ...xyz) : xyz));
+    }
     // ── Lab string parser: lab(L a b) or lab(L a b / alpha) ──
     registerColorParser((value) => {
       if (typeof value !== "string") return null;
       const res = parseFunctionalChannels(value, "lab", 3);
       if (!res) return null;
       // L can be percentage (0-100%), a and b are numbers
-      let l = parseFloat(res.channels[0]);
-      if (res.channels[0].endsWith("%")) l = parseFloat(res.channels[0]);
-      const a = parseFloat(res.channels[1]);
-      const b = parseFloat(res.channels[2]);
-      if (isNaN(l) || isNaN(a) || isNaN(b)) return null;
+      const l = numericToken(res.channels[0], 100);
+      const a = numericToken(res.channels[1], 125);
+      const b = numericToken(res.channels[2], 125);
+      if (![l, a, b].every(Number.isFinite)) return null;
       const rgb = labToRgb(l, a, b);
       return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
     });
@@ -252,22 +243,23 @@ const lab: XColorPlugin = {
       if (typeof value !== "string") return null;
       const res = parseFunctionalChannels(value, "lch", 3);
       if (!res) return null;
-      const l = parseFloat(res.channels[0]);
-      const c = parseFloat(res.channels[1]);
-      const h = parseFloat(res.channels[2]);
-      if (isNaN(l) || isNaN(c) || isNaN(h)) return null;
-      const rgb = lchToRgb(l, c, h);
+      const l = numericToken(res.channels[0], 100);
+      const c = numericToken(res.channels[1], 150);
+      const h = hueToken(res.channels[2]);
+      if (![l, c, h].every(Number.isFinite)) return null;
+      const labVal = lchToLab(l, Math.max(0, c), h);
+      const rgb = labToRgb(labVal.l, labVal.a, labVal.b);
       return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
     });
 
     defineMethod(cls, 'toLab', function (this: InstanceType<typeof cls>): Lab {
-      const [x, y, z] = rgbToXyz(this.red(), this.green(), this.blue());
-      return xyzToLab(x, y, z);
+      const xyz = rgbToXyz(this.red(), this.green(), this.blue());
+      return xyzToLab(d50 ? mat3Mul(D65_TO_D50, ...xyz) : xyz, white);
     });
 
     defineMethod(cls, 'toLabString', function (this: InstanceType<typeof cls>): string {
       const { l, a, b: bVal } = this.toLab();
-      return `lab(${l}% ${a} ${bVal})`;
+      return `lab(${l}% ${a} ${bVal}${alphaSuffix(this.alpha())})`;
     });
 
     defineMethod(cls, 'deltaE', function (this: InstanceType<typeof cls>, other: XColorInput): number {
@@ -289,7 +281,7 @@ const lab: XColorPlugin = {
 
     defineMethod(cls, 'toLchString', function (this: InstanceType<typeof cls>): string {
       const { l, c, h } = this.toLch();
-      return `lch(${l}% ${c} ${h})`;
+      return `lch(${l}% ${c} ${h}${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "lab", color => color.toLabString());

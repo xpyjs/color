@@ -89,6 +89,7 @@ const name: XColorPlugin = {
     registerColorParser((value) => {
       if (typeof value !== "string") return null;
       const key = value.trim().toLowerCase();
+      if (!Object.prototype.hasOwnProperty.call(NAMED_COLORS, key)) return null;
       const hex = NAMED_COLORS[key];
       if (!hex) return null;
       return parseNamedHex(hex);

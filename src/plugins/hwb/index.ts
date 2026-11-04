@@ -1,3 +1,4 @@
+import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 // =======================================
 // Plugin: hwb - HWB color space support
 // =======================================
@@ -10,6 +11,7 @@ import {
   parseAlphaChannel,
   defineMethod,
   clamp,
+  hsvToRgb,
   rgbToHsl
 } from "@xpyjs/color";
 
@@ -73,38 +75,16 @@ function rgbToHwb(r: number, g: number, b: number): HWB {
 // ── HWB → RGB ──
 
 function hwbToRgb(h: number, w: number, bk: number): { r: number; g: number; b: number } {
-  let wn = w / 100;
-  let bn = bk / 100;
-
-  // Normalize if w + b > 1
-  if (wn + bn > 1) {
-    const ratio = 1 / (wn + bn);
-    wn *= ratio;
-    bn *= ratio;
+  const wn = clamp(w, 0, 100) / 100;
+  const bn = clamp(bk, 0, 100) / 100;
+  if (wn + bn >= 1) {
+    const gray = 255 * wn / (wn + bn);
+    return { r: gray, g: gray, b: gray };
   }
 
-  // Convert hue to RGB using the same algorithm as HSL with s=100, l=50
-  const hh = ((h % 360) + 360) % 360 / 60;
-  const i = Math.floor(hh);
-  const f = hh - i;
-  const v = 1 - bn;
-
-  let r: number, g: number, b: number;
-
-  switch (i) {
-    case 0: r = v; g = v * (1 - (1 - f) * (1 - wn / v)); b = wn / v * v; break;
-    case 1: r = v * (1 - f * (1 - wn / v)); g = v; b = wn / v * v; break;
-    case 2: r = wn / v * v; g = v; b = v * (1 - (1 - f) * (1 - wn / v)); break;
-    case 3: r = wn / v * v; g = v * (1 - f * (1 - wn / v)); b = v; break;
-    case 4: r = v * (1 - (1 - f) * (1 - wn / v)); g = wn / v * v; b = v; break;
-    default: r = v; g = wn / v * v; b = v * (1 - f * (1 - wn / v)); break;
-  }
-
-  return {
-    r: Math.round(clamp(r * 255, 0, 255)),
-    g: Math.round(clamp(g * 255, 0, 255)),
-    b: Math.round(clamp(b * 255, 0, 255))
-  };
+  const { r, g, b } = hsvToRgb(h, 100, 100, true);
+  const factor = 1 - wn - bn;
+  return { r: r * factor + wn * 255, g: g * factor + wn * 255, b: b * factor + wn * 255 };
 }
 
 const hwb: XColorPlugin = {
@@ -115,10 +95,10 @@ const hwb: XColorPlugin = {
       if (typeof value !== "string") return null;
       const res = parseFunctionalChannels(value, "hwb", 3);
       if (!res) return null;
-      const h = parseFloat(res.channels[0]);
-      const w = parseFloat(res.channels[1]);
-      const b = parseFloat(res.channels[2]);
-      if (isNaN(h) || isNaN(w) || isNaN(b)) return null;
+      const h = hueToken(res.channels[0]);
+      const w = numericToken(res.channels[1], 100);
+      const b = numericToken(res.channels[2], 100);
+      if (![h, w, b].every(Number.isFinite)) return null;
       const rgb = hwbToRgb(h, w, b);
       return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
     });
@@ -129,7 +109,7 @@ const hwb: XColorPlugin = {
 
     defineMethod(cls, 'toHwbString', function (this: InstanceType<typeof cls>): string {
       const { h, w, b } = this.toHwb();
-      return `hwb(${h} ${w}% ${b}%)`;
+      return `hwb(${h} ${w}% ${b}%${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "hwb", color => color.toHwbString());

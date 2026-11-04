@@ -49,7 +49,8 @@ const percentageRgb: XColorPlugin = {
     });
 
     defineMethod(cls, 'toPercentageRgbString', function (this: InstanceType<typeof cls>) {
-      const { r, g, b, a } = this.toPercentageRgb();
+      const { r, g, b } = this.toPercentageRgb();
+      const a = this.alpha();
       return a === 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`;
     });
 

@@ -5,6 +5,8 @@
 import type { RGBA } from "./types";
 import type { XColorInputNative } from "./core";
 import { clamp, round, hslToRgb, hsvToRgb, Logger } from "./utils";
+import { pluginInstallation, trackRegistration } from "./registration";
+import { hueToken, numericToken } from "./tokens";
 
 // ---- Types ----
 
@@ -22,8 +24,9 @@ export type XColorFunctionalChannelsResult = {
 
 // ---- Parser registry (before / after built-in) ----
 
-const BEFORE_PARSERS: XColorParser[] = [];
-const AFTER_PARSERS: XColorParser[] = [];
+type ParserEntry = { parser: XColorParser; installation?: ReturnType<typeof pluginInstallation> };
+const BEFORE_PARSERS: ParserEntry[] = [];
+const AFTER_PARSERS: ParserEntry[] = [];
 
 /**
  * Register a custom color parser into the parsing pipeline.
@@ -44,11 +47,17 @@ export function registerColorParser(
 ): () => void {
   if (typeof parser !== "function") return () => {};
   const list = options?.priority === "before" ? BEFORE_PARSERS : AFTER_PARSERS;
-  if (list.indexOf(parser) === -1) list.push(parser);
-  return () => {
-    const idx = list.indexOf(parser);
-    if (idx >= 0) list.splice(idx, 1);
-  };
+  const installation = pluginInstallation();
+  const entry = (!installation && list.find((entry) => !entry.installation && entry.parser === parser))
+    || { parser, installation };
+  if (!list.includes(entry)) {
+    const index = installation ? list.findIndex(({ installation: old }) => old !== installation && old?.name === installation.name) : -1;
+    list.splice(index < 0 ? list.length : index, 0, entry);
+  }
+  return trackRegistration(() => {
+    const index = list.indexOf(entry);
+    if (index >= 0) list.splice(index, 1);
+  });
 }
 
 // ---- Channel parsers (exported for plugin reuse) ----
@@ -148,21 +157,20 @@ export function parseFunctionalChannels(
   if (!m) return null;
 
   const payload = (m[1] ?? m[2] ?? "").trim();
-  if (!payload) return null;
+  if (!payload || /[()]/.test(payload)) return null;
 
   let alpha: string | undefined;
   let channelsPart = payload;
 
-  const slashIdx = payload.lastIndexOf("/");
+  const slashIdx = payload.indexOf("/");
   if (slashIdx >= 0) {
     alpha = payload.slice(slashIdx + 1).trim();
     channelsPart = payload.slice(0, slashIdx).trim();
-    if (!alpha) return null;
   }
 
   let channels: string[];
   if (channelsPart.includes(",")) {
-    channels = channelsPart.split(/\s*,\s*/).filter(Boolean);
+    channels = channelsPart.split(/\s*,\s*/);
     if (channels.length === channelCount + 1 && alpha === undefined) {
       alpha = channels[channelCount];
       channels = channels.slice(0, channelCount);
@@ -171,7 +179,8 @@ export function parseFunctionalChannels(
     channels = channelsPart.split(/\s+/).filter(Boolean);
   }
 
-  if (channels.length !== channelCount) return null;
+  if (channels.length !== channelCount || channels.some((channel) => !channel)) return null;
+  if (alpha !== undefined && !Number.isFinite(numericToken(alpha, 1))) return null;
   return { channels, alpha };
 }
 
@@ -185,17 +194,20 @@ interface ColorModel {
   anyKey?: boolean;
   /** Function name(s) for string input (omit to skip string input). */
   names?: string[];
-  /** Number of channels (default `3`). */
-  channels?: number;
   /** Per-channel parse functions. */
-  parsers: ((v: string | number) => number)[];
+  parsers: ((value: unknown) => number)[];
   /** Convert parsed channels to RGB. */
   toRgb: (...args: number[]) => { r: number; g: number; b: number };
 }
 
-/** sRGB channel parser: 0-1 float → 0-255 int. */
-const srgbCh = (v: string | number): number =>
-  Math.round(clamp(parseFloat(String(v)) * 255, 0, 255));
+function channel(value: unknown, max: number): number {
+  const number = numericToken(value, max);
+  return Number.isFinite(number) ? clamp(number, 0, max) : NaN;
+}
+
+const rgbCh = (value: unknown) => channel(value, 255);
+const percentCh = (value: unknown) => channel(value, 100);
+const srgbCh = (value: unknown) => channel(value, 1) * 255;
 
 /**
  * Built-in colour models. Each entry generates one pipeline parser via
@@ -207,20 +219,20 @@ const MODELS: ColorModel[] = [
   {
     keys: ["r", "g", "b"], anyKey: true,
     names: ["rgb", "rgba"],
-    parsers: [parseRgbChannel, parseRgbChannel, parseRgbChannel],
+    parsers: [rgbCh, rgbCh, rgbCh],
     toRgb: (r, g, b) => ({ r, g, b })
   },
   {
     keys: ["h", "s", "l"],
     names: ["hsl", "hsla"],
-    parsers: [parseHue, parsePercent, parsePercent],
-    toRgb: hslToRgb
+    parsers: [hueToken, percentCh, percentCh],
+    toRgb: (h, s, l) => hslToRgb(h, s, l, true)
   },
   {
     keys: ["h", "s", "v"],
     names: ["hsv", "hsva"],
-    parsers: [parseHue, parsePercent, parsePercent],
-    toRgb: hsvToRgb
+    parsers: [hueToken, percentCh, percentCh],
+    toRgb: (h, s, v) => hsvToRgb(h, s, v, true)
   },
   {
     names: ["srgb"],
@@ -235,33 +247,28 @@ const MODELS: ColorModel[] = [
  * @internal
  */
 function createModelParser(model: ColorModel): XColorParser {
-  const chCount = model.channels ?? 3;
-
   return (value: XColorInputNative): RGBA | null => {
-    // ── Object branch (only when model.keys is defined) ──
+    let channels: unknown[];
+    let alpha: unknown;
     if (model.keys && typeof value === "object" && value !== null) {
-      const v = value as Record<string, unknown>;
-      const match = model.anyKey
-        ? model.keys.some((k) => v[k] !== undefined)
-        : model.keys.every((k) => v[k] !== undefined);
-      if (match) {
-        const vals = model.keys.map((k, i) => model.parsers[i]((v[k] as string | number | undefined) ?? 0));
-        const rgb = model.toRgb(...vals);
-        return { ...rgb, a: parseAlphaChannel((v.a as string | number | undefined) ?? 1) };
-      }
+      const object = value as Record<string, unknown>;
+      const has = (key: string) => Object.prototype.hasOwnProperty.call(object, key) && object[key] !== undefined;
+      if (!(model.anyKey ? model.keys.some(has) : model.keys.every(has))) return null;
+      channels = model.keys.map((key) => has(key) ? object[key] : 0);
+      alpha = has("a") ? object.a : 1;
+    } else if (model.names && typeof value === "string") {
+      const result = parseFunctionalChannels(value, model.names, 3);
+      if (!result) return null;
+      channels = result.channels;
+      alpha = result.alpha ?? 1;
+    } else {
+      return null;
     }
 
-    // ── String branch (only when model.names is defined) ──
-    if (model.names && typeof value === "string") {
-      const res = parseFunctionalChannels(value, model.names, chCount);
-      if (res) {
-        const vals = res.channels.map((ch, i) => model.parsers[i](ch));
-        const rgb = model.toRgb(...vals);
-        return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
-      }
-    }
-
-    return null;
+    const values = channels.map((value, index) => model.parsers[index](value));
+    const opacity = channel(alpha, 1);
+    if (!values.every(Number.isFinite) || !Number.isFinite(opacity)) return null;
+    return { ...model.toRgb(...values), a: opacity };
   };
 }
 
@@ -276,7 +283,7 @@ const HEX_RE = /^#?([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
  */
 function parseNumber(value: XColorInputNative): RGBA | null {
   if (typeof value !== "number") return null;
-  if (!Number.isFinite(value) || value < 0 || value > 0xFFFFFF) return null;
+  if (!Number.isInteger(value) || value < 0 || value > 0xFFFFFF) return null;
   return { r: (value >> 16) & 0xFF, g: (value >> 8) & 0xFF, b: value & 0xFF, a: 1 };
 }
 
@@ -317,31 +324,19 @@ const BUILTIN_PARSERS: XColorParser[] = [
 function normalize(value: XColorInputNative): XColorInputNative {
   if (typeof value !== "string") return value;
   const s = value.trim().toLowerCase();
-  return s.replace(/^color\(\s*srgb\b\s*/, "srgb(");
+  return s.replace(/^color\(\s*srgb\s+/, "srgb(");
 }
 
 /**
  * Produce diagnostic warning on parse failure (called only on failure path).
  * @internal
  */
-const MDN_COLOR_VALUE = "https://developer.mozilla.org/en-US/docs/Web/CSS/color_value";
-
 function diagnose(value: XColorInputNative): void {
-  if (typeof value === "number") {
-    Logger.warn(`Invalid numeric color: ${value}. Expected integer 0x000000–0xFFFFFF. See: ${MDN_COLOR_VALUE}`);
-  } else if (typeof value === "string") {
-    const s = value.trim();
-    if (!s) {
-      Logger.warn("Color input is empty.");
-    } else if (/^#?[0-9a-f]+$/i.test(s)) {
-      Logger.warn(`Invalid hex color: "${s}". See: ${MDN_COLOR_VALUE}`);
-    } else if (/^[a-z]+$/i.test(s)) {
-      Logger.warn(`Unknown color name: "${s}". Enable the name plugin via xcolor.use(name), or see: ${MDN_COLOR_VALUE}`);
-    } else {
-      Logger.warn(`Invalid color value: "${s}". See: ${MDN_COLOR_VALUE}`);
-    }
+  if (typeof value === "string") {
+    const input = value.trim();
+    Logger.warn(/^[a-z]+$/i.test(input) ? "Unknown color name (name plugin)" : "Invalid color", input);
   } else {
-    Logger.warn(`Invalid color value: ${JSON.stringify(value)}. See: ${MDN_COLOR_VALUE}`);
+    Logger.warn(typeof value === "number" ? "Expected a 24-bit RGB integer" : "Invalid color", typeof value === "object" ? null : value);
   }
 }
 
@@ -350,9 +345,10 @@ function diagnose(value: XColorInputNative): void {
  *
  * Pipeline order: `BEFORE_PARSERS → BUILTIN_PARSERS → AFTER_PARSERS`.
  * Each parser receives the (normalized) value and returns `RGBA | null`.
- * The first non-null result wins. All results are clamped & rounded.
+ * The first non-null result wins. Channels are clamped and retain the precision supplied by the parser.
  *
  * @param value - Color value as string, object, or number
+ * @param silent - Suppress parser diagnostics when true
  * @returns RGBA object, or `null` if parsing fails
  * @example parseColor('#ff0000')           // { r: 255, g: 0, b: 0, a: 1 }
  * @example parseColor(0xFF0000)            // { r: 255, g: 0, b: 0, a: 1 }
@@ -360,16 +356,16 @@ function diagnose(value: XColorInputNative): void {
  * @example parseColor({ r: 255 })          // { r: 255, g: 0, b: 0, a: 1 }
  * @example parseColor('color(srgb 1 0 0)') // { r: 255, g: 0, b: 0, a: 1 }
  */
-export function parseColor(value: XColorInputNative): RGBA | null {
+export function parseColor(value: XColorInputNative, silent = false): RGBA | null {
   const input = normalize(value);
   const pipeline = BEFORE_PARSERS.length || AFTER_PARSERS.length
-    ? [...BEFORE_PARSERS, ...BUILTIN_PARSERS, ...AFTER_PARSERS]
+    ? [...BEFORE_PARSERS.map(({ parser }) => parser), ...BUILTIN_PARSERS, ...AFTER_PARSERS.map(({ parser }) => parser)]
     : BUILTIN_PARSERS;
 
   for (let i = 0; i < pipeline.length; i++) {
     try {
       const result = pipeline[i](input);
-      if (result !== null) {
+      if (result && [result.r, result.g, result.b, result.a].every(Number.isFinite)) {
         return {
           r: clamp(result.r, 0, 255),
           g: clamp(result.g, 0, 255),
@@ -378,10 +374,10 @@ export function parseColor(value: XColorInputNative): RGBA | null {
         };
       }
     } catch (err) {
-      Logger.warn("Parser error:", err);
+      if (!silent) Logger.warn("Parser error:", err);
     }
   }
 
-  diagnose(value);
+  if (!silent) diagnose(value);
   return null;
 }

@@ -1,12 +1,15 @@
+import { parseCoordinates, type WideColorRecord } from "../wide-color";
+export { formatWideColor } from "../wide-color";
+import { srgbToLinear, linearToSrgb, type Mat3, mat3Mul, SRGB_TO_XYZ, XYZ_TO_SRGB } from "../../color-math";
+import { alphaSuffix } from "../../tokens";
 // =======================================
 // Plugin: rec2020 - Rec. 2020 color space
 // =======================================
 
-import type { XColorPlugin } from "@xpyjs/color";
+import type { RGBA, XColorPlugin } from "@xpyjs/color";
 import {
   registerStringFormatter,
   registerColorParser,
-  parseAlphaChannel,
   defineMethod,
   clamp
 } from "@xpyjs/color";
@@ -31,19 +34,6 @@ declare module "@xpyjs/color" {
   }
 }
 
-// ── sRGB transfer functions ──
-
-function srgbToLinear(c: number): number {
-  c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-
-function linearToSrgb(c: number): number {
-  return c <= 0.0031308
-    ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
-
 // ── Rec2020 transfer functions ──
 
 const REC2020_ALPHA = 1.09929682680944;
@@ -61,31 +51,7 @@ function linearToRec2020(c: number): number {
     : 4.5 * c;
 }
 
-// ── Matrix helpers ──
-
-type Mat3 = [number, number, number, number, number, number, number, number, number];
-
-function mat3Mul(m: Mat3, x: number, y: number, z: number): [number, number, number] {
-  return [
-    m[0] * x + m[1] * y + m[2] * z,
-    m[3] * x + m[4] * y + m[5] * z,
-    m[6] * x + m[7] * y + m[8] * z
-  ];
-}
-
 // ── Matrices ──
-
-const SRGB_TO_XYZ: Mat3 = [
-  0.4123907993, 0.3575843394, 0.1804807884,
-  0.2126390059, 0.7151686788, 0.0721923154,
-  0.0193308187, 0.1191947798, 0.9505321522
-];
-
-const XYZ_TO_SRGB: Mat3 = [
-  3.2409699419, -1.5373831776, -0.4986107603,
-  -0.9692436363, 1.8759675015, 0.0415550574,
-  0.0556300797, -0.2039769589, 1.0569715142
-];
 
 const REC2020_TO_XYZ: Mat3 = [
   0.6369580484, 0.1446169036, 0.1688809752,
@@ -106,7 +72,41 @@ function round4(n: number): number {
 }
 
 function srgbChannelFromLinear(c: number): number {
-  return Math.round(clamp(linearToSrgb(c) * 255, 0, 255));
+  return clamp(linearToSrgb(c) * 255, 0, 255);
+}
+
+/** Color data retained in the original coordinate space. */
+export type WideColor = WideColorRecord<"rec2020">;
+
+/**
+ * Parse this plugin's CSS color() syntax without clipping its coordinates to sRGB.
+ * @param input - Color string
+ * @returns A wide-gamut record, or null for invalid syntax or another color space
+ */
+export function parseWideColor(input: string): WideColor | null {
+  return parseCoordinates(input, "rec2020");
+}
+
+/**
+ * Explicitly convert to sRGB, clipping out-of-gamut channels.
+ * @param color - A wide-gamut record from parseWideColor()
+ * @returns RGB channels in 0–255 and alpha in 0–1
+ */
+export function toSrgb(color: WideColor): RGBA {
+  const channels = color.coordinates;
+  const rl = rec2020ToLinear(channels[0]);
+  const gl = rec2020ToLinear(channels[1]);
+  const bl = rec2020ToLinear(channels[2]);
+
+  const [x, y, z] = mat3Mul(REC2020_TO_XYZ, rl, gl, bl);
+  const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
+
+  return {
+    r: srgbChannelFromLinear(sr),
+    g: srgbChannelFromLinear(sg),
+    b: srgbChannelFromLinear(sb),
+    a: color.alpha
+  };
 }
 
 const rec2020: XColorPlugin = {
@@ -114,32 +114,8 @@ const rec2020: XColorPlugin = {
   install(_option, cls, _factory) {
     // ── Parser for color(rec2020 r g b [/ a]) ──
     registerColorParser((value) => {
-      if (typeof value !== "string") return null;
-      const str = value.trim().toLowerCase();
-      if (!str.startsWith("color(") || !str.endsWith(")")) return null;
-
-      const inner = str.slice(6, -1).trim();
-      if (!inner.startsWith("rec2020")) return null;
-
-      const rest = inner.slice(7).trim();
-      const parts = rest.split("/").map(s => s.trim());
-      const channels = parts[0].split(/\s+/).map(Number);
-      if (channels.length < 3 || channels.some(isNaN)) return null;
-
-      const rl = rec2020ToLinear(channels[0]);
-      const gl = rec2020ToLinear(channels[1]);
-      const bl = rec2020ToLinear(channels[2]);
-
-      const [x, y, z] = mat3Mul(REC2020_TO_XYZ, rl, gl, bl);
-      const [sr, sg, sb] = mat3Mul(XYZ_TO_SRGB, x, y, z);
-
-      const alpha = parts[1] !== undefined ? parseAlphaChannel(parts[1].trim()) : 1;
-      return {
-        r: srgbChannelFromLinear(sr),
-        g: srgbChannelFromLinear(sg),
-        b: srgbChannelFromLinear(sb),
-        a: alpha
-      };
+      const color = typeof value === "string" ? parseWideColor(value) : null;
+      return color ? toSrgb(color) : null;
     });
 
     // ── Output methods ──
@@ -158,7 +134,7 @@ const rec2020: XColorPlugin = {
 
     defineMethod(cls, 'toRec2020String', function (this: InstanceType<typeof cls>): string {
       const { r, g, b } = this.toRec2020();
-      return `color(rec2020 ${r} ${g} ${b})`;
+      return `color(rec2020 ${r} ${g} ${b}${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "rec2020", color => color.toRec2020String());

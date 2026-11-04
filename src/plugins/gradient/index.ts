@@ -1,3 +1,4 @@
+import { interpolate } from "../../color-math";
 // =======================================
 // Plugin: gradient - Generate color gradients/scales
 // =======================================
@@ -12,7 +13,7 @@ declare module "@xpyjs/color" {
      * Generate a gradient (array of colors) between this color and another.
      * Interpolates in RGB space.
      * @param to - Target color
-     * @param steps - Number of colors to generate including start and end (default 5, minimum 2)
+     * @param steps - Number of colors to generate including start and end (default 5, range 2-10000)
      * @returns Array of new XColor instances forming the gradient
      * @example
      * ```ts
@@ -25,7 +26,7 @@ declare module "@xpyjs/color" {
 
     /**
      * Generate a tonal range of tints (lighter) and shades (darker) around this color.
-     * @param steps - Number of variations in each direction (default 5, minimum 2)
+     * @param steps - Number of variations in each direction (default 5, range 2-10000)
      * @returns Array of XColor instances: shades (dark→light) + original + tints (light→lighter)
      * @example
      * ```ts
@@ -42,17 +43,21 @@ const gradient: XColorPlugin = {
   name: "@xpyjs/color/plugins/gradient",
   install(_option, cls, _factory) {
     defineMethod(cls, 'gradient', function (this: InstanceType<typeof cls>, to: XColorInput, steps: number = 5) {
-      const end = new cls(to);
+      const end = new cls(to, to instanceof cls ? undefined : this._opts);
       const colors: InstanceType<typeof cls>[] = [];
       const total = normalizeSteps(steps);
       const opts = this._opts;
 
       for (let i = 0; i < total; i++) {
+        if (i === 0 || i === total - 1) {
+          colors.push((i === 0 ? this : end).clone());
+          continue;
+        }
         const factor = i / (total - 1);
-        const r = Math.round(this.red() + (end.red() - this.red()) * factor);
-        const g = Math.round(this.green() + (end.green() - this.green()) * factor);
-        const b = Math.round(this.blue() + (end.blue() - this.blue()) * factor);
-        const a = this.alpha() + (end.alpha() - this.alpha()) * factor;
+        const r = interpolate(this.red(), end.red(), factor);
+        const g = interpolate(this.green(), end.green(), factor);
+        const b = interpolate(this.blue(), end.blue(), factor);
+        const a = interpolate(this.alpha(), end.alpha(), factor);
         colors.push(new cls({ r, g, b, a }, opts));
       }
 

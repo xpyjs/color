@@ -106,7 +106,7 @@ describe("parseColor", () => {
 
     it("should parse decimal channel values", () => {
       const c = parseColor("rgb(10.4, 20.5, 30.6)");
-      expect(c).toEqual({ r: 10, g: 21, b: 31, a: 1 });
+      expect(c).toEqual({ r: 10.4, g: 20.5, b: 30.6, a: 1 });
     });
 
     it("should parse bare rgb syntax without parentheses", () => {
@@ -149,7 +149,8 @@ describe("parseColor", () => {
 
     it("should parse hue units", () => {
       const c = parseColor("hsl(0.5turn 100% 50%)");
-      expect(c).toEqual({ r: 0, g: 255, b: 255, a: 1 });
+      expect(c).toMatchObject({ r: 0, b: 255, a: 1 });
+      expect(c!.g).toBeCloseTo(255, 10);
     });
 
     it("should parse bare hsl syntax without parentheses", () => {

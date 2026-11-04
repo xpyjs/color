@@ -1,3 +1,4 @@
+import { alphaSuffix, numericToken } from "../../tokens";
 // =======================================
 // Plugin: cmyk - CMYK color space support
 // =======================================
@@ -6,7 +7,6 @@ import type { XColorPlugin } from "@xpyjs/color";
 import {
   registerColorParser,
   parseFunctionalChannels,
-  parseAlphaChannel,
   registerStringFormatter,
   defineMethod
 } from "@xpyjs/color";
@@ -87,9 +87,9 @@ function cmykToRgb(c: number, m: number, y: number, k: number) {
   const kn = clamp(k, 0, 100) / 100;
 
   return {
-    r: Math.round(255 * (1 - cn) * (1 - kn)),
-    g: Math.round(255 * (1 - mn) * (1 - kn)),
-    b: Math.round(255 * (1 - yn) * (1 - kn))
+    r: 255 * (1 - cn) * (1 - kn),
+    g: 255 * (1 - mn) * (1 - kn),
+    b: 255 * (1 - yn) * (1 - kn)
   };
 }
 
@@ -117,34 +117,31 @@ const cmyk: XColorPlugin = {
 
     defineMethod(cls, 'toCmykString', function (this: InstanceType<typeof cls>): string {
       const { c, m, y, k: kk } = this.toCmyk();
-      return `cmyk(${c}%, ${m}%, ${y}%, ${kk}%)`;
+      return `cmyk(${c}%, ${m}%, ${y}%, ${kk}%${alphaSuffix(this.alpha())})`;
     });
 
     registerStringFormatter(cls, "cmyk", color => color.toCmykString());
 
     registerColorParser((value) => {
-      if (value && typeof value === "object") {
-        const v = value as any;
-        if (v.c !== undefined && v.m !== undefined && v.y !== undefined && v.k !== undefined) {
-          const rgb = cmykToRgb(v.c, v.m, v.y, v.k);
-          return { ...rgb, a: v.a !== undefined ? parseAlphaChannel(v.a) : 1 };
-        }
+      let channels: unknown[];
+      let alpha: unknown;
+      if (typeof value === "string") {
+        const parsed = parseFunctionalChannels(value, "cmyk", 4);
+        if (!parsed) return null;
+        channels = parsed.channels;
+        alpha = parsed.alpha ?? 1;
+      } else if (value && typeof value === "object") {
+        const { c, m, y, k, a } = value as Partial<CMYK> & { a?: number };
+        channels = [c, m, y, k];
+        alpha = a ?? 1;
+      } else {
         return null;
       }
 
-      if (typeof value !== "string") return null;
-      const str = value.trim().toLowerCase();
-      const parsed = parseFunctionalChannels(str, "cmyk", 4);
-      if (!parsed) return null;
-
-      const rgb = cmykToRgb(
-        parseFloat(parsed.channels[0]),
-        parseFloat(parsed.channels[1]),
-        parseFloat(parsed.channels[2]),
-        parseFloat(parsed.channels[3])
-      );
-
-      return { ...rgb, a: parsed.alpha !== undefined ? parseAlphaChannel(parsed.alpha) : 1 };
+      const [c, m, y, k] = channels.map((channel) => numericToken(channel, 100));
+      const opacity = numericToken(alpha, 1);
+      if (![c, m, y, k, opacity].every(Number.isFinite)) return null;
+      return { ...cmykToRgb(c, m, y, k), a: opacity };
     });
   }
 };

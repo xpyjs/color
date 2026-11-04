@@ -10,7 +10,8 @@
 // does NOT depend on the oklab plugin at runtime.
 // =======================================
 
-import { clamp } from "@xpyjs/color";
+import { rgbToOklab, oklabToOklch, oklchToRgb } from "../../color-math";
+import { clamp, rgbaToHex } from "@xpyjs/color";
 import { Logger } from "@xpyjs/color";
 import type { BuiltinRole, XColorThemeDeriveOptions, ColorConfig } from "./types";
 
@@ -50,81 +51,6 @@ export const DEFAULT_ROLE_HUES: Partial<Record<BuiltinRole, number>> = {
   info: 235
   // secondary: dynamic — sourceHue + 180
 };
-
-// =======================================
-// Inline OKLCh conversion (no oklab dep)
-// =======================================
-
-/** @internal sRGB gamma → linear */
-function srgbToLinear(c: number): number {
-  c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-
-/** @internal linear → sRGB gamma */
-function linearToSrgb(c: number): number {
-  return c <= 0.0031308
-    ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
-
-/** @internal RGB (0-255) → OKLab { l, a, b } */
-function rgbToOklab(r: number, g: number, b: number): { l: number; a: number; b: number } {
-  var rl = srgbToLinear(r);
-  var gl = srgbToLinear(g);
-  var bl = srgbToLinear(b);
-
-  var l_ = 0.4122214708 * rl + 0.5363325363 * gl + 0.0514459929 * bl;
-  var m_ = 0.2119034982 * rl + 0.6806995451 * gl + 0.1073969566 * bl;
-  var s_ = 0.0883024619 * rl + 0.2817188376 * gl + 0.6299787005 * bl;
-
-  var l1 = Math.cbrt(l_);
-  var m1 = Math.cbrt(m_);
-  var s1 = Math.cbrt(s_);
-
-  return {
-    l: 0.2104542553 * l1 + 0.7936177850 * m1 - 0.0040720468 * s1,
-    a: 1.9779984951 * l1 - 2.4285922050 * m1 + 0.4505937099 * s1,
-    b: 0.0259040371 * l1 + 0.7827717662 * m1 - 0.8086757660 * s1
-  };
-}
-
-/** @internal OKLab → RGB (0-255, clamped & rounded) */
-function oklabToRgb(L: number, a: number, b: number): { r: number; g: number; b: number } {
-  var l1 = L + 0.3963377774 * a + 0.2158037573 * b;
-  var m1 = L - 0.1055613458 * a - 0.0638541728 * b;
-  var s1 = L - 0.0894841775 * a - 1.2914855480 * b;
-
-  var l_ = l1 * l1 * l1;
-  var m_ = m1 * m1 * m1;
-  var s_ = s1 * s1 * s1;
-
-  var rl = 4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_;
-  var gl = -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_;
-  var bl = -0.0041960863 * l_ - 0.7034186147 * m_ + 1.7076147010 * s_;
-
-  return {
-    r: Math.round(clamp(linearToSrgb(rl) * 255, 0, 255)),
-    g: Math.round(clamp(linearToSrgb(gl) * 255, 0, 255)),
-    b: Math.round(clamp(linearToSrgb(bl) * 255, 0, 255))
-  };
-}
-
-/** @internal OKLab → OKLCh (polar form) */
-function oklabToOklch(l: number, a: number, b: number): { l: number; c: number; h: number } {
-  var c = Math.sqrt(a * a + b * b);
-  var h = Math.atan2(b, a) * 180 / Math.PI;
-  if (h < 0) h += 360;
-  return { l: l, c: c, h: h };
-}
-
-/** @internal OKLCh → RGB (0-255) */
-function oklchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
-  var hRad = h * Math.PI / 180;
-  var a = c * Math.cos(hRad);
-  var b = c * Math.sin(hRad);
-  return oklabToRgb(l, a, b);
-}
 
 // =======================================
 // HSL helpers (fallback algorithm)
@@ -259,7 +185,7 @@ export function deriveBaseColor(
       targetHue = DEFAULT_ROLE_HUES[role] || hsl.h;
     }
 
-    var newS = clamp(hsl.s * (opts.chromaScale || 1), 0, 100);
+    var newS = clamp(hsl.s * (opts.chromaScale ?? 1), 0, 100);
     var newL = clamp(hsl.l + (opts.lightnessShift || 0) * 100, 0, 100);
     var rgb = hslToRgbLocal(targetHue, newS, newL);
 
@@ -279,11 +205,11 @@ export function deriveBaseColor(
     targetH = DEFAULT_ROLE_HUES[role] || lch.h;
   }
 
-  var newC = clamp(lch.c * (opts.chromaScale || 1), 0, 0.4);
+  var newC = clamp(lch.c * (opts.chromaScale ?? 1), 0, 0.4);
   var newLightness = clamp(lch.l + (opts.lightnessShift || 0), 0, 1);
 
   var result = oklchToRgb(newLightness, newC, targetH);
-  return rgbToHex(result.r, result.g, result.b);
+  return rgbaToHex(result.r, result.g, result.b, 1);
 }
 
 /**

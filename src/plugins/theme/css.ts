@@ -2,7 +2,7 @@
 // Plugin: theme - CSS string generation
 // =======================================
 
-import { rgbToHsl } from "@xpyjs/color";
+import type { XColor } from "@xpyjs/color";
 import type { XColorThemeOptions, ThemeCssFormat } from "./types";
 
 /**
@@ -12,22 +12,11 @@ import type { XColorThemeOptions, ThemeCssFormat } from "./types";
  * @param format - Desired output format
  * @returns Formatted color string
  */
-export function formatColorValue(hex: string, format: ThemeCssFormat): string {
-  if (format === "hex") return hex;
-
-  // Parse hex → RGB
-  const raw = hex.replace("#", "");
-  const r = parseInt(raw.substring(0, 2), 16);
-  const g = parseInt(raw.substring(2, 4), 16);
-  const b = parseInt(raw.substring(4, 6), 16);
-
-  if (format === "rgb") {
-    return "rgb(" + r + ", " + g + ", " + b + ")";
-  }
-
-  // HSL
-  const hsl = rgbToHsl(r, g, b);
-  return "hsl(" + Math.round(hsl.h) + ", " + Math.round(hsl.s) + "%, " + Math.round(hsl.l) + "%)";
+export function formatColorValue(value: string, format: ThemeCssFormat, cls: typeof XColor): string {
+  if (format === "hex") return value;
+  const color = new cls(value);
+  if (!color.isValid()) return value;
+  return format === "rgb" ? color.toRgbString() : color.toHslString();
 }
 
 /**
@@ -37,12 +26,12 @@ export function formatColorValue(hex: string, format: ThemeCssFormat): string {
  * @param format - Output format for values
  * @returns CSS declaration lines (no selector wrapping)
  */
-function buildDeclarations(vars: Record<string, string>, format: ThemeCssFormat): string {
+function buildDeclarations(vars: Record<string, string>, format: ThemeCssFormat, cls: typeof XColor): string {
   var lines: string[] = [];
   var keys = Object.keys(vars);
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-    lines.push("  " + key + ": " + formatColorValue(vars[key], format) + ";");
+    lines.push("  " + key + ": " + formatColorValue(vars[key], format, cls) + ";");
   }
   return lines.join("\n");
 }
@@ -58,21 +47,22 @@ function buildDeclarations(vars: Record<string, string>, format: ThemeCssFormat)
 export function buildCssString(
   vars: Record<string, string>,
   darkVars: Record<string, string> | null,
-  options: XColorThemeOptions
+  options: XColorThemeOptions,
+  cls: typeof XColor
 ): string {
   var format = options.format || "hex";
   var cssSelector = options.cssSelector || ":root";
   var parts: string[] = [];
 
   // Light mode block
-  var lightDecl = buildDeclarations(vars, format);
+  var lightDecl = buildDeclarations(vars, format, cls);
   if (lightDecl) {
     parts.push(cssSelector + " {\n" + lightDecl + "\n}");
   }
 
   // Dark mode block
   if (darkVars && options.darkMode) {
-    var darkDecl = buildDeclarations(darkVars, format);
+    var darkDecl = buildDeclarations(darkVars, format, cls);
     if (darkDecl) {
       if (options.darkMode === "class") {
         var darkSelector = options.darkSelector || ".dark";

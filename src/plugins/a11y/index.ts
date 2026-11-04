@@ -1,9 +1,10 @@
+import { luminanceRatio } from "../../color-math";
 // =======================================
 // Plugin: a11y - Accessibility utilities
 // =======================================
 
-import type { XColorPlugin, XColorInput } from "@xpyjs/color";
-import { defineMethod } from "@xpyjs/color";
+import type { XColorPlugin, XColorInput, XColor } from "@xpyjs/color";
+import { defineMethod, Logger, relativeLuminance, round } from "@xpyjs/color";
 
 /**
  * WCAG 2.0 conformance level.
@@ -82,12 +83,20 @@ const THRESHOLDS: Record<string, number> = {
   "AAA-large": 4.5
 };
 
+function rawContrast(first: XColor, second: XColor): number {
+  const a = relativeLuminance(first.red(), first.green(), first.blue());
+  const b = relativeLuminance(second.red(), second.green(), second.blue());
+  return luminanceRatio(a, b);
+}
+
 const a11y: XColorPlugin = {
   name: "@xpyjs/color/plugins/a11y",
   install(_option, cls, _factory) {
-    defineMethod(cls, 'isReadable', function (this: InstanceType<typeof cls>, background: any, options: any = {}) {
+    defineMethod(cls, 'isReadable', function (this: XColor, background: XColorInput, options = {} as { level?: WCAGLevel; size?: WCAGSize }) {
       const { level = "AA", size = "normal" } = options;
-      const ratio = this.contrast(background);
+      const other = new cls(background);
+      if (!this.isValid() || !other.isValid()) return false;
+      const ratio = rawContrast(this, other);
       const threshold = THRESHOLDS[`${level}-${size}`] || 4.5;
       return ratio >= threshold;
     });
@@ -96,42 +105,35 @@ const a11y: XColorPlugin = {
       const { level = "AA", size = "normal" } = options;
       const threshold = THRESHOLDS[`${level}-${size}`] || 4.5;
 
+      if (!this.isValid()) throw Logger.createError("Invalid base color for readability");
       let bestColor: InstanceType<typeof cls> | null = null;
       let bestContrast = 0;
 
       for (const c of (Array.isArray(colorList) ? colorList : [])) {
         const candidate = new cls(c);
         if (!candidate.isValid()) continue;
-        const ratio = this.contrast(candidate);
+        const ratio = rawContrast(this, candidate);
         if (ratio > bestContrast) {
           bestContrast = ratio;
           bestColor = candidate;
         }
       }
 
-      // If no readable color found, return black or white based on luminance
-      if (!bestColor) {
-        return this.isLight() ? new cls("#000000") : new cls("#ffffff");
-      }
+      if (bestColor && bestContrast >= threshold) return bestColor;
 
-      // If best still doesn't meet threshold, return black or white fallback
-      if (bestContrast < threshold) {
-        const blackContrast = this.contrast("#000000");
-        const whiteContrast = this.contrast("#ffffff");
-        return blackContrast > whiteContrast
-          ? new cls("#000000")
-          : new cls("#ffffff");
-      }
-
-      return bestColor;
+      const black = new cls("#000");
+      const white = new cls("#fff");
+      return rawContrast(this, black) > rawContrast(this, white) ? black : white;
     });
 
-    defineMethod(cls, 'wcagLevel', function (this: InstanceType<typeof cls>, background: any) {
-      const ratio = this.contrast(background);
+    defineMethod(cls, 'wcagLevel', function (this: InstanceType<typeof cls>, background: XColorInput) {
+      const other = new cls(background);
+      if (!this.isValid() || !other.isValid()) throw Logger.createError("Invalid color for WCAG contrast");
+      const ratio = rawContrast(this, other);
       return {
         level: ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : "FAIL",
         largeText: ratio >= 4.5 ? "AAA" : ratio >= 3 ? "AA" : "FAIL",
-        ratio
+        ratio: round(ratio, 2)
       };
     });
   }

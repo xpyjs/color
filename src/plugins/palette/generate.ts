@@ -2,7 +2,7 @@
 // Plugin: palette - Palette generation algorithms
 // =======================================
 
-import { rgbToHsv, hsvToRgb, clamp, round } from "@xpyjs/color";
+import { Logger, rgbToHsv, hsvToRgb, clamp, round } from "@xpyjs/color";
 import type { XColor } from "@xpyjs/color";
 import type { Shade, PaletteType } from "./types";
 import { DEFAULT_SHADES } from "./types";
@@ -145,41 +145,25 @@ function linearPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XCo
   const r = baseColor.red();
   const g = baseColor.green();
   const b = baseColor.blue();
-  const baseIndex = shades.indexOf(500 as Shade);
-  const total = shades.length;
+  const lighter = shades.filter((shade) => shade < 500).sort((a, b) => a - b);
+  const darker = shades.filter((shade) => shade > 500).sort((a, b) => a - b);
 
-  const colors: any[] = [];
+  const colors = shades.map((shade) => {
+    if (shade === 500) return new cls({ r, g, b, a: 1 });
 
-  for (let i = 0; i < total; i++) {
-    if (i === baseIndex) {
-      colors.push(new cls({ r, g, b, a: 1 }));
-      continue;
+    if (shade < 500) {
+      const factor = 1 - lighter.indexOf(shade) / lighter.length;
+      return new cls({
+        r: r + (255 - r) * factor,
+        g: g + (255 - g) * factor,
+        b: b + (255 - b) * factor,
+        a: 1
+      });
     }
 
-    let factor: number;
-    let tr: number, tg: number, tb: number;
-
-    if (i < baseIndex) {
-      // Light: interpolate toward white
-      factor = 1 - (i / baseIndex);
-      tr = Math.round(r + (255 - r) * factor);
-      tg = Math.round(g + (255 - g) * factor);
-      tb = Math.round(b + (255 - b) * factor);
-    } else {
-      // Dark: interpolate toward black
-      factor = (i - baseIndex) / (total - 1 - baseIndex);
-      tr = Math.round(r * (1 - factor));
-      tg = Math.round(g * (1 - factor));
-      tb = Math.round(b * (1 - factor));
-    }
-
-    colors.push(new cls({
-      r: clamp(tr, 0, 255),
-      g: clamp(tg, 0, 255),
-      b: clamp(tb, 0, 255),
-      a: 1
-    }));
-  }
+    const factor = 1 - (darker.indexOf(shade) + 1) / darker.length;
+    return new cls({ r: r * factor, g: g * factor, b: b * factor, a: 1 });
+  });
 
   return colors;
 }
@@ -201,7 +185,12 @@ export function generatePalette(
   cls: new (...args: any[]) => any
 ): any[] {
   if (typeof type === "function") {
-    return type(baseColor, shades);
+    const colors = type(baseColor, shades.slice());
+    if (!Array.isArray(colors) || colors.length !== shades.length ||
+        Array.from(colors).some((color) => !(color instanceof cls) || !color.isValid())) {
+      throw Logger.createError("Palette generator must return one valid XColor per shade");
+    }
+    return colors;
   }
 
   if (type === "linear") {
@@ -228,7 +217,7 @@ export function generatePalette(
       var db = darkest.blue();
       var darkHsv = rgbToHsv(dr, dg, db);
       var v = clamp(darkHsv.v - BRIGHTNESS_STEP_DARK, 5, 100);
-      var rgb = hsvToRgb(darkHsv.h, clamp(darkHsv.s + SATURATION_STEP_DARK, 0, 100), v);
+      var rgb = hsvToRgb(darkHsv.h, getSaturation(darkHsv, 1, false), v);
       result.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
     }
   }

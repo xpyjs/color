@@ -3,7 +3,7 @@
 // =======================================
 
 import type { XColorPlugin } from "@xpyjs/color";
-import { Logger } from "@xpyjs/color";
+import { Logger, XColor } from "@xpyjs/color";
 import type {
   XColorThemeOptions,
   ThemeResult,
@@ -96,6 +96,15 @@ declare module "@xpyjs/color" {
 /** Style element ID used for DOM injection. */
 const STYLE_ID = "xcolor-theme";
 
+/**
+ * Generate a theme from its configuration for SSR or build-time use.
+ * @param options - Theme colors and generation settings
+ * @returns CSS, variable snapshot, and generated palettes
+ */
+export function generateTheme(options: XColorThemeOptions): ThemeResult {
+  return resolveThemeConfig(options, XColor);
+}
+
 const theme: XColorPlugin<XColorThemeOptions> = {
   name: "@xpyjs/color/plugins/theme",
   install(option, cls, factory) {
@@ -105,13 +114,13 @@ const theme: XColorPlugin<XColorThemeOptions> = {
     }
 
     // ---- Closure state ----
-    let _options: XColorThemeOptions = option || { colors: {} };
+    let _options: XColorThemeOptions = { ...option, colors: option?.colors ?? {} };
     let _result: ThemeResult | null = null;
     let _injected = false;
 
     function ensureResult(): ThemeResult {
       if (!_result) {
-        _result = resolveThemeConfig(_options, cls, factory as any);
+        _result = resolveThemeConfig(_options, cls);
       }
       return _result;
     }
@@ -120,49 +129,50 @@ const theme: XColorPlugin<XColorThemeOptions> = {
       _result = null;
     }
 
-    // ---- Static methods on factory ----
+    function injectCss(css: string): void {
+      if (typeof document === "undefined") return;
 
-    (factory as any).injectTheme = function (): string {
-      var result = ensureResult();
-      var css = result.css;
-
-      // SSR safety: only manipulate DOM in browser environments
-      if (typeof document !== "undefined") {
-        var existing = document.getElementById(STYLE_ID);
-        if (existing) {
-          existing.textContent = css;
-        } else {
-          var style = document.createElement("style");
-          style.id = STYLE_ID;
-          style.textContent = css;
-          document.head.appendChild(style);
-        }
-        _injected = true;
+      const existing = document.getElementById(STYLE_ID);
+      if (existing) {
+        existing.textContent = css;
+      } else {
+        const style = document.createElement("style");
+        style.id = STYLE_ID;
+        style.textContent = css;
+        document.head.appendChild(style);
       }
+      _injected = true;
+    }
 
+    const hasStyle = typeof document !== "undefined" && document.getElementById(STYLE_ID);
+    if (hasStyle || typeof factory.getThemeCss === "function") {
+      const { css } = ensureResult();
+      if (hasStyle) injectCss(css);
+    }
+
+    factory.injectTheme = function (): string {
+      const css = ensureResult().css;
+      injectCss(css);
       return css;
     };
 
-    (factory as any).getThemeCss = function (): string {
+    factory.getThemeCss = function (): string {
       return ensureResult().css;
     };
 
-    (factory as any).getThemeVars = function (): Record<string, string> {
-      return ensureResult().vars;
+    factory.getThemeVars = function (): Record<string, string> {
+      return { ...ensureResult().vars };
     };
 
-    (factory as any).updateTheme = function (partial: Partial<XColorThemeOptions>, deep?: boolean): void {
-      var useDeep = deep !== false;
-      _options = useDeep ? deepMerge(_options, partial) : Object.assign({}, _options, partial) as XColorThemeOptions;
-      invalidateCache();
-
-      // Auto re-inject if previously injected
-      if (_injected) {
-        (factory as any).injectTheme();
-      }
+    factory.updateTheme = function (partial: Partial<XColorThemeOptions>, deep?: boolean): void {
+      const options = deep === false ? { ..._options, ...partial } : deepMerge(_options, partial);
+      const result = resolveThemeConfig(options, cls);
+      if (_injected) injectCss(result.css);
+      _options = options;
+      _result = result;
     };
 
-    (factory as any).removeTheme = function (): void {
+    factory.removeTheme = function (): void {
       if (typeof document !== "undefined") {
         var existing = document.getElementById(STYLE_ID);
         if (existing && existing.parentNode) {

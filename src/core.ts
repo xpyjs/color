@@ -15,6 +15,8 @@ import {
   relativeLuminance,
   contrastRatio
 } from "./utils";
+import { interpolate } from "./color-math";
+import { installWithCleanup, pluginInstallation, trackRegistration } from "./registration";
 import { parseColor } from "./parse";
 
 /** Global default options, applied when no instance-level opts are provided. */
@@ -159,7 +161,7 @@ export class XColor {
   /** @internal */
   _opts: XColorOptions;
   /** @internal */
-  private static _registeredPluginNames = new Set<string>();
+  private static _pluginCleanups = new Map<string, () => void>();
 
   /**
    * Create a new XColor instance.
@@ -172,7 +174,7 @@ export class XColor {
 
     if (value instanceof XColor) {
       // Inherit options from the source unless explicitly provided
-      if (!opts) this._opts = { ...value._opts };
+      this._opts = { ...value._opts, ...opts };
       this._r = this._roundCh(value._r);
       this._g = this._roundCh(value._g);
       this._b = this._roundCh(value._b);
@@ -209,7 +211,7 @@ export class XColor {
    * @internal
    */
   private _roundCh(value: number): number {
-    return this._opts.useDecimal ? value : Math.round(value);
+    return this._opts.useDecimal ? value : Math.round(value + 1e-9);
   }
 
   /**
@@ -217,14 +219,15 @@ export class XColor {
    * @internal
    */
   private _applyCS<T>(
-    toCS: (r: number, g: number, b: number) => T,
-    fromCS: (...args: number[]) => { r: number; g: number; b: number },
-    keys: (keyof T)[],
+    toCS: (r: number, g: number, b: number, useDecimal?: boolean) => T,
+    fromCS: typeof hslToRgb,
+    keys: [keyof T, keyof T, keyof T],
     fn: (cs: T) => void
   ): this {
-    const cs = toCS(this._r, this._g, this._b);
+    const cs = toCS(this._r, this._g, this._b, this._opts.useDecimal);
     fn(cs);
-    const c = fromCS(...keys.map(k => cs[k] as number));
+    const [first, second, third] = keys;
+    const c = fromCS(cs[first] as number, cs[second] as number, cs[third] as number, this._opts.useDecimal);
     this._r = this._roundCh(c.r);
     this._g = this._roundCh(c.g);
     this._b = this._roundCh(c.b);
@@ -388,7 +391,7 @@ export class XColor {
    */
   hue(value: number): this;
   hue(value?: number): number | this {
-    if (value === undefined) return rgbToHsl(this._r, this._g, this._b).h;
+    if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).h;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.h = ((value % 360) + 360) % 360; });
   }
 
@@ -417,7 +420,7 @@ export class XColor {
    */
   saturation(value: number): this;
   saturation(value?: number): number | this {
-    if (value === undefined) return rgbToHsl(this._r, this._g, this._b).s;
+    if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).s;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.s = clamp(value, 0, 100); });
   }
 
@@ -442,18 +445,18 @@ export class XColor {
    * Set the lightness value (0-100). Values are clamped.
    * @param value - New lightness percentage (0-100)
    * @returns Current instance
-   * @example xcolor('#ff0000').lightness(20).toHex() // '#cc0000'
+   * @example xcolor('#ff0000').lightness(20).toHex() // '#660000'
    */
   lightness(value: number): this;
   lightness(value?: number): number | this {
-    if (value === undefined) return rgbToHsl(this._r, this._g, this._b).l;
+    if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).l;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.l = clamp(value, 0, 100); });
   }
 
   /**
    * Alias for {@link lightness}. Get or set the lightness (0-100).
    * @example xcolor('#ff0000').l() // 50
-   * @example xcolor('#ff0000').l(20).toHex() // '#cc0000'
+   * @example xcolor('#ff0000').l(20).toHex() // '#660000'
    */
   l(): number;
   l(value: number): this;
@@ -475,7 +478,7 @@ export class XColor {
    */
   value(value: number): this;
   value(value?: number): number | this {
-    if (value === undefined) return rgbToHsv(this._r, this._g, this._b).v;
+    if (value === undefined) return rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal).v;
     return this._applyCS(rgbToHsv, hsvToRgb, ["h", "s", "v"], hsv => { hsv.v = clamp(value, 0, 100); });
   }
 
@@ -541,11 +544,13 @@ export class XColor {
   hsl(h: number, s: number, l: number, a?: number): this;
   hsl(h?: number, s?: number, l?: number, a?: number): HSLA | this {
     if (h === undefined) return this.toHsl();
+    if (!Number.isFinite(h)) return this;
     const current = this.toHsl();
     const c = hslToRgb(
       ((h % 360) + 360) % 360,
       clamp(s ?? current.s, 0, 100),
-      clamp(l ?? current.l, 0, 100)
+      clamp(l ?? current.l, 0, 100),
+      this._opts.useDecimal
     );
     this._r = this._roundCh(c.r);
     this._g = this._roundCh(c.g);
@@ -573,11 +578,13 @@ export class XColor {
   hsv(h: number, s: number, v: number, a?: number): this;
   hsv(h?: number, s?: number, v?: number, a?: number): HSVA | this {
     if (h === undefined) return this.toHsv();
+    if (!Number.isFinite(h)) return this;
     const current = this.toHsv();
     const c = hsvToRgb(
       ((h % 360) + 360) % 360,
       clamp(s ?? current.s, 0, 100),
-      clamp(v ?? current.v, 0, 100)
+      clamp(v ?? current.v, 0, 100),
+      this._opts.useDecimal
     );
     this._r = this._roundCh(c.r);
     this._g = this._roundCh(c.g);
@@ -594,8 +601,9 @@ export class XColor {
    */
   hex(): string;
   /**
-   * Set the color from a hex string.
-   * @param value - Hex color string (#RRGGBB, #RRGGBBAA, #RGB, #RGBA)
+   * Set the color from a string supported by the color parser.
+   * @param value - Hex, functional color string, or a registered plugin format
+   * @throws If parsing fails. The current channels are retained and validity becomes false.
    * @returns Current instance
    * @example xcolor().hex('#00ff00').toRgb() // { r: 0, g: 255, b: 0, a: 1 }
    */
@@ -683,7 +691,7 @@ export class XColor {
     if (this._a === 1) {
       return "rgb(" + this._r + ", " + this._g + ", " + this._b + ")";
     }
-    return "rgba(" + this._r + ", " + this._g + ", " + this._b + ", " + round(this._a, 2) + ")";
+    return "rgba(" + this._r + ", " + this._g + ", " + this._b + ", " + this._a + ")";
   }
 
   /**
@@ -697,7 +705,8 @@ export class XColor {
    * ```
    */
   toRgbArray(): [number, number, number, number] {
-    return [this._r, this._g, this._b, round(this._a, 2)];
+    const { r, g, b, a } = this.toRgb();
+    return [r, g, b, a];
   }
 
   /**
@@ -711,8 +720,17 @@ export class XColor {
    * ```
    */
   toHsl(): HSLA {
-    const _hsl = rgbToHsl(this._r, this._g, this._b);
+    const _hsl = rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal);
     return { h: _hsl.h, s: _hsl.s, l: _hsl.l, a: round(this._a, 2) };
+  }
+
+  /**
+   * Serialize as [hue, saturation, lightness, alpha], with the same precision as toHsl().
+   * @returns HSL channels and alpha
+   */
+  toHslArray(): [number, number, number, number] {
+    const { h, s, l, a } = this.toHsl();
+    return [h, s, l, a];
   }
 
   /**
@@ -726,11 +744,11 @@ export class XColor {
    * ```
    */
   toHslString(): string {
-    const _hsl = rgbToHsl(this._r, this._g, this._b);
+    const _hsl = rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal);
     if (this._a === 1) {
       return "hsl(" + round(_hsl.h) + ", " + round(_hsl.s) + "%, " + round(_hsl.l) + "%)";
     }
-    return "hsla(" + round(_hsl.h) + ", " + round(_hsl.s) + "%, " + round(_hsl.l) + "%, " + round(this._a, 2) + ")";
+    return "hsla(" + round(_hsl.h) + ", " + round(_hsl.s) + "%, " + round(_hsl.l) + "%, " + this._a + ")";
   }
 
   /**
@@ -744,8 +762,17 @@ export class XColor {
    * ```
    */
   toHsv(): HSVA {
-    const _hsv = rgbToHsv(this._r, this._g, this._b);
+    const _hsv = rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal);
     return { h: _hsv.h, s: _hsv.s, v: _hsv.v, a: round(this._a, 2) };
+  }
+
+  /**
+   * Serialize as [hue, saturation, value, alpha], with the same precision as toHsv().
+   * @returns HSV channels and alpha
+   */
+  toHsvArray(): [number, number, number, number] {
+    const { h, s, v, a } = this.toHsv();
+    return [h, s, v, a];
   }
 
   /**
@@ -759,11 +786,11 @@ export class XColor {
    * ```
    */
   toHsvString(): string {
-    const _hsv = rgbToHsv(this._r, this._g, this._b);
+    const _hsv = rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal);
     if (this._a === 1) {
       return "hsv(" + round(_hsv.h) + ", " + round(_hsv.s) + "%, " + round(_hsv.v) + "%)";
     }
-    return "hsva(" + round(_hsv.h) + ", " + round(_hsv.s) + "%, " + round(_hsv.v) + "%, " + round(this._a, 2) + ")";
+    return "hsva(" + round(_hsv.h) + ", " + round(_hsv.s) + "%, " + round(_hsv.v) + "%, " + this._a + ")";
   }
 
   /**
@@ -992,6 +1019,7 @@ export class XColor {
    * ```
    */
   spin(degrees: number): this {
+    if (!Number.isFinite(degrees)) return this;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.h = ((hsl.h + degrees) % 360 + 360) % 360; });
   }
 
@@ -1147,12 +1175,12 @@ export class XColor {
    * ```
    */
   mix(color: XColorInput, amount: number = 50): this {
-    const other = color instanceof XColor ? color : new XColor(color);
+    const other = color instanceof XColor ? color : new XColor(color, this._opts);
     const factor = clamp(amount, 0, 100) / 100;
-    this._r = this._roundCh(clamp(this._r * (1 - factor) + other._r * factor, 0, 255));
-    this._g = this._roundCh(clamp(this._g * (1 - factor) + other._g * factor, 0, 255));
-    this._b = this._roundCh(clamp(this._b * (1 - factor) + other._b * factor, 0, 255));
-    this._a = clamp(this._a * (1 - factor) + other._a * factor, 0, 1);
+    this._r = this._roundCh(clamp(interpolate(this._r, other._r, factor), 0, 255));
+    this._g = this._roundCh(clamp(interpolate(this._g, other._g, factor), 0, 255));
+    this._b = this._roundCh(clamp(interpolate(this._b, other._b, factor), 0, 255));
+    this._a = clamp(interpolate(this._a, other._a, factor), 0, 1);
     return this;
   }
 
@@ -1222,8 +1250,8 @@ export class XColor {
    * ```ts
    * xcolor('#ffffff').brightness()   // 255
    * xcolor('#000000').brightness()   // 0
-   * xcolor('#ffff00').brightness()   // 226  (yellow is very bright)
-   * xcolor('#0000ff').brightness()   // 29   (blue is perceived as dark)
+   * xcolor('#ffff00').brightness()   // 225.93  (yellow is very bright)
+   * xcolor('#0000ff').brightness()   // 29.07  (blue is perceived as dark)
    * ```
    */
   brightness(): number {
@@ -1291,6 +1319,7 @@ export class XColor {
   equals(other: XColorInput): boolean {
     const otherColor = other instanceof XColor ? other : new XColor(other);
     return (
+      this._valid && otherColor._valid &&
       this._r === otherColor._r &&
       this._g === otherColor._g &&
       this._b === otherColor._b &&
@@ -1347,14 +1376,10 @@ export class XColor {
    * ```
    */
   static extend<T = unknown>(plugin: XColorPlugin<T>, option?: T): typeof XColor {
-    // Handle UMD/CJS modules that wrap the plugin in a default export
-    if (
-      plugin && typeof plugin === "object"
-      && "default" in plugin
-      && typeof (plugin as any).default === "object"
-      && typeof (plugin as any).default.install === "function"
-    ) {
-      plugin = (plugin as any).default;
+    // Handle the namespace wrapper emitted by UMD and CommonJS.
+    const wrapped = plugin && (plugin as { default?: XColorPlugin<T> }).default;
+    if (wrapped && typeof wrapped === "object" && typeof wrapped.install === "function") {
+      plugin = wrapped;
     }
 
     if (
@@ -1370,12 +1395,13 @@ export class XColor {
       throw Logger.createError("Plugin must provide a non-empty name");
     }
 
-    if (XColor._registeredPluginNames.has(pluginName)) {
+    if (XColor._pluginCleanups.has(pluginName)) {
       Logger.warn(`Plugin "${pluginName}" is already registered and will be overridden`);
     }
 
-    XColor._registeredPluginNames.add(pluginName);
-    plugin.install(option as T, XColor, xcolor);
+    const cleanup = installWithCleanup(pluginName, () => plugin.install(option as T, XColor, xcolor), Logger.warn);
+    XColor._pluginCleanups.get(pluginName)?.();
+    XColor._pluginCleanups.set(pluginName, cleanup);
     return XColor;
   }
 
@@ -1440,7 +1466,7 @@ export class XColor {
   /**
    * Set global default options for all new `XColor` instances.
    * Instance-level options passed to the constructor take precedence.
-   * Call with no arguments or `{}` to reset to defaults.
+   * Pass `{}` to reset to defaults.
    *
    * @param opts - Default {@link XColorOptions} to apply globally
    * @example
@@ -1458,9 +1484,9 @@ export class XColor {
 
 type XColorStringFormatterFunc = (color: XColor) => string;
 
-const stringFormatRegistry = new WeakMap<object, Map<string, XColorStringFormatterFunc>>();
+const stringFormatRegistry = new WeakMap<object, Map<string, XColorStringFormatterFunc[]>>();
 
-function getStringFormatRegistry(cls: object): Map<string, XColorStringFormatterFunc> {
+function getStringFormatRegistry(cls: object): Map<string, XColorStringFormatterFunc[]> {
   let registry = stringFormatRegistry.get(cls);
   if (!registry) {
     registry = new Map();
@@ -1470,8 +1496,9 @@ function getStringFormatRegistry(cls: object): Map<string, XColorStringFormatter
 }
 
 function resolveStringFormatter(cls: typeof XColor, format: string): XColorStringFormatterFunc | undefined {
-  return stringFormatRegistry.get(cls)?.get(format)
-    ?? (cls === XColor ? undefined : stringFormatRegistry.get(XColor)?.get(format));
+  const formatters = stringFormatRegistry.get(cls)?.get(format)
+    ?? stringFormatRegistry.get(XColor)?.get(format);
+  return formatters?.[formatters.length - 1];
 }
 
 /**
@@ -1483,6 +1510,7 @@ function resolveStringFormatter(cls: typeof XColor, format: string): XColorStrin
  * @param cls - The `XColor` class being extended by the plugin
  * @param format - Custom format key added by the plugin, e.g. `"cmyk"`
  * @param formatter - Formatter that returns the string output for one instance
+ * @returns A function that removes this formatter registration
  * @example
  * ```ts
  * registerStringFormatter(XColor, 'cmyk', color => color.toCmykString())
@@ -1492,8 +1520,17 @@ export function registerStringFormatter<T extends XColor>(
   cls: { prototype: T },
   format: string,
   formatter: (color: T) => string
-): void {
-  getStringFormatRegistry(cls as object).set(format, formatter as XColorStringFormatterFunc);
+): () => void {
+  const registry = getStringFormatRegistry(cls);
+  const formatters = (pluginInstallation() && registry.get(format)) || [];
+  const entry: XColorStringFormatterFunc = (color) => formatter(color as T);
+  formatters.push(entry);
+  registry.set(format, formatters);
+  return trackRegistration(() => {
+    const index = formatters.indexOf(entry);
+    if (index >= 0) formatters.splice(index, 1);
+    if (!formatters.length && registry.get(format) === formatters) registry.delete(format);
+  });
 }
 
 // =======================================
@@ -1522,6 +1559,14 @@ export function registerStringFormatter<T extends XColor>(
  * ```
  */
 export interface XColorFactory {
+  /**
+   * Check whether an input represents a valid color using the active parser pipeline.
+   * @param value - A value to check, including an existing color instance
+   * @returns Whether parsing succeeds, or whether the instance is valid
+   * @example xcolor.isValidInput("#f00") // true
+   */
+  isValidInput(value: unknown): boolean;
+
   /**
    * Create a new {@link XColor} instance from any supported input.
    * When `value` is already an `XColor` instance, a clone is returned.
@@ -1674,9 +1719,6 @@ export interface XColorFactory {
  * ```
  */
 export const xcolor: XColorFactory = ((value?: XColorInput, opts?: XColorOptions): XColor => {
-  if (value instanceof XColor) {
-    return value.clone();
-  }
   return new XColor(value, opts);
 }) as XColorFactory;
 
@@ -1686,6 +1728,9 @@ export const xcolor: XColorFactory = ((value?: XColorInput, opts?: XColorOptions
 
 xcolor.extend = XColor.extend;
 xcolor.use = XColor.use;
+xcolor.isValidInput = (value) => value instanceof XColor
+  ? value.isValid()
+  : value != null && parseColor(value as XColorInputNative, true) !== null;
 xcolor.isColor = XColor.isColor;
 xcolor.is = XColor.isColor;
 xcolor.random = XColor.random;
