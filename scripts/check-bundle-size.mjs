@@ -6,7 +6,7 @@ import { gzipSync } from "node:zlib";
 // gzip output depends on the zlib build bundled with Node — Node 18 reports ~20
 // bytes less than Node 22 for these same files — so always re-measure with the CI
 // Node version before changing these numbers.
-const ceilings = { "index.cjs": 5636, "index.esm.js": 5608, "index.umd.js": 5654 };
+const ceilings = { "index.cjs": 5575, "index.esm.js": 5545, "index.umd.js": 5590 };
 
 const exceeded = [];
 for (const [file, ceiling] of Object.entries(ceilings)) {

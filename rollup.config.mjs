@@ -112,7 +112,7 @@ function commonJsDeclarations(isCore = false) {
                 type: "asset",
                 fileName: "index.d.cts",
                 source: [
-                    'import type * as exports from "./index.js" with { "resolution-mode": "import" };',
+                    'import type * as exports from "./index.js" assert { "resolution-mode": "import" };',
                     "declare const entry: typeof exports.default & Omit<typeof exports, \"default\"> & { default: typeof entry };",
                     ...(typeNames.size ? [
                         "declare namespace entry {",
