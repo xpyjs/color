@@ -32,7 +32,7 @@ xcolor.use(simulatePlugin)
 | `'protanopia'` | 红色盲（L 锥体缺失）| 约 1% 男性 |
 | `'deuteranopia'` | 绿色盲（M 锥体缺失）| 约 1% 男性 |
 | `'tritanopia'` | 蓝色盲（S 锥体缺失）| 极少数 |
-| `'grayscale'` | 全色盲 | — |
+| `'grayscale'` | 完全去饱和（HSL 灰度）| — |
 
 ```ts
 xcolor('#ff0000').clone().simulate('protanopia').toHex()

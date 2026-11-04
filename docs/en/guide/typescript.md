@@ -1,4 +1,4 @@
-﻿# TypeScript
+# TypeScript
 
 xcolor is written in TypeScript and ships with full type declarations. No `@types` package needed.
 
@@ -59,7 +59,7 @@ const myPlugin: XColorPlugin<{ threshold: number }> = {
 
 ## ESM, CommonJS, and troubleshooting
 
-Use TypeScript 5.3 or later for the CommonJS declaration entry.
+The CommonJS declaration entry uses `resolution-mode` in an `import type`, so it needs TypeScript 4.7 or later (verified with 4.9 and 5.9).
 
 ```ts
 // example.mts

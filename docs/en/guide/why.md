@@ -6,11 +6,11 @@ Color manipulation is a common need in frontend development and design tools. Wh
 
 ### Extremely Lightweight
 
-Core library is about **15 KB** min / **5 KB** gzip.
+Core library is about **17 KB** min / **5.5 KB** gzip.
 
 ### Chainable + Mutable Instance
 
-All xcolor manipulation methods modify the instance in place and return `this`, supporting fluent chaining:
+xcolor's core manipulation methods modify the instance in place and return `this`, supporting fluent chaining (plugin methods such as blend and simulate return a new instance and say so in their docs):
 
 ```ts
 xcolor('#3498db')

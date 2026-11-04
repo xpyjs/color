@@ -74,7 +74,7 @@ xcolor('#ff0000')
   .hue(210)       // setter: set hue to 210°
   .lightness(60)  // setter: set lightness to 60%
   .alpha(0.8)     // setter: set opacity
-  .toRgbString()  // 'rgba(77, 136, 230, 0.8)'
+  .toRgbString()  // 'rgba(51, 153, 255, 0.8)'
 ```
 
 ## Practical Examples

@@ -186,7 +186,7 @@ Generated CSS variables (example):
 ```css
 :root {
   /* primary — user-provided */
-  --x-primary-50:  #e6f7ff;
+  --x-primary-50:  #e4f6ff;
   --x-primary-500: #1890ff;
   --x-primary-900: #002766;
   --x-primary-hover: ...;
@@ -490,7 +490,8 @@ Get a flat map of CSS variable names to values.
 
 ```ts
 const vars = xcolor.getThemeVars()
-// { '--x-primary-500': '#1890ff', '--x-primary-hover': '#40a9ff', ... }
+// { '--x-primary-500': '#1890ff', '--x-primary-hover': '#41a9ff', ... }
+// getThemeVars() always returns a hex snapshot; format only affects getThemeCss()/injectTheme() CSS text.
 ```
 
 ### updateTheme(options, deep?)
@@ -553,17 +554,17 @@ Generated CSS:
 
 ```css
 :root {
-  --x-primary-50: #e6f7ff;
-  --x-primary-100: #bae7ff;
+  --x-primary-50: #e4f6ff;
+  --x-primary-100: #bbe7ff;
   /* ... more shades ... */
   --x-primary-500: #1890ff;
   /* ... */
   --x-primary-900: #002766;
-  --x-primary-hover: #40a9ff;
-  --x-primary-active: #096dd9;
-  --x-primary-disabled: #91d5ff;
-  --x-primary-border: #69c0ff;
-  --x-primary-bg: #e6f7ff;
+  --x-primary-hover: #41a9ff;
+  --x-primary-active: #0a6ed9;
+  --x-primary-disabled: #92d5ff;
+  --x-primary-border: #6ac1ff;
+  --x-primary-bg: #e4f6ff;
   --x-primary-text: #002766;
   /* success, warning, danger likewise ... */
 }

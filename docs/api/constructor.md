@@ -43,7 +43,7 @@ xcolor({ h: 0, s: 100, l: 50 })           // HSL
 xcolor({ h: 0, s: 100, v: 100 })          // HSV
 ```
 
-缺少的通道会使用默认值（RGB 默认 0，alpha 默认 1）。
+RGB 对象可以省略通道（缺省为 0），alpha 始终可省略（默认 1）。HSL 对象必须提供完整的 `h`、`s`、`l`，HSV 对象必须提供完整的 `h`、`s`、`v`；安装 CMYK 插件后，CMYK 对象必须提供完整的 `c`、`m`、`y`、`k`。
 
 #### 数字
 
@@ -83,17 +83,9 @@ c.rgb(127.5, 64.25, 0)
 c.rgb()  // { r: 127.5, g: 64.25, b: 0, a: 1 }
 ```
 
-## new XColor(input?, options?)
+## XColor 类
 
-同 `xcolor()` 工厂函数，但使用 `new` 关键字。两者行为完全一致：
-
-```ts
-import { XColor } from '@xpyjs/color'
-
-const color = new XColor('#ff0000')
-```
-
-一般推荐使用 `xcolor()` 工厂函数——更简洁，且静态方法挂载在工厂函数上。
+`XColor` 类用于类型标注和插件扩展（插件 `install` 会收到类本身），不作为用户的常规构造入口。请始终使用 `xcolor()` 工厂函数创建实例；`xcolor(existing)` 会返回独立克隆。
 
 ## clone()
 

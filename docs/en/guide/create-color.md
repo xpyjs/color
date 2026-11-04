@@ -75,7 +75,7 @@ xcolor({ h: 120, s: 100, l: 50 })      // green
 xcolor({ h: 240, s: 100, v: 100 })     // blue
 ```
 
-Missing channels use default values (RGB defaults to 0, alpha defaults to 1).
+RGB objects may omit channels (default 0), and alpha is always optional (default 1). HSL objects require complete `h`, `s`, `l`; HSV objects require complete `h`, `s`, `v`.
 
 ## Number Input
 

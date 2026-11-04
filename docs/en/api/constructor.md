@@ -43,7 +43,7 @@ xcolor({ h: 0, s: 100, l: 50 })           // HSL
 xcolor({ h: 0, s: 100, v: 100 })          // HSV
 ```
 
-Missing channels will use default values (RGB defaults to 0, alpha defaults to 1).
+RGB objects may omit channels (default 0), and alpha is always optional (default 1). HSL objects require all of `h`, `s`, `l`; HSV objects require all of `h`, `s`, `v`. With the CMYK plugin installed, CMYK objects require all of `c`, `m`, `y`, `k`.
 
 #### Number
 
@@ -83,17 +83,9 @@ c.rgb(127.5, 64.25, 0)
 c.rgb()  // { r: 127.5, g: 64.25, b: 0, a: 1 }
 ```
 
-## new XColor(input?, options?)
+## XColor Class
 
-Same as the `xcolor()` factory function, but using the `new` keyword. Both behave identically:
-
-```ts
-import { XColor } from '@xpyjs/color'
-
-const color = new XColor('#ff0000')
-```
-
-Generally, the `xcolor()` factory function is recommended — it's more concise, and static methods are mounted on the factory function.
+The `XColor` class is intended for type annotations and plugin extensions (the plugin `install` callback receives the class itself), not as the normal constructor entry point. Always create instances with `xcolor()`; `xcolor(existing)` returns an independent clone.
 
 ## clone()
 

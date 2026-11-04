@@ -86,7 +86,7 @@ xcolor 编译目标为 ES2015。如果你的项目 `tsconfig.json` 设置了 `mo
 
 ## ESM、CommonJS 与排错
 
-CommonJS 声明入口需要 TypeScript 5.3 或以上版本。
+CommonJS 声明入口使用 `import type` 的 `resolution-mode`，需要 TypeScript 4.7 或以上版本（已在 4.9 和 5.9 验证）。
 
 ```ts
 // example.mts

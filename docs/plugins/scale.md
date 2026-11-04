@@ -26,9 +26,10 @@ xcolor.use(scalePlugin)
 
 ```ts
 interface ScaleOptions {
-  steps?: number      // 步数，默认 5（≥ 2）
-  space?: ScaleSpace  // 插值色彩空间
-  easing?: ScaleEasing // 缓动函数
+  steps?: number            // 步数，默认 5（2–10000）
+  space?: ScaleSpace        // 插值色彩空间
+  easing?: ScaleEasing      // 缓动函数
+  premultiplyAlpha?: boolean // 按不透明度加权通道，默认 false
 }
 ```
 
@@ -38,18 +39,17 @@ interface ScaleOptions {
 | --- | --- |
 | `'rgb'` | RGB 线性插值（默认）|
 | `'hsl'` | HSL 插值 |
-| `'hsv'` | HSV 插值 |
-| `'lab'` | CIE Lab 插值（需安装 lab 插件）|
-| `'lch'` | CIE LCH 插值 |
+| `'srgb-linear'` | 线性光 sRGB 插值 |
+| `'oklab'` | OKLab 插值 |
 
 #### 缓动函数（ScaleEasing）
 
 | 值 | 说明 |
 | --- | --- |
 | `'linear'` | 线性（默认）|
-| `'ease-in'` | 缓入 |
-| `'ease-out'` | 缓出 |
-| `'ease-in-out'` | 缓入缓出 |
+| `'easeIn'` | 缓入 |
+| `'easeOut'` | 缓出 |
+| `'easeInOut'` | 缓入缓出 |
 
 **返回值**：`XColor[]`
 
@@ -57,7 +57,7 @@ interface ScaleOptions {
 xcolor('#ff0000').scale('#0000ff', {
   steps: 7,
   space: 'hsl',
-  easing: 'ease-in-out'
+  easing: 'easeInOut'
 }).map(c => c.toHex())
 ```
 
@@ -69,7 +69,7 @@ xcolor('#ff0000').scale('#0000ff', {
 | --- | --- | --- |
 | `to` | `XColorInput` | 目标颜色 |
 | `t` | `number` | 插值位置（0–1）|
-| `options` | `{ space?, easing? }` | 配置选项 |
+| `options` | `{ space?, easing?, premultiplyAlpha? }` | 配置选项 |
 
 **返回值**：`XColor`
 
@@ -88,7 +88,7 @@ RGB 插值可能产生"浑浊"的中间色，HSL 插值会沿色轮过渡：
 // RGB：红→蓝 中间是紫灰色
 xcolor('#ff0000').scale('#0000ff', { space: 'rgb', steps: 5 })
 
-// HSL：红→蓝 中间经过绿色
+// HSL：红→蓝 走最短色相路径，中间经过品红
 xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 

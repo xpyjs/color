@@ -125,9 +125,9 @@ xcolor('#ff0000').monochromatic().map(c => c.toHex())
 
 <div class="color-demo">
   <div class="color-demo-swatch" style="background: #2b0000"></div>
-  <div class="color-demo-swatch" style="background: #550000"></div>
   <div class="color-demo-swatch" style="background: #800000"></div>
-  <div class="color-demo-swatch" style="background: #aa0000"></div>
-  <div class="color-demo-swatch" style="background: #d40000"></div>
-  <div class="color-demo-swatch" style="background: #ff0000"></div>
+  <div class="color-demo-swatch" style="background: #d50000"></div>
+  <div class="color-demo-swatch" style="background: #ff2b2b"></div>
+  <div class="color-demo-swatch" style="background: #ff8080"></div>
+  <div class="color-demo-swatch" style="background: #ffd5d5"></div>
 </div>

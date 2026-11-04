@@ -14,7 +14,7 @@ import { Logger, defineMethod } from "@xpyjs/color";
  * - `"protanopia"`   — Red-blind: missing L-cone (red-sensitive). Red appears dark.
  * - `"deuteranopia"` — Green-blind: missing M-cone (green-sensitive). Most common form (~6% of males).
  * - `"tritanopia"`   — Blue-blind: missing S-cone (blue-sensitive). Rare.
- * - `"grayscale"`    — Achromatopsia: complete absence of color perception.
+ * - `"grayscale"`    — Full HSL desaturation; a lightness-preserving gray approximation.
  *
  * @example
  * ```ts
@@ -53,7 +53,7 @@ declare module "@xpyjs/color" {
      *   - `"protanopia"` - Red-blind (no red cones)
      *   - `"deuteranopia"` - Green-blind (no green cones)
      *   - `"tritanopia"` - Blue-blind (no blue cones)
-     *   - `"grayscale"` - Complete color blindness
+     *   - `"grayscale"` - Full HSL desaturation (gray approximation)
      * @returns A new XColor instance with the simulated color
      * @example
      * ```ts

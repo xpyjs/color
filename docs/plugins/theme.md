@@ -186,7 +186,7 @@ xcolor.use(themePlugin, {
 ```css
 :root {
   /* primary — 用户提供 */
-  --x-primary-50:  #e6f7ff;
+  --x-primary-50:  #e4f6ff;
   --x-primary-500: #1890ff;
   --x-primary-900: #002766;
   --x-primary-hover: ...;
@@ -490,7 +490,8 @@ const css = xcolor.getThemeCss()
 
 ```ts
 const vars = xcolor.getThemeVars()
-// { '--x-primary-500': '#1890ff', '--x-primary-hover': '#40a9ff', ... }
+// { '--x-primary-500': '#1890ff', '--x-primary-hover': '#41a9ff', ... }
+// getThemeVars() 始终返回 hex 快照；format 只影响 getThemeCss()/injectTheme() 的 CSS 文本。
 ```
 
 ### updateTheme(options, deep?)
@@ -553,17 +554,17 @@ xcolor.injectTheme()
 
 ```css
 :root {
-  --x-primary-50: #e6f7ff;
-  --x-primary-100: #bae7ff;
+  --x-primary-50: #e4f6ff;
+  --x-primary-100: #bbe7ff;
   /* ... 更多色阶 ... */
   --x-primary-500: #1890ff;
   /* ... */
   --x-primary-900: #002766;
-  --x-primary-hover: #40a9ff;
-  --x-primary-active: #096dd9;
-  --x-primary-disabled: #91d5ff;
-  --x-primary-border: #69c0ff;
-  --x-primary-bg: #e6f7ff;
+  --x-primary-hover: #41a9ff;
+  --x-primary-active: #0a6ed9;
+  --x-primary-disabled: #92d5ff;
+  --x-primary-border: #6ac1ff;
+  --x-primary-bg: #e4f6ff;
   --x-primary-text: #002766;
   /* success, warning, danger 同理 ... */
 }

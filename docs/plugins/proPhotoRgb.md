@@ -21,7 +21,7 @@ xcolor.use(proPhotoRgbPlugin)
 
 ```ts
 xcolor('#ff0000').toProPhotoRgb()
-// { r: 0.7022, g: 0.2757, b: 0.1036 }
+// { r: 0.7023, g: 0.2757, b: 0.1036 }
 ```
 
 ### toProPhotoRgbString()
@@ -30,7 +30,7 @@ xcolor('#ff0000').toProPhotoRgb()
 
 ```ts
 xcolor('#ff0000').toProPhotoRgbString()
-// 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
+// 'color(prophoto-rgb 0.7023 0.2757 0.1036)'
 ```
 
 ## 输入解析
@@ -42,7 +42,7 @@ xcolor('color(prophoto-rgb 0.70 0.28 0.10)').toHex()
 ## 格式化
 
 ```ts
-xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.7022 0.2757 0.1036)'
+xcolor('#ff0000').toString('proPhotoRgb')  // 'color(prophoto-rgb 0.7023 0.2757 0.1036)'
 ```
 
 ## 保留原始坐标

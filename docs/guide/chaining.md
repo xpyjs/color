@@ -74,7 +74,7 @@ xcolor('#ff0000')
   .hue(210)       // setter：设置色相为 210°
   .lightness(60)  // setter：设置亮度为 60%
   .alpha(0.8)     // setter：设置透明度
-  .toRgbString()  // 'rgba(77, 136, 230, 0.8)'
+  .toRgbString()  // 'rgba(51, 153, 255, 0.8)'
 ```
 
 ## 实际场景

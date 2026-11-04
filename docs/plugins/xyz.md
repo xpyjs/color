@@ -28,7 +28,7 @@ xcolor('#ff0000').toXyz()
 // { x: 0.4124, y: 0.2126, z: 0.0193 }
 
 xcolor('#ff0000').toXyz('D50')
-// { x: 0.436, y: 0.2225, z: 0.0139 }
+// { x: 0.4361, y: 0.2225, z: 0.0139 }
 ```
 
 ### toXyzString(illuminant?)
@@ -40,7 +40,7 @@ xcolor('#ff0000').toXyzString()
 // 'color(xyz-d65 0.4124 0.2126 0.0193)'
 
 xcolor('#ff0000').toXyzString('D50')
-// 'color(xyz-d50 0.436 0.2225 0.0139)'
+// 'color(xyz-d50 0.4361 0.2225 0.0139)'
 ```
 
 ## 输入解析

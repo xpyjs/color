@@ -114,7 +114,7 @@ Supported plugin format keys include: `cmyk`, `lab`, `lch`, `oklab`, `oklch`, `h
 
 | Format Key | Output Example | Description |
 | --- | --- | --- |
-| `hex` | `#ff0000` | Default 6-digit hex |
+| `hex` | `#ff0000` | Default 6-digit hex; 8 digits when alpha < 1 |
 | `hex3` | `#f00` | 3-digit short format (only when color is compressible) |
 | `hex8` | `#ff0000ff` | 8-digit with alpha |
 | `rgb` | `rgb(255, 0, 0)` | CSS rgb/rgba |

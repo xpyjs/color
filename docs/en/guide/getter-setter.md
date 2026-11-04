@@ -97,14 +97,14 @@ xcolor('#ff0000').value(50) // reduce brightness
 ```
 
 ::: info
-`hue()` and `saturation()` are shared between HSL and HSV. Modifying hue or saturation will affect both models simultaneously.
+`hue()` is the same angle in HSL and HSV. `saturation()` is the **HSL saturation**; read/write HSV saturation through the `hsv()` object, and use `value()` for HSV brightness.
 :::
 
 ## Compound Getter / Setter
 
 ### rgb(r, g, b)
 
-Without arguments, returns an `{ r, g, b, a }` object. With arguments, sets all three RGB channels at once:
+Without arguments, returns an `{ r, g, b, a }` object. With arguments, sets channels; omitted channels keep their current values:
 
 ```ts
 xcolor('#ff0000').rgb()           // { r: 255, g: 0, b: 0, a: 1 }
@@ -113,7 +113,7 @@ xcolor('#ff0000').rgb(0, 128, 255) // set all three channels
 
 ### hsl(h, s, l)
 
-Without arguments, returns an `{ h, s, l, a }` object. With arguments, sets all three HSL channels at once:
+Without arguments, returns an `{ h, s, l, a }` object. With arguments, sets channels; omitted channels keep their current values:
 
 ```ts
 xcolor('#ff0000').hsl()          // { h: 0, s: 100, l: 50, a: 1 }
@@ -122,7 +122,7 @@ xcolor('#ff0000').hsl(210, 80, 60)
 
 ### hsv(h, s, v)
 
-Without arguments, returns an `{ h, s, v, a }` object. With arguments, sets all three HSV channels at once:
+Without arguments, returns an `{ h, s, v, a }` object. With arguments, sets channels; omitted channels keep their current values:
 
 ```ts
 xcolor('#ff0000').hsv()            // { h: 0, s: 100, v: 100, a: 1 }
@@ -131,7 +131,7 @@ xcolor('#ff0000').hsv(120, 100, 80)
 
 ### hex(value)
 
-Without arguments, returns a 6-digit hex string. With an argument, sets the color from a hex string:
+Without arguments, returns a hex string: 6 digits when fully opaque, 8 digits when alpha < 1. With an argument, sets the color from a hex string:
 
 ```ts
 xcolor('#ff0000').hex()        // '#ff0000'

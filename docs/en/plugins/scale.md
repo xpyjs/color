@@ -26,9 +26,10 @@ Generate an interpolation sequence from the current color to the target color.
 
 ```ts
 interface ScaleOptions {
-  steps?: number      // Number of steps, default 5 (≥ 2)
-  space?: ScaleSpace  // Interpolation color space
-  easing?: ScaleEasing // Easing function
+  steps?: number            // Number of steps, default 5 (2–10000)
+  space?: ScaleSpace        // Interpolation color space
+  easing?: ScaleEasing      // Easing function
+  premultiplyAlpha?: boolean // Weight channels by opacity, default false
 }
 ```
 
@@ -38,18 +39,17 @@ interface ScaleOptions {
 | --- | --- |
 | `'rgb'` | RGB linear interpolation (default) |
 | `'hsl'` | HSL interpolation |
-| `'hsv'` | HSV interpolation |
-| `'lab'` | CIE Lab interpolation (requires lab plugin) |
-| `'lch'` | CIE LCH interpolation |
+| `'srgb-linear'` | Linear-light sRGB interpolation |
+| `'oklab'` | OKLab interpolation |
 
 #### Easing Function (ScaleEasing)
 
 | Value | Description |
 | --- | --- |
 | `'linear'` | Linear (default) |
-| `'ease-in'` | Ease in |
-| `'ease-out'` | Ease out |
-| `'ease-in-out'` | Ease in-out |
+| `'easeIn'` | Ease in |
+| `'easeOut'` | Ease out |
+| `'easeInOut'` | Ease in-out |
 
 **Return value**: `XColor[]`
 
@@ -57,7 +57,7 @@ interface ScaleOptions {
 xcolor('#ff0000').scale('#0000ff', {
   steps: 7,
   space: 'hsl',
-  easing: 'ease-in-out'
+  easing: 'easeInOut'
 }).map(c => c.toHex())
 ```
 
@@ -69,7 +69,7 @@ Get a single interpolated color at a specified position between two colors.
 | --- | --- | --- |
 | `to` | `XColorInput` | Target color |
 | `t` | `number` | Interpolation position (0–1) |
-| `options` | `{ space?, easing? }` | Configuration options |
+| `options` | `{ space?, easing?, premultiplyAlpha? }` | Configuration options |
 
 **Return value**: `XColor`
 
@@ -88,7 +88,7 @@ RGB interpolation may produce "muddy" intermediate colors, while HSL interpolati
 // RGB: red→blue, the middle is a grayish purple
 xcolor('#ff0000').scale('#0000ff', { space: 'rgb', steps: 5 })
 
-// HSL: red→blue, the middle passes through green
+// HSL: red→blue takes the shortest hue path, passing through magenta
 xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 

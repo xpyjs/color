@@ -97,7 +97,7 @@ declare module "@xpyjs/color" {
      * @example
      * ```ts
      * xcolor('#ff0000').deltaE('#ff0000') // 0
-     * xcolor('#ff0000').deltaE('#00ff00') // ~86.6
+     * xcolor('#ff0000').deltaE('#00ff00') // ~170.57
      * ```
      */
     deltaE(other: XColorInput): number;

@@ -241,7 +241,7 @@ export default myPlugin
 | --- | --- |
 | `parseRgbChannel(val)` | 解析 RGB 通道值（支持百分比）|
 | `parseAlphaChannel(val)` | 解析透明度值（支持百分比）|
-| `parseFunctionalChannels(input, name)` | 解析 CSS 函数语法的通道值 |
+| `parseFunctionalChannels(input, names, channelCount)` | 解析 CSS 函数语法的通道值（`channelCount` 为期望的通道数）|
 | `parseColor(input)` | 完整的颜色解析管道 |
 
 ### 日志

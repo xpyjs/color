@@ -129,7 +129,7 @@ xcolor('#ff0000').hsv(120, 100, 80)  // set to a green tone
 
 ### hex(value?) {#hex}
 
-Without arguments, returns a 6-digit hex string. With an argument, sets the color from a hex string.
+Without arguments, returns a hex string: 6 digits when fully opaque, 8 digits when alpha < 1. With an argument, sets the color from a hex string.
 
 The setter accepts strings recognized by the active color parsers. A successful call marks the instance valid. A parse failure throws and marks it invalid while retaining its channels.
 

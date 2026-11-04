@@ -80,7 +80,7 @@ const color2 = xcolor('#00ff00', {/* 配置项 */}); // 支持针对当前实例
 - 保存默认 r、g、b、a 信息，以及一些颜色附加信息，作为基础值。所有颜色操作都通过这些基础值进行。
 - 内部数据支持完整小数位。由于 CSS4 中以及现代浏览器能够支持颜色小数位（比如 rgb(230.5, 120.3, 50.8)），因此内部数据需要支持完整小数位，以确保颜色计算的准确性和一致性。但这些仅在显式声明下才可用，默认情况仍然需要返回整数以确保用户得到的颜色有效性。这个参数可以通过工厂函数的配置选项实现。
 
-解析方法应当统一为一个 `parse` 方法，接受不同格式的输入，并返回一个标准化的颜色对象。解析过程中需要进行严格的输入验证，确保输入的合法性和正确性。
+解析入口统一为 `parseColor`（以及 `xcolor.isValidInput`），接受不同格式的输入，并返回标准化的 RGBA 对象或 `null`。解析过程中需要进行严格的输入验证，确保输入的合法性和正确性。
 
 ### Getter 和 Setter 方法
 
@@ -189,30 +189,31 @@ color.toString('cmyk'); // 'cmyk(0, 0, 0, 100)' 安装插件后，应当返回 C
 比如：
 
 ```typescript
-interface XColorPlugin {
+interface XColorPlugin<T = unknown> {
   name: string; // 插件名称，必须唯一
-  install(xcolorInstance: typeof xcolor, options?: any): void; // 插件安装方法，接受核心库实例和可选的配置项
+  // 插件安装方法：配置项、XColor 类、xcolor 工厂；可返回清理函数
+  install(option: T, cls: typeof XColor, factory: typeof xcolor): void | (() => void);
   // 其他必要的信息，如版本、作者等
 }
 ```
 
 类型可以支持类型参数，方便在安装插件时进行类型提示和约束。比如：`XColorPlugin<T = any>`，其中 `T` 是插件的配置项类型，根据实际情况，看需要如何使用。
 
-插件应当在 src/plugins 目录下实现，每个插件都有单独子目录。所有插件目录下都存在一个 `index.ts` 文件，其中至少有一个默认导出的插件对象，包含插件的名称、安装方法和其他必要的信息。插件的安装方法应当接受核心库的实例作为参数，以便插件能够正确地挂载到核心库上。
+插件应当在 src/plugins 目录下实现，每个插件都有单独子目录。所有插件目录下都存在一个 `index.ts` 文件，其中至少有一个默认导出的插件对象，包含插件的名称、安装方法和其他必要的信息。`install(option, cls, factory)` 会收到配置项、`XColor` 类和 `xcolor` 工厂函数；可以通过 `cls` 挂载方法，通过 `factory` 创建实例。
 
 比如：
 
 ```typescript
 // src/plugins/some-plugin/index.ts
-import { XColor } from '@xpyjs/color';
+import { defineMethod } from '@xpyjs/color';
 
 const SomePlugin: XColorPlugin = {
   name: 'some-plugin',
-  install(xcolorInstance: typeof xcolor) {
-    // 在这里实现插件的安装逻辑，比如添加新的方法或属性到 XColor 类上
-    xcolorInstance.prototype.someMethod = function() {
+  install(_option, cls) {
+    // 在这里实现插件的安装逻辑，比如添加新的方法到 XColor 类上
+    defineMethod(cls, 'someMethod', function() {
       // 插件方法的实现
-    };
+    });
   },
 };
 
@@ -228,12 +229,12 @@ export default SomePlugin;
 ```typescript
 const SomePlugin: XColorPlugin = {
   name: 'some-plugin',
-  install(xcolorInstance: typeof xcolor) {
+  install(_option, cls) {
     // 保存原有的 toString 方法
-    const originalToString = xcolorInstance.prototype.toString;
+    const originalToString = cls.prototype.toString;
 
     // 覆盖 toString 方法
-    xcolorInstance.prototype.toString = function(type: XColorFormat) {
+    cls.prototype.toString = function(type?: string) {
       if (type === 'cmyk') {
         // 实现 CMYK 格式的字符串输出
         return `cmyk(0, 0, 0, 100)`;
@@ -284,7 +285,7 @@ const SomePlugin: XColorPlugin = {
 
 ## 10. 实现目标
 
-- 核心包打包后体积不超过 5KB（gzip 后），以确保库的轻量级和高性能。
+- 核心包打包后体积不超过 6KB（gzip 后，当前约 5.5KB），以确保库的轻量级和高性能。
 - 核心包的功能实现应当满足常见的颜色处理需求，同时保持 API 的简洁和一致性，以确保用户能够方便地使用和扩展库的功能。
 - 插件机制应当灵活且易于使用，允许用户根据需要扩展库的功能，同时保持与核心库的兼容性和一致性。
 - 可与其他 JavaScript 运行环境兼容，确保库的广泛适用性和用户覆盖面。

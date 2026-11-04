@@ -136,7 +136,7 @@ xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 | 输出 | 精度和 alpha |
 | --- | --- |
 | `alpha()` | 返回实例保存的 alpha |
-| `toRgb()`、`toHsl()`、`toHsv()` 和对应数组 | alpha 保留两位小数。`toHslArray()` 为 `[h, s, l, a]`，`toHsvArray()` 为 `[h, s, v, a]`。 |
+| `toRgb()`、`toHsl()`、`toHsv()` 和对应数组 | alpha 保留实例保存的精度。`toHslArray()` 为 `[h, s, l, a]`，`toHsvArray()` 为 `[h, s, v, a]`。 |
 | RGB、HSL、HSV 字符串 | 保留实例 alpha，HSL 和 HSV 的颜色坐标在字符串中取整 |
 | Hex | RGB 与 alpha 均量化为 8 位通道 |
 | `toNumber()` | RGB 取整，输出省略 alpha |

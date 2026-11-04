@@ -36,13 +36,13 @@ xcolor('#ff0000').palette({ shades: [100, 500, 900] })
 ```
 
 <div class="color-demo">
-  <div class="color-demo-swatch" style="background: #e6f7ff"></div>
-  <div class="color-demo-swatch" style="background: #bae7ff"></div>
-  <div class="color-demo-swatch" style="background: #91d5ff"></div>
-  <div class="color-demo-swatch" style="background: #69c0ff"></div>
-  <div class="color-demo-swatch" style="background: #40a9ff"></div>
+  <div class="color-demo-swatch" style="background: #e4f6ff"></div>
+  <div class="color-demo-swatch" style="background: #bbe7ff"></div>
+  <div class="color-demo-swatch" style="background: #92d5ff"></div>
+  <div class="color-demo-swatch" style="background: #6ac1ff"></div>
+  <div class="color-demo-swatch" style="background: #41a9ff"></div>
   <div class="color-demo-swatch" style="background: #1890ff; border: 2px solid #333"></div>
-  <div class="color-demo-swatch" style="background: #096dd9"></div>
+  <div class="color-demo-swatch" style="background: #0a6ed9"></div>
   <div class="color-demo-swatch" style="background: #0050b3"></div>
   <div class="color-demo-swatch" style="background: #003a8c"></div>
   <div class="color-demo-swatch" style="background: #002766"></div>

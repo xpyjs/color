@@ -18,12 +18,14 @@ declare module "@xpyjs/color" {
      */
     toPercentageRgb(): { r: string; g: string; b: string; a: number };
     /**
-     * Output as percentage-based rgba() string.
-     * @returns Formatted string, e.g. `rgba(100%, 50%, 0%, 1)`
+     * Output as percentage-based rgb()/rgba() string.
+     * @returns Formatted string; alpha is omitted when the color is fully opaque
      * @example
      * ```ts
      * xcolor('#ff8000').toPercentageRgbString()
-     * // 'rgba(100%, 50%, 0%, 1)'
+     * // 'rgb(100%, 50%, 0%)'
+     * xcolor('rgba(255,128,0,0.5)').toPercentageRgbString()
+     * // 'rgba(100%, 50%, 0%, 0.5)'
      * ```
      */
     toPercentageRgbString(): string;
@@ -31,7 +33,7 @@ declare module "@xpyjs/color" {
 
   /** Adds `'percentageRgb'` as a valid {@link XColorStringFormat} key. */
   interface XColorStringFormatMap {
-    /** Percentage-based RGB functional notation, e.g. `rgba(100%, 50%, 0%, 1)`. */
+    /** Percentage-based RGB functional notation, e.g. `rgb(100%, 50%, 0%)`. */
     percentageRgb: true;
   }
 }

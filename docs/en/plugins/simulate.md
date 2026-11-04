@@ -20,7 +20,7 @@ Simulate a color vision deficiency. Returns a new color instance.
 | `'protanopia'` | Red-blind (no L cones) | ~1% males |
 | `'deuteranopia'` | Green-blind (no M cones) | ~1% males |
 | `'tritanopia'` | Blue-blind (no S cones) | Rare |
-| `'grayscale'` | Total color blindness | — |
+| `'grayscale'` | Full desaturation (HSL grayscale) | — |
 
 ```ts
 xcolor('#ff0000').clone().simulate('protanopia').toHex()

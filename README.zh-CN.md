@@ -1,9 +1,9 @@
 <p align="center">
-  <img src=".github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
+  <img src="https://raw.githubusercontent.com/xpyjs/color/main/.github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
 </p>
 
 <h1 align="center">
-  <img src=".github/assets/title.svg" alt="@xpyjs/color" width="480" />
+  <img src="https://raw.githubusercontent.com/xpyjs/color/main/.github/assets/title.svg" alt="@xpyjs/color" width="480" />
 </h1>
 
 <p align="center">
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  一个极小（gzip 后约 <b>4KB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
+  一个极小（gzip 后约 <b>5.5KB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
 </p>
 
 <p align="center">
@@ -30,15 +30,15 @@
 
 ## ✨ 特性
 
-- 🪶 **极小体积** — 核心约 4KB（gzip），零依赖
+- 🪶 **极小体积** — 核心约 5.5KB（gzip），零依赖
 - 🔌 **插件系统** — 类似 dayjs 的扩展机制，按需加载
 - 🎯 **TypeScript 优先** — 完整的类型定义和智能提示
 - ⛓️ **链式 API** — 所有操作支持流畅的链式调用
-- 🎨 **多格式支持**  — Hex、RGB、HSL、HSV、CSS 颜色名、数字
+- 🎨 **多格式支持**  — Hex、RGB、HSL、HSV、数字（CSS 颜色名通过 `name` 插件）
 - 🏷️ **方法别名** — 简写别名如 `r()`、`g()`、`b()`、`h()`、`s()`、`l()`
 - ♿ **无障碍**  — WCAG 对比度、可读性检查（通过插件）
 - 🎭 **混合模式** — 类似 Photoshop 的颜色混合（通过插件）
-- 🧪 **测试完善** — 接近 100% 的测试覆盖率
+- 🧪 **测试完善** — CI 中强制覆盖率阈值
 
 ## 📦 安装
 
@@ -62,6 +62,9 @@ pnpm add @xpyjs/color
 
 ```typescript
 import xcolor from '@xpyjs/color'
+import name from '@xpyjs/color/plugins/name'
+
+xcolor.use(name)
 
 // 从多种格式创建
 const red = xcolor('#ff0000')

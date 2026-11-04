@@ -136,7 +136,7 @@ Plugins can extend additional formats. For example, after registering the `cmyk`
 | Output | Precision and alpha |
 | --- | --- |
 | `alpha()` | Returns the stored alpha |
-| `toRgb()`, `toHsl()`, `toHsv()` and their array forms | Alpha is rounded to two decimals. `toHslArray()` returns `[h, s, l, a]` and `toHsvArray()` returns `[h, s, v, a]`. |
+| `toRgb()`, `toHsl()`, `toHsv()` and their array forms | Alpha preserves the stored precision. `toHslArray()` returns `[h, s, l, a]` and `toHsvArray()` returns `[h, s, v, a]`. |
 | RGB, HSL and HSV strings | Retain stored alpha. HSL and HSV string coordinates are rounded to integers. |
 | Hex | Quantizes RGB and alpha to 8-bit channels |
 | `toNumber()` | Quantizes RGB and omits alpha |

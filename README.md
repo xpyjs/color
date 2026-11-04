@@ -1,9 +1,9 @@
 <p align="center">
-  <img src=".github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
+  <img src="https://raw.githubusercontent.com/xpyjs/color/main/.github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
 </p>
 
 <h1 align="center">
-  <img src=".github/assets/title.svg" alt="@xpyjs/color" width="480" />
+  <img src="https://raw.githubusercontent.com/xpyjs/color/main/.github/assets/title.svg" alt="@xpyjs/color" width="480" />
 </h1>
 
 <p align="center">
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  A tiny (<b>~4KB</b> gzipped), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
+  A tiny (<b>~5.5KB</b> gzipped), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
 </p>
 
 <p align="center">
@@ -30,15 +30,15 @@
 
 ## ✨ Features
 
-- 🪶 **Tiny** — ~4KB gzipped core, zero dependencies
+- 🪶 **Tiny** — ~5.5KB gzipped core, zero dependencies
 - 🔌 **Plugin System** — Extend functionality like dayjs, load what you need
 - 🎯 **TypeScript First** — Full type definitions and IntelliSense
 - ⛓️ **Chainable API** — Fluent interface for all operations
-- 🎨 **Multi-format** — Hex, RGB, HSL, HSV, Named colors, Numbers
+- 🎨 **Multi-format** — Hex, RGB, HSL, HSV, Numbers (named colors via the `name` plugin)
 - 🏷️ **Method Aliases** — Shorthand aliases like `r()`, `g()`, `b()`, `h()`, `s()`, `l()`
 - ♿ **Accessibility** — WCAG contrast ratio, readability checks (via plugin)
 - 🎭 **Blend Modes** — Photoshop-like blending (via plugin)
-- 🧪 **Well Tested** — Near 100% test coverage
+- 🧪 **Well Tested** — Coverage thresholds enforced in CI
 
 ## 📦 Installation
 
@@ -62,6 +62,9 @@ Build the repository with Node 20 or 22. For browser, CDN and TypeScript entry p
 
 ```typescript
 import xcolor from '@xpyjs/color'
+import name from '@xpyjs/color/plugins/name'
+
+xcolor.use(name)
 
 // Create from various formats
 const red = xcolor('#ff0000')

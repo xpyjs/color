@@ -65,7 +65,7 @@ const copy = original.clone()
 
 copy.lighten(30)
 original.toHex() // '#ff0000' — 不变
-copy.toHex()     // '#ff9999'
+copy.toHex()     // '#ff4d4d'
 ```
 
 ### Getter / Setter 合一

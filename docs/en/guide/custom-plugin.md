@@ -241,7 +241,7 @@ The following functions are exported from `@xpyjs/color` to facilitate plugin de
 | --- | --- |
 | `parseRgbChannel(val)` | Parse an RGB channel value (supports percentages) |
 | `parseAlphaChannel(val)` | Parse an alpha value (supports percentages) |
-| `parseFunctionalChannels(input, name)` | Parse CSS functional syntax channel values |
+| `parseFunctionalChannels(input, names, channelCount)` | Parse CSS functional syntax channel values (`channelCount` is the expected channel count) |
 | `parseColor(input)` | Complete color parsing pipeline |
 
 ### Logging
