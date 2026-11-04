@@ -53,4 +53,12 @@ describe("a98Rgb plugin", () => {
       expect(c.red()).toBeGreaterThan(240);
     });
   });
+
+  describe("round-trip", () => {
+    it("should preserve 8-bit colors through A98-RGB strings", () => {
+      for (const hex of ["#000000", "#123456", "#808080", "#abcdef", "#ffffff"]) {
+        expect(xcolor(xcolor(hex).toA98RgbString()).toHex()).toBe(hex);
+      }
+    });
+  });
 });
