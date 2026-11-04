@@ -5,7 +5,7 @@
 // Usage: node scripts/create-plugin.mjs <plugin-name>
 // =======================================
 
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -15,7 +15,7 @@ const ROOT = join(__dirname, "..");
 const pluginName = process.argv[2];
 
 if (!pluginName) {
-  console.error("�?Please provide a plugin name.");
+  console.error("Error: Please provide a plugin name.");
   console.error("   Usage: node scripts/create-plugin.mjs <plugin-name>");
   console.error("   Example: node scripts/create-plugin.mjs myPlugin");
   process.exit(1);
@@ -24,7 +24,7 @@ if (!pluginName) {
 // Validate plugin name
 if (!/^[a-z][a-zA-Z0-9]*$/.test(pluginName)) {
   console.error(
-    "�?Plugin name must start with a lowercase letter and contain only letters and digits."
+    "Error: Plugin name must start with a lowercase letter and contain only letters and digits."
   );
   console.error("   Example: myPlugin, colorMixer, a11y");
   process.exit(1);
@@ -34,7 +34,7 @@ const pluginDir = join(ROOT, "src", "plugins", pluginName);
 const testDir = join(ROOT, "test", "plugins");
 
 if (existsSync(pluginDir)) {
-  console.error(`�?Plugin "${pluginName}" already exists at: ${pluginDir}`);
+  console.error(`Error: Plugin "${pluginName}" already exists at: ${pluginDir}`);
   process.exit(1);
 }
 
@@ -79,10 +79,10 @@ declare module "@xpyjs/color" {
  *
  * @example
  * \`\`\`ts
- * import { XColor, xcolor } from '@xpyjs/color'
+ * import xcolor from '@xpyjs/color'
  * import ${pluginName} from '@xpyjs/color/plugins/${pluginName}'
  *
- * XColor.extend(${pluginName})
+ * xcolor.use(${pluginName})
  * xcolor('#ff0000').${pluginName}Example()
  * \`\`\`
  */
@@ -117,12 +117,12 @@ writeFileSync(join(pluginDir, "index.ts"), pluginSource);
 mkdirSync(testDir, { recursive: true });
 
 const testSource = `import { describe, it, expect, beforeAll } from "vitest";
-import { XColor, xcolor } from "../../src/core";
+import { xcolor } from "../../src/index";
 import ${pluginName} from "../../src/plugins/${pluginName}";
 
 describe("Plugin: ${pluginName}", () => {
   beforeAll(() => {
-    XColor.extend(${pluginName});
+    xcolor.use(${pluginName});
   });
 
   describe("${pluginName}Example", () => {
@@ -148,7 +148,7 @@ writeFileSync(manifest, JSON.stringify(pkg, null, 2) + "\n");
 
 // ---- Print success ----
 console.log("");
-console.log(`�?Plugin "${pluginName}" created successfully!`);
+console.log(`Done: Plugin "${pluginName}" created successfully!`);
 console.log("");
 console.log("📁 Files created:");
 console.log(`   src/plugins/${pluginName}/index.ts`);
