@@ -21,6 +21,8 @@ Generate a design system shade palette from the current color. The base color ma
 
 Dark shades can reach pure black. A black base remains black in subsequent dark shades instead of being artificially brightened.
 
+`linear` uses fixed anchors: white at 50, the base at 500, and black at 950. Intermediate colors interpolate by shade value. Subsets, ordering and duplicates do not change a shade's color. This corrects the previous request-relative interpolation, so intermediate colors may differ from older versions.
+
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `options.type` | `PaletteType` | `'antd'` | Palette generation type |

@@ -10,6 +10,20 @@ beforeAll(() => {
 // Palette algorithm tests
 // =======================================
 describe("palette plugin - palette()", () => {
+  it("maps linear shade values independently of subsets, order and duplicates", () => {
+    const base = xcolor("#1890ff");
+    const full = base.palette({ type: "linear" });
+    const shades = [600, 400, 500, 600, 50, 950] as const;
+    const subset = base.palette({ type: "linear", shades: [...shades] });
+    const standard = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+    subset.forEach((color, i) => expect(color.toHex()).toBe(full[standard.indexOf(shades[i])].toHex()));
+    expect(base.palette({ type: "linear", shades: [400] })[0].toHex()).toBe(full[4].toHex());
+    expect(full[0].toHex()).toBe("#ffffff");
+    expect(full[5].toHex()).toBe("#1890ff");
+    expect(full[10].toHex()).toBe("#000000");
+    expect(subset[0]).not.toBe(subset[3]);
+  });
+
   it.each(["#000000", "#010203", "#0c0000", "#000c00", "#00000c", "#111111"])(
     "keeps dark shades of %s no lighter than their predecessors", (input) => {
       const colors = xcolor(input).palette({ shades: [500, 600, 700, 800, 900, 950] });

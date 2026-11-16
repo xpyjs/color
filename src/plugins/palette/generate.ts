@@ -145,14 +145,12 @@ function linearPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XCo
   const r = baseColor.red();
   const g = baseColor.green();
   const b = baseColor.blue();
-  const lighter = shades.filter((shade) => shade < 500).sort((a, b) => a - b);
-  const darker = shades.filter((shade) => shade > 500).sort((a, b) => a - b);
 
   const colors = shades.map((shade) => {
     if (shade === 500) return new cls({ r, g, b, a: 1 });
 
     if (shade < 500) {
-      const factor = 1 - lighter.indexOf(shade) / lighter.length;
+      const factor = (500 - shade) / (500 - 50);
       return new cls({
         r: r + (255 - r) * factor,
         g: g + (255 - g) * factor,
@@ -161,7 +159,7 @@ function linearPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XCo
       });
     }
 
-    const factor = 1 - (darker.indexOf(shade) + 1) / darker.length;
+    const factor = (950 - shade) / (950 - 500);
     return new cls({ r: r * factor, g: g * factor, b: b * factor, a: 1 });
   });
 

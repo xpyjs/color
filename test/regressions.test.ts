@@ -185,8 +185,8 @@ describe("xcolor published behavior regressions", () => {
 
   it("uses shade values to classify linear shades when 500 is absent", () => {
     const [light, dark] = xcolor("#f00").palette({ type: "linear", shades: [100, 900] });
-    expect(light.toHex()).toBe("#ffffff");
-    expect(dark.toHex()).toBe("#000000");
+    expect(light.toHex()).toBe("#ffe3e3");
+    expect(dark.toHex()).toBe("#1c0000");
   });
   it("keeps parser order and rolls back methods on failed replacement", () => {
     const parser = (red: number) => (input: unknown) =>
