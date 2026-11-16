@@ -2,6 +2,19 @@ export function interpolate(start: number, end: number, position: number): numbe
   return start * (1 - position) + end * position;
 }
 
+/** Composite an sRGB foreground over an opaque background without rounding. */
+export function compositeRgb(
+  foreground: { r: number; g: number; b: number },
+  alpha: number,
+  background: { r: number; g: number; b: number }
+): { r: number; g: number; b: number } {
+  return {
+    r: interpolate(background.r, foreground.r, alpha),
+    g: interpolate(background.g, foreground.g, alpha),
+    b: interpolate(background.b, foreground.b, alpha)
+  };
+}
+
 export function srgbToLinear(c: number): number {
   c = c / 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;

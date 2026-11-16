@@ -11,6 +11,59 @@ beforeAll(() => {
 });
 
 describe("a11y plugin", () => {
+  describe("alpha compositing", () => {
+    it("rejects invisible text and does not recommend it", () => {
+      const invisible = xcolor("#0000");
+      expect(invisible.isReadable("#fff")).toBe(false);
+      expect(invisible.wcagLevel("#fff")).toEqual({ level: "FAIL", largeText: "FAIL", ratio: 1 });
+      expect(xcolor("#fff").mostReadable([invisible, "#555"]).toHex()).toBe("#555555");
+      expect(xcolor("#fff").mostReadable([invisible]).toHex()).toBe("#000000");
+    });
+
+    it("uses fractional composited channels before testing thresholds", () => {
+      // 50% black on white is 127.5 per channel; its contrast is about 3.97665.
+      const text = xcolor("rgb(0 0 0 / 50%)");
+      expect(text.wcagLevel("#fff")).toEqual({ level: "FAIL", largeText: "AA", ratio: 3.98 });
+      expect(text.isReadable("#fff")).toBe(false);
+      expect(text.isReadable("#fff", { size: "large" })).toBe(true);
+      // 118.6 would round to 119 in an integer instance, moving across AA's boundary.
+      const nearThreshold = xcolor("#000").alpha(1 - 118.6 / 255);
+      expect(nearThreshold.isReadable("#fff")).toBe(true);
+    });
+
+    it("resolves the background over the backdrop before compositing text", () => {
+      const text = xcolor("rgb(0 0 0 / 50%)");
+      const background = xcolor("rgb(255 255 255 / 50%)");
+      const options = { backdrop: "#000" };
+      // Background = 127.5 gray, foreground = 63.75 gray, ratio about 2.61748.
+      expect(text.wcagLevel(background, options)).toEqual({ level: "FAIL", largeText: "FAIL", ratio: 2.62 });
+      expect(text.isReadable(background, options)).toBe(false);
+      expect(xcolor("#0000").mostReadable(["#000", "#fff"], { backdrop: "#fff" }).toHex()).toBe("#000000");
+      expect(xcolor("#0000").mostReadable([], { backdrop: "#000" }).toHex()).toBe("#ffffff");
+      expect(text.alpha()).toBe(0.5);
+      expect(background.alpha()).toBe(0.5);
+    });
+
+    it("refuses to guess a backdrop for translucent backgrounds", () => {
+      const text = xcolor("#000");
+      const background = xcolor("#fff8");
+      for (const options of [{}, { backdrop: "#fff8" }, { backdrop: "bogus" }, { backdrop: xcolor("bogus") }]) {
+        expect(text.isReadable(background, options)).toBe(false);
+        expect(() => text.wcagLevel(background, options)).toThrow(/opaque/);
+        expect(() => background.mostReadable(["#000", "#fff"], options)).toThrow(/opaque/);
+      }
+    });
+
+    it("ranks candidates as foregrounds and returns the original translucent color", () => {
+      const candidate = xcolor("#000").alpha(0.9);
+      const result = xcolor("#fff").mostReadable(["#555", candidate]);
+      expect(result.alpha()).toBe(0.9);
+      expect(result.toHex()).toBe(candidate.toHex());
+      expect(result).not.toBe(candidate);
+      expect(candidate.alpha()).toBe(0.9);
+    });
+  });
+
   describe("isReadable", () => {
     it("should return true for black text on white background", () => {
       const text = xcolor("#000000");
