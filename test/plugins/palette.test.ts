@@ -10,6 +10,36 @@ beforeAll(() => {
 // Palette algorithm tests
 // =======================================
 describe("palette plugin - palette()", () => {
+  it.each(["antd", "linear"] as const)("preserves alpha and instance precision in %s palettes", type => {
+    const base = xcolor({ r: 12.4, g: 32.6, b: 44.5, a: 0.1234 }, { useDecimal: true });
+    const colors = base.palette({ type });
+    expect(colors[5].toRgb()).toEqual(base.toRgb());
+    expect(colors[5]).not.toBe(base);
+    for (const color of colors) {
+      expect(color.alpha()).toBe(0.1234);
+      // Verify the generated instance retains the option for later operations.
+      expect(color.clone().red(12.5).red()).toBe(12.5);
+    }
+    expect(colors[4].red() % 1).not.toBe(0);
+    expect(base.red()).toBe(12.4);
+    expect(base.palette({ type, shades: [500] })[0].alpha()).toBe(0.1234);
+  });
+
+  it("does not replace explicit integer precision with later global defaults", () => {
+    const base = xcolor("#1890ff", { useDecimal: false });
+    xcolor.config({ useDecimal: true });
+    try {
+      for (const type of ["antd", "linear"] as const) {
+        for (const color of base.palette({ type })) {
+          expect(Number.isInteger(color.red())).toBe(true);
+          expect(color.red(12.5).red()).toBe(13);
+        }
+      }
+    } finally {
+      xcolor.config({});
+    }
+  });
+
   it("maps linear shade values independently of subsets, order and duplicates", () => {
     const base = xcolor("#1890ff");
     const full = base.palette({ type: "linear" });

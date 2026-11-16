@@ -4,6 +4,8 @@ Generate design system shade palettes from any color. Supports Ant Design HSV cu
 
 An invalid base color throws, including empty shade requests and custom generators. Parser fallback black is never promoted into a valid palette.
 
+Built-in algorithms retain the base alpha and instance `useDecimal` option. Shade 500 is an independent copy of the base. Later global configuration does not override the source instance's options. Custom generators control their output opacity and precision.
+
 ## Install
 
 ```ts

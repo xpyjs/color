@@ -37,14 +37,14 @@ export function generateDarkPalette(
     const r = source.red();
     const g = source.green();
     const b = source.blue();
-    const hsv = rgbToHsv(r, g, b);
+    const hsv = rgbToHsv(r, g, b, source._opts.useDecimal);
 
     // Adjust for dark mode: reduce saturation slightly, shift value
     const s = round(clamp(hsv.s * 0.85, 0, 100), 2);
     const v = round(clamp(hsv.v * 0.9, 5, 100), 2);
 
-    const rgb = hsvToRgb(hsv.h, s, v);
-    darkColors.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
+    const rgb = hsvToRgb(hsv.h, s, v, source._opts.useDecimal);
+    darkColors.push(new cls({ ...rgb, a: source.alpha() }, source._opts));
   }
 
   return darkColors;

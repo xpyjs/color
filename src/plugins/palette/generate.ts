@@ -102,7 +102,7 @@ function antdPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XColo
   const r = baseColor.red();
   const g = baseColor.green();
   const b = baseColor.blue();
-  const hsv = rgbToHsv(r, g, b);
+  const hsv = rgbToHsv(r, g, b, baseColor._opts.useDecimal);
 
   const colors: any[] = [];
 
@@ -111,20 +111,20 @@ function antdPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XColo
     const h = getHue(hsv, i, true);
     const s = getSaturation(hsv, i, true);
     const v = getValue(hsv, i, true);
-    const rgb = hsvToRgb(h, s, v);
-    colors.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
+    const rgb = hsvToRgb(h, s, v, baseColor._opts.useDecimal);
+    colors.push(new cls({ ...rgb, a: baseColor.alpha() }, baseColor._opts));
   }
 
   // Base color (index 5 → shade 500)
-  colors.push(new cls({ r, g, b, a: 1 }));
+  colors.push(new cls(baseColor));
 
   // Generate dark shades (indexes 6-9 → shades 600-900)
   for (let i = 1; i <= DARK_COUNT; i++) {
     const h = getHue(hsv, i, false);
     const s = getSaturation(hsv, i, false);
     const v = getValue(hsv, i, false);
-    const rgb = hsvToRgb(h, s, v);
-    colors.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
+    const rgb = hsvToRgb(h, s, v, baseColor._opts.useDecimal);
+    colors.push(new cls({ ...rgb, a: baseColor.alpha() }, baseColor._opts));
   }
 
   return colors;
@@ -147,7 +147,7 @@ function linearPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XCo
   const b = baseColor.blue();
 
   const colors = shades.map((shade) => {
-    if (shade === 500) return new cls({ r, g, b, a: 1 });
+    if (shade === 500) return new cls(baseColor);
 
     if (shade < 500) {
       const factor = (500 - shade) / (500 - 50);
@@ -155,12 +155,12 @@ function linearPalette(baseColor: InstanceType<typeof import("@xpyjs/color").XCo
         r: r + (255 - r) * factor,
         g: g + (255 - g) * factor,
         b: b + (255 - b) * factor,
-        a: 1
-      });
+        a: baseColor.alpha()
+      }, baseColor._opts);
     }
 
     const factor = (950 - shade) / (950 - 500);
-    return new cls({ r: r * factor, g: g * factor, b: b * factor, a: 1 });
+    return new cls({ r: r * factor, g: g * factor, b: b * factor, a: baseColor.alpha() }, baseColor._opts);
   });
 
   return colors;
@@ -216,10 +216,10 @@ export function generatePalette(
       var dr = darkest.red();
       var dg = darkest.green();
       var db = darkest.blue();
-      var darkHsv = rgbToHsv(dr, dg, db);
+      var darkHsv = rgbToHsv(dr, dg, db, baseColor._opts.useDecimal);
       var v = clamp(darkHsv.v - BRIGHTNESS_STEP_DARK, 0, 100);
-      var rgb = hsvToRgb(darkHsv.h, getSaturation(darkHsv, 1, false), v);
-      result.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
+      var rgb = hsvToRgb(darkHsv.h, getSaturation(darkHsv, 1, false), v, baseColor._opts.useDecimal);
+      result.push(new cls({ ...rgb, a: baseColor.alpha() }, baseColor._opts));
     }
   }
 
