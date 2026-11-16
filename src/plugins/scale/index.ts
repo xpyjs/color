@@ -110,6 +110,16 @@ const scale: XColorPlugin = {
         const start = this.toHsl();
         const end = target.toHsl();
 
+        // Carry the chromatic endpoint's hue across an achromatic endpoint.
+        if (start.s <= 0.001) {
+          start.s = 0;
+          start.h = end.h;
+        }
+        if (end.s <= 0.001) {
+          end.s = 0;
+          end.h = start.h;
+        }
+
         let dh = end.h - start.h;
         if (dh > 180) dh -= 360;
         if (dh < -180) dh += 360;

@@ -1,5 +1,7 @@
 # scale - Color Scale Interpolation
 
+HSL interpolation carries the chromatic endpoint's hue across an achromatic endpoint. Transitions from white, gray or black to blue no longer detour through purple. Two achromatic endpoints remain neutral.
+
 Perform precise color space interpolation between two colors, with support for multiple color spaces and easing functions. Provides finer control than the gradient plugin.
 
 ## Install
