@@ -2,6 +2,13 @@ import xcolor = require("@xpyjs/color");
 import lab = require("@xpyjs/color/plugins/lab");
 import palette = require("@xpyjs/color/plugins/palette");
 import theme = require("@xpyjs/color/plugins/theme");
+import colorSpace = require("@xpyjs/color/plugins/colorSpace");
+
+xcolor.use(colorSpace);
+const wide: colorSpace.XColorSpaceRecord = colorSpace.parseColorSpace("color(display-p3 1 0 0)")!;
+const converted = colorSpace.convertColorSpace(wide, "oklab");
+const spaceName: "oklab" = converted.space;
+colorSpace.mapToGamut(converted, "srgb");
 import defaultFactory from "@xpyjs/color";
 
 xcolor.use(lab, { whitePoint: "D50" }).use(palette);

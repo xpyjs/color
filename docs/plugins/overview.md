@@ -15,6 +15,8 @@ xcolor.use(labPlugin)
 
 ## 按任务选择插件
 
+- 保留广色域坐标、跨空间转换和显式色域映射 · [colorSpace](/plugins/colorSpace)
+
 - 生成色板与主题 · [harmony](/plugins/harmony), [gradient](/plugins/gradient), [scale](/plugins/scale), [palette](/plugins/palette), [theme](/plugins/theme)
 - 比较、合成与模拟 · [a11y](/plugins/a11y), [blend](/plugins/blend), [simulate](/plugins/simulate), [lab](/plugins/lab)
 - 查找名称与处理色温 · [name](/plugins/name), [temperature](/plugins/temperature)

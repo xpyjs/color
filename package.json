@@ -93,6 +93,17 @@
       },
       "default": "./dist/plugins/cmyk/index.js"
     },
+    "./plugins/colorSpace": {
+      "import": {
+        "types": "./dist/types/plugins/colorSpace/index.d.ts",
+        "default": "./dist/plugins/colorSpace/index.js"
+      },
+      "require": {
+        "types": "./dist/types/plugins/colorSpace/index.d.cts",
+        "default": "./dist/plugins/colorSpace/index.cjs"
+      },
+      "default": "./dist/plugins/colorSpace/index.js"
+    },
     "./plugins/displayP3": {
       "import": {
         "types": "./dist/types/plugins/displayP3/index.d.ts",

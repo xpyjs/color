@@ -34,6 +34,14 @@ async function smoke() {
   assert.strictEqual(p3.formatWideColor(wide), "color(display-p3 1 0.4 0 / 0.3)");
   assert.strictEqual(xcolor(p3.toSrgb(wide)).alpha(), .3);
   assert.strictEqual(xcolor("#f00").toHslArray()[0], 0);
+  const spaces = require("@xpyjs/color/plugins/colorSpace");
+  const coordinateColor = spaces.parseColorSpace("color(display-p3 1 0 0 / .25)");
+  assert.strictEqual(spaces.inGamut(coordinateColor, "display-p3"), true);
+  assert.strictEqual(spaces.inGamut(coordinateColor, "srgb"), false);
+  assert.ok(spaces.convertColorSpace(coordinateColor, "srgb").coordinates[0] > 1);
+  assert.strictEqual(spaces.mapToGamut(coordinateColor).alpha, .25);
+  cjs.use(spaces);
+  assert.strictEqual(xcolor("#f00").toColorSpace("oklab").space, "oklab");
   assert.strictEqual(cjs.isValidInput("bogus"), false);
 
   cjs.config({ useDecimal: true });
