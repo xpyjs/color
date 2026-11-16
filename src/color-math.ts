@@ -17,13 +17,14 @@ export function compositeRgb(
 
 export function srgbToLinear(c: number): number {
   c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const magnitude = Math.abs(c);
+  return magnitude <= 0.04045 ? c / 12.92 : Math.sign(c) * ((magnitude + 0.055) / 1.055) ** 2.4;
 }
 
 export function linearToSrgb(c: number): number {
-  return c <= 0.0031308
+  return Math.abs(c) <= 0.0031308
     ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    : Math.sign(c) * (1.055 * Math.pow(Math.abs(c), 1 / 2.4) - 0.055);
 }
 
 export type Mat3 = [number, number, number, number, number, number, number, number, number];

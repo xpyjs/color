@@ -40,14 +40,14 @@ const REC2020_ALPHA = 1.09929682680944;
 const REC2020_BETA = 0.018053968510807;
 
 function rec2020ToLinear(c: number): number {
-  return c < REC2020_BETA * 4.5
+  return Math.abs(c) < REC2020_BETA * 4.5
     ? c / 4.5
-    : Math.pow((c + REC2020_ALPHA - 1) / REC2020_ALPHA, 1 / 0.45);
+    : Math.sign(c) * Math.pow((Math.abs(c) + REC2020_ALPHA - 1) / REC2020_ALPHA, 1 / 0.45);
 }
 
 function linearToRec2020(c: number): number {
-  return c >= REC2020_BETA
-    ? REC2020_ALPHA * Math.pow(c, 0.45) - (REC2020_ALPHA - 1)
+  return Math.abs(c) >= REC2020_BETA
+    ? Math.sign(c) * (REC2020_ALPHA * Math.pow(Math.abs(c), 0.45) - (REC2020_ALPHA - 1))
     : 4.5 * c;
 }
 

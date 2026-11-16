@@ -78,9 +78,9 @@ export function parseWideColor(input: string): WideColor | null {
 export function toSrgb(color: WideColor): RGBA {
   const channels = color.coordinates;
   // Linearize (Display P3 uses sRGB gamma)
-  const rl = channels[0] <= 0.04045 ? channels[0] / 12.92 : ((channels[0] + 0.055) / 1.055) ** 2.4;
-  const gl = channels[1] <= 0.04045 ? channels[1] / 12.92 : ((channels[1] + 0.055) / 1.055) ** 2.4;
-  const bl = channels[2] <= 0.04045 ? channels[2] / 12.92 : ((channels[2] + 0.055) / 1.055) ** 2.4;
+  const rl = srgbToLinear(channels[0] * 255);
+  const gl = srgbToLinear(channels[1] * 255);
+  const bl = srgbToLinear(channels[2] * 255);
 
   // P3 → XYZ D65 → sRGB linear → sRGB
   const [x, y, z] = mat3Mul(P3_TO_XYZ, rl, gl, bl);

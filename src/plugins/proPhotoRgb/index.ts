@@ -37,11 +37,11 @@ declare module "@xpyjs/color" {
 // ── ProPhoto RGB transfer functions (gamma 1.8) ──
 
 function proPhotoToLinear(c: number): number {
-  return c <= 16 / 512 ? c / 16 : Math.pow(c, 1.8);
+  return Math.abs(c) <= 16 / 512 ? c / 16 : Math.sign(c) * Math.pow(Math.abs(c), 1.8);
 }
 
 function linearToProPhoto(c: number): number {
-  return c <= 1 / 512 ? 16 * c : Math.pow(c, 1 / 1.8);
+  return Math.abs(c) <= 1 / 512 ? 16 * c : Math.sign(c) * Math.pow(Math.abs(c), 1 / 1.8);
 }
 
 // ── Matrices ──
