@@ -19,6 +19,8 @@ xcolor.use(palettePlugin)
 
 Generate a design system shade palette from the current color. The base color maps to shade 500, with lighter shades below and darker shades above.
 
+Dark shades can reach pure black. A black base remains black in subsequent dark shades instead of being artificially brightened.
+
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
 | `options.type` | `PaletteType` | `'antd'` | Palette generation type |

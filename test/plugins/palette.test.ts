@@ -10,6 +10,17 @@ beforeAll(() => {
 // Palette algorithm tests
 // =======================================
 describe("palette plugin - palette()", () => {
+  it.each(["#000000", "#010203", "#0c0000", "#000c00", "#00000c", "#111111"])(
+    "keeps dark shades of %s no lighter than their predecessors", (input) => {
+      const colors = xcolor(input).palette({ shades: [500, 600, 700, 800, 900, 950] });
+      expect(colors[0].toHex()).toBe(input);
+      for (let i = 1; i < colors.length; i++) {
+        expect(colors[i].luminance()).toBeLessThanOrEqual(colors[i - 1].luminance());
+      }
+      expect(colors[colors.length - 1].toHex()).toBe("#000000");
+    }
+  );
+
   it("rejects invalid base colors before invoking any generator", () => {
     const invalid = xcolor("not-a-color");
     expect(() => invalid.palette()).toThrow("Invalid base color");

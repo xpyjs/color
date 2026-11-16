@@ -84,7 +84,7 @@ function getValue(hsv: { h: number; s: number; v: number }, i: number, isLight: 
   } else {
     value = hsv.v - BRIGHTNESS_STEP_DARK * i;
   }
-  return round(clamp(value, 5, 100), 2);
+  return round(clamp(value, isLight ? 5 : 0, 100), 2);
 }
 
 /**
@@ -219,7 +219,7 @@ export function generatePalette(
       var dg = darkest.green();
       var db = darkest.blue();
       var darkHsv = rgbToHsv(dr, dg, db);
-      var v = clamp(darkHsv.v - BRIGHTNESS_STEP_DARK, 5, 100);
+      var v = clamp(darkHsv.v - BRIGHTNESS_STEP_DARK, 0, 100);
       var rgb = hsvToRgb(darkHsv.h, getSaturation(darkHsv, 1, false), v);
       result.push(new cls({ r: rgb.r, g: rgb.g, b: rgb.b, a: 1 }));
     }
