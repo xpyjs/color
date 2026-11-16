@@ -30,6 +30,7 @@ declare module "@xpyjs/color" {
      * @param options.type - `'antd'` (default), `'linear'`, or a custom function
      * @param options.shades - Shade levels to generate (default: 50-950)
      * @returns Array of XColor instances from lightest to darkest
+     * @throws If the base color is invalid or a custom generator returns invalid colors
      * @example
      * ```ts
      * xcolor('#1890ff').palette()

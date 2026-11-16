@@ -27,6 +27,37 @@ beforeAll(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("xcolor published behavior regressions", () => {
+  it("rejects invalid theme bases without replacing cached or injected themes", () => {
+    xcolor.use(theme, { colors: { primary: "#1890ff" }, prefix: "brand" });
+    const style = { textContent: "" };
+    vi.stubGlobal("document", { getElementById: () => style });
+    const css = xcolor.injectTheme();
+    const vars = xcolor.getThemeVars();
+    for (const primary of ["bogus", "", { DEFAULT: "bogus" }, { DEFAULT: "" }]) {
+      expect(() => generateTheme({ colors: { primary } })).toThrow("Invalid base color");
+      for (const deep of [true, false]) {
+        expect(() => xcolor.updateTheme({ colors: { primary }, prefix: "broken" }, deep)).toThrow("Invalid base color");
+        expect(xcolor.getThemeCss()).toBe(css);
+        expect(xcolor.getThemeVars()).toEqual(vars);
+        expect(style.textContent).toBe(css);
+      }
+    }
+    expect(() => xcolor.use(theme, { colors: { primary: "bogus" } })).toThrow("Invalid base color");
+    expect(xcolor.getThemeCss()).toBe(css);
+    expect(style.textContent).toBe(css);
+    xcolor.updateTheme({ colors: { primary: "#f00" } });
+    expect(xcolor.getThemeVars()["--brand-primary"]).toBe("#ff0000");
+    expect(style.textContent).toBe(xcolor.getThemeCss());
+  });
+
+  it("rejects invalid derivation sources and still permits custom CSS values", () => {
+    expect(() => generateTheme({ colors: { primary: "bogus" }, derive: true })).toThrow("Invalid source color");
+    expect(() => generateTheme({ colors: { primary: "" }, derive: true })).toThrow("Invalid source color");
+    const result = generateTheme({ colors: { primary: { DEFAULT: "#1890ff", text: "var(--text)" }, custom: { muted: "var(--muted)" } } });
+    expect(result.vars["--x-primary-text"]).toBe("var(--text)");
+    expect(result.vars["--x-custom-muted"]).toBe("var(--muted)");
+  });
+
   it.each([
     1.5, "rgb(nope 0 0)", "rgb(1,,2,3)", "rgb(1 2 3 / 1 / .5)",
     "rgb(1 2 3 / 50px)", "hsl(5deg 1turn 50%)",

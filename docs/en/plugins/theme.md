@@ -1,5 +1,7 @@
 # theme - Theme & CSS Variables
 
+Palette base colors (strings or `DEFAULT`) and derivation sources must be valid colors. Invalid input throws; failed updates or reinstalls preserve the previous configuration, cache, and injected CSS. Custom values and overrides may still contain literal CSS such as `var(...)` and are not parsed as base colors.
+
 Design-system-level theme color generator. Automatically generates complete shade palettes, semantic colors, and dark mode from base colors, outputting CSS variables that can be injected into the DOM or used as strings for SSR.
 
 ::: info 🎨 Try it live

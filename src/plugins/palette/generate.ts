@@ -184,6 +184,9 @@ export function generatePalette(
   shades: Shade[],
   cls: new (...args: any[]) => any
 ): any[] {
+  if (!(baseColor instanceof cls) || !baseColor.isValid()) {
+    throw Logger.createError("Invalid base color for palette generation");
+  }
   if (typeof type === "function") {
     const colors = type(baseColor, shades.slice());
     if (!Array.isArray(colors) || colors.length !== shades.length ||

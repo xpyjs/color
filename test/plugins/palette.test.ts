@@ -10,6 +10,16 @@ beforeAll(() => {
 // Palette algorithm tests
 // =======================================
 describe("palette plugin - palette()", () => {
+  it("rejects invalid base colors before invoking any generator", () => {
+    const invalid = xcolor("not-a-color");
+    expect(() => invalid.palette()).toThrow("Invalid base color");
+    expect(() => invalid.palette({ type: "linear" })).toThrow("Invalid base color");
+    expect(() => invalid.palette({ shades: [] })).toThrow("Invalid base color");
+    let called = false;
+    expect(() => invalid.palette({ type: () => { called = true; return []; } })).toThrow("Invalid base color");
+    expect(called).toBe(false);
+  });
+
   it("should generate 11-shade palette with antd algorithm (default)", () => {
     const result = xcolor("#1890ff").palette();
     expect(result).toHaveLength(11);

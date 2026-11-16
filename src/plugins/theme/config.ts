@@ -142,7 +142,7 @@ export function resolveThemeConfig(
       baseColor = colorValue.DEFAULT;
     }
 
-    if (baseColor) {
+    if (baseColor !== null) {
       // Generate palette from base color
       var base = new cls(baseColor);
       var palette = generatePalette(base, type, shades, cls);

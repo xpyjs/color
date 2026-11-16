@@ -2,6 +2,8 @@
 
 Generate design system shade palettes from any color. Supports Ant Design HSV curves, linear interpolation, and custom generator functions.
 
+An invalid base color throws, including empty shade requests and custom generators. Parser fallback black is never promoted into a valid palette.
+
 ## Install
 
 ```ts

@@ -70,6 +70,7 @@ declare module "@xpyjs/color" {
      *
      * @param options - Partial configuration to merge
      * @param deep - Whether to deep merge (`true`, default) or shallow merge (`false`)
+     * @throws If a base/derivation color or palette result is invalid; the previous theme is preserved
      * @example
      * ```ts
      * // Deep merge (default) — only primary color changes
@@ -100,6 +101,7 @@ const STYLE_ID = "xcolor-theme";
  * Generate a theme from its configuration for SSR or build-time use.
  * @param options - Theme colors and generation settings
  * @returns CSS, variable snapshot, and generated palettes
+ * @throws If a base/derivation color or palette result is invalid
  */
 export function generateTheme(options: XColorThemeOptions): ThemeResult {
   return resolveThemeConfig(options, XColor);
