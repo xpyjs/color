@@ -26,6 +26,10 @@ RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH us
 
 Pure functions require no plugin registration. To bridge an existing sRGB instance:
 
+Records retain full calculated precision. HSL/HSV records are also supported, using degrees and 0–100 channel scales. `toColorSpace()` reads the stored alpha directly, bypassing the legacy two-decimal object output. Input precision already discarded during instance creation cannot be recovered; fractional RGB inputs should use `useDecimal`.
+
+`formatColorSpace(record, { precision: 4 })` rounds coordinates and alpha only at serialization. The default is `'full'`; numeric precision must be an integer from 0 to 15. Lower precision can change colors or round a tiny alpha to zero. Legacy getters keep their existing defaults. HSV function strings are library notation, not standard CSS.
+
 ```ts
 import xcolor from '@xpyjs/color'
 import colorSpace from '@xpyjs/color/plugins/colorSpace'

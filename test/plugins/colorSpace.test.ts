@@ -6,6 +6,31 @@ import { parseWideColor } from "../../src/plugins/displayP3";
 const spaces: XColorSpace[] = ["srgb","srgb-linear","display-p3","a98-rgb","prophoto-rgb","rec2020","xyz","xyz-d65","xyz-d50","lab","lch","oklab","oklch"];
 
 describe("xcolor coordinate records", () => {
+  it.each(["hsl", "hsv", "lab", "oklab", "xyz-d50", "srgb"] as const)("keeps tiny alpha and dark RGB detail through full-precision %s output", space => {
+    xcolor.use(colorSpace);
+    const source = xcolor({ r:1.25,g:2.5,b:3.75,a:.000123456789 }, { useDecimal:true });
+    const record = source.toColorSpace(space);
+    const serialized = formatColorSpace(record);
+    const recovered = convertColorSpace(parseColorSpace(serialized)!, "srgb");
+    recovered.coordinates.forEach((v,i)=>expect(v*255).toBeCloseTo([1.25,2.5,3.75][i],5));
+    expect(recovered.alpha).toBe(.000123456789);
+  });
+
+  it("rounds only when explicitly requested and leaves the source intact", () => {
+    const source = parseColorSpace("oklab(.1234567 .2345678 -.3456789 / .1234567)")!;
+    expect(formatColorSpace(source,{precision:3})).toBe("oklab(0.123 0.235 -0.346 / 0.123)");
+    expect(formatColorSpace(source,{precision:"full"})).toBe(formatColorSpace(source));
+    expect(source.alpha).toBe(.1234567);
+    for (const precision of [-1,16,1.5,NaN,Infinity]) expect(()=>formatColorSpace(source,{precision})).toThrow("precision");
+  });
+
+  it("preserves the original hex alpha byte through the record serialization path", () => {
+    xcolor.use(colorSpace);
+    const source = xcolor("#12345601");
+    expect(xcolor(formatColorSpace(source.toColorSpace())).toHex()).toBe("#12345601");
+    expect(xcolor(formatColorSpace(xcolor("#010203").toColorSpace("hsl"))).toHex()).toBe("#010203");
+  });
+
   it.each(spaces)("roundtrips wide signed coordinates through %s without clipping", space => {
     const source = parseWideColor("color(display-p3 1.1 -.2 .4 / .1234)")!;
     const result = convertColorSpace(convertColorSpace(source, space), "display-p3");

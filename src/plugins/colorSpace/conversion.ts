@@ -1,8 +1,9 @@
 import { D50_TO_D65, D65_TO_D50, SRGB_TO_XYZ, XYZ_TO_SRGB, mat3Mul, linearToSrgb, srgbToLinear, rgbToOklab, oklabToRgb, type Mat3 } from "../../color-math";
+import { hslToRgb, hsvToRgb, rgbToHsl, rgbToHsv } from "@xpyjs/color";
 
 export type Coordinates = [number, number, number];
 export type RGBSpace = "srgb" | "srgb-linear" | "display-p3" | "a98-rgb" | "prophoto-rgb" | "rec2020";
-export type ColorSpace = RGBSpace | "xyz" | "xyz-d65" | "xyz-d50" | "lab" | "lch" | "oklab" | "oklch";
+export type ColorSpace = RGBSpace | "xyz" | "xyz-d65" | "xyz-d50" | "lab" | "lch" | "oklab" | "oklch" | "hsl" | "hsv";
 
 const P3: Mat3 = [.4865709486,.2656676932,.1982172852,.2289745641,.6917385218,.0792869141,0,.0451133819,1.0439443689];
 const A98: Mat3 = [.5766690429,.1855582379,.1882286462,.2973449753,.6273635663,.0752914585,.0270313614,.0706888525,.9913375368];
@@ -54,6 +55,12 @@ function polar([l,a,b]: readonly number[]): Coordinates {
 
 /** Unclipped conversion through XYZ D65. Lab/LCH coordinates use D50. */
 export function toXyzD65(space: ColorSpace, coordinates: readonly number[]): Coordinates {
+  if (space === "hsl" || space === "hsv") {
+    const convert = space === "hsl" ? hslToRgb : hsvToRgb;
+    const hue = ((coordinates[0] % 360) + 360) % 360;
+    const rgb = convert(hue, coordinates[1], coordinates[2], true);
+    return mul(SRGB_TO_XYZ, [rgb.r, rgb.g, rgb.b].map(srgbToLinear));
+  }
   if (isRgbSpace(space)) {
     const xyz = mul(matrices[space], map(coordinates, v => decode(v, space)));
     return space === "prophoto-rgb" ? mul(D50_TO_D65, xyz) : xyz;
@@ -73,6 +80,15 @@ export function toXyzD65(space: ColorSpace, coordinates: readonly number[]): Coo
 
 /** Convert XYZ D65 into a target space without rounding or clipping. */
 export function fromXyzD65(space: ColorSpace, xyz: readonly number[]): Coordinates {
+  if (space === "hsl" || space === "hsv") {
+    const rgb = map(mul(XYZ_TO_SRGB, xyz), v=>linearToSrgb(v)*255);
+    if (space === "hsl") {
+      const value = rgbToHsl(...rgb, true);
+      return [value.h, value.s, value.l];
+    }
+    const value = rgbToHsv(...rgb, true);
+    return [value.h, value.s, value.v];
+  }
   if (isRgbSpace(space)) {
     const adapted = space === "prophoto-rgb" ? mul(D65_TO_D50, xyz) : xyz;
     return map(mul(inverses[space], adapted), v => encode(v, space));

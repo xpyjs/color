@@ -21,7 +21,7 @@
 
 - [x] 09 广色域计算模型：统一带空间标识的数据、直接跨空间转换、色域检测、显式映射和延迟裁剪；接通现有 wide-color 记录。分支：`feat/09-color-space-records`；新增 colorSpace 可选模块，13 个空间，无裁剪转换、色域检测、clip / OKLCh 降色度映射、实例导出；保持旧实例模型。26 项新测试，全量 860 测试、覆盖率门槛、类型检查、111 个构建输出、ESM/CJS 消费及四种 TS 解析模式通过。基于记录的渐变和色差分别在 15/16 项继续。
 - [x] 10 Lab 与 CSS：区分 D65 数据计算和 D50 CSS 解析/输出，制定兼容策略。分支：`feat/10-explicit-css-lab`。保留旧默认；新增 parseCssLab、toCssLabString/toCssLchString 及 cssLab/cssLch 格式键，D50 始终明确。黑白边界、alpha、配置独立性与无效输入回归通过；全量 863 测试和类型检查通过，双语文档同步。
-- [ ] 11 精度：统一无损数据输出和可配置序列化精度，覆盖 RGB/alpha/HSL/HSV/Lab/OKLab/XYZ 往返。
+- [x] 11 精度：统一无损数据输出和可配置序列化精度，覆盖 RGB/alpha/HSL/HSV/Lab/OKLab/XYZ 往返。分支：`feat/11-output-precision`。兼容方案：旧 getter 保持默认；记录接口扩展 HSL/HSV，formatColorSpace 提供 full（默认）或 0–15 位精度，统一坐标与 alpha 输出，保留数据。新增 8 项精度/往返回归，全量 871 测试和类型检查通过。
 - [ ] 12 颜色空间 API 闭环：带空间标识的对象输入或显式工厂、配套 setter；修正 Partial 类型与运行时要求不一致。
 
 ## 能力扩展（每项单独分支）

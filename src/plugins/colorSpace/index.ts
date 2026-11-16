@@ -15,7 +15,13 @@ export interface XColorSpaceRecord {
   readonly alpha: number;
 }
 
-const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch"];
+const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv"];
+
+/** Precision for coordinate serialization; never changes the stored record. */
+export interface XColorSpaceFormatOptions {
+  /** Decimal places from 0 to 15, or full stored precision (default 'full'). */
+  precision?: number | "full";
+}
 
 function validate(color: XColorSpaceRecord): void {
   if (!color || !SPACES.includes(color.space) || !Array.isArray(color.coordinates) || color.coordinates.length !== 3 ||
@@ -41,6 +47,12 @@ export function parseColorSpace(input: string): XColorSpaceRecord | null {
     }
     const parsed = parseFunctionalChannels(input, space, 3);
     if (!parsed) continue;
+    if (space === "hsl" || space === "hsv") {
+      const values = [hueToken(parsed.channels[0]), numericToken(parsed.channels[1],100), numericToken(parsed.channels[2],100)];
+      const alpha = parsed.alpha === undefined ? 1 : numericToken(parsed.alpha,1);
+      if (![...values,alpha].every(Number.isFinite)) return null;
+      return { space, coordinates: values as Coordinates, alpha: Math.max(0,Math.min(1,alpha)) };
+    }
     const ok = space.startsWith("ok"), polar = space.endsWith("lch");
     const l = numericToken(parsed.channels[0], ok ? 1 : 100);
     const second = numericToken(parsed.channels[1], ok ? .4 : polar ? 150 : 125);
@@ -113,17 +125,28 @@ export function mapToGamut<Space extends XColorRgbSpace = "srgb">(
 }
 
 /**
- * Serialize coordinates directly to CSS without conversion or rounding.
+ * Serialize coordinates directly without conversion; rounding is opt-in.
  * @param color - Source record
- * @returns CSS color(), lab(), lch(), oklab() or oklch() string
+ * @param options - Full precision (default) or 0–15 decimal places, including alpha
+ * @returns A color function string; hsv() is library notation, not CSS
  * @throws For an invalid record
  */
-export function formatColorSpace(color: XColorSpaceRecord): string {
+export function formatColorSpace(color: XColorSpaceRecord, options: XColorSpaceFormatOptions = {}): string {
   validate(color);
-  const values = color.coordinates.join(" ");
+  const precision = options.precision ?? "full";
+  if (precision !== "full" && (!Number.isInteger(precision) || precision < 0 || precision > 15)) {
+    throw Logger.createError("Output precision must be full or an integer from 0 to 15");
+  }
+  const number = (value: number) => precision === "full" ? value : Number(value.toFixed(precision));
+  const coordinates = color.coordinates.map(number);
+  const alpha = number(color.alpha);
+  if (color.space === "hsl" || color.space === "hsv") {
+    return `${color.space}(${coordinates[0]} ${coordinates[1]}% ${coordinates[2]}%${alphaSuffix(alpha)})`;
+  }
+  const values = coordinates.join(" ");
   return isRgbSpace(color.space) || color.space.startsWith("xyz")
-    ? `color(${color.space} ${values}${alphaSuffix(color.alpha)})`
-    : `${color.space}(${values}${alphaSuffix(color.alpha)})`;
+    ? `color(${color.space} ${values}${alphaSuffix(alpha)})`
+    : `${color.space}(${values}${alphaSuffix(alpha)})`;
 }
 
 declare module "@xpyjs/color" {
