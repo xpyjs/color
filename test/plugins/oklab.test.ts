@@ -11,6 +11,18 @@ beforeAll(() => {
 });
 
 describe("oklab plugin", () => {
+  it.each([
+    ["0", "#000000"], ["0%", "#000000"], ["-0.2", "#000000"], ["-20%", "#000000"],
+    ["1", "#ffffff"], ["100%", "#ffffff"], ["1.2", "#ffffff"], ["120%", "#ffffff"]
+  ])("maps lightness %s to %s regardless of chromatic channels", (l, expected) => {
+    for (const input of [`oklab(${l} .4 .4 / .1234)`, `oklch(${l} .4 90 / .1234)`]) {
+      const color = xcolor(input, { useDecimal: true });
+      expect(color.isValid()).toBe(true);
+      expect(color.alpha()).toBe(0.1234);
+      expect(color.clone().alpha(1).toHex()).toBe(expected);
+    }
+  });
+
   describe("toOklab", () => {
     it("should convert white", () => {
       const r = xcolor("#ffffff").toOklab();

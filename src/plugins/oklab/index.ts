@@ -85,6 +85,13 @@ declare module "@xpyjs/color" {
   }
 }
 
+/** Map lightness endpoints to display black/white before clipping into sRGB. */
+function lightnessEndpoint(l: number) {
+  if (l > 0 && l < 1) return null;
+  const channel = l <= 0 ? 0 : 255;
+  return { r: channel, g: channel, b: channel };
+}
+
 const oklab: XColorPlugin = {
   name: "@xpyjs/color/plugins/oklab",
   install(_option, cls, _factory) {
@@ -97,7 +104,7 @@ const oklab: XColorPlugin = {
       const a = numericToken(res.channels[1], 0.4);
       const b = numericToken(res.channels[2], 0.4);
       if (![l, a, b].every(Number.isFinite)) return null;
-      const rgb = oklabToRgb(l, a, b);
+      const rgb = lightnessEndpoint(l) ?? oklabToRgb(l, a, b);
       return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
     });
 
@@ -110,7 +117,7 @@ const oklab: XColorPlugin = {
       const c = numericToken(res.channels[1], 0.4);
       const h = hueToken(res.channels[2]);
       if (![l, c, h].every(Number.isFinite)) return null;
-      const rgb = oklchToRgb(l, Math.max(0, c), h);
+      const rgb = lightnessEndpoint(l) ?? oklchToRgb(l, Math.max(0, c), h);
       return { ...rgb, a: res.alpha !== undefined ? parseAlphaChannel(res.alpha) : 1 };
     });
 

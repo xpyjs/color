@@ -10,7 +10,7 @@
 - [x] 02 无效主题和色板输入：拒绝无效基础色；主题更新失败保留配置、缓存和 DOM。分支：`fix/02-invalid-theme-colors`。
 - [x] 03 深色色阶反向变亮：保证黑色及近黑色的暗阶不比基础色亮。分支：`fix/03-dark-palette-boundaries`。移除暗阶 5% 明度下限；6 个黑色/近黑色参考输入验证单调性。全量 806 测试及类型检查通过，中英文文档同步。
 - [x] 04 线性色阶不稳定：相同 shade 不因请求的等级子集或顺序变化。分支：`fix/04-stable-linear-shades`。固定 50/500/950 锚点并按 shade 数值插值；覆盖子集、顺序、重复和单项请求。中间颜色较旧版变化已在双语文档说明。全量 807 测试及类型检查通过。
-- [ ] 05 OKLab / OKLCh 黑白边界：正确处理零、最大和超范围亮度，保留 alpha。建议分支：`fix/05-oklab-lightness-boundaries`。
+- [x] 05 OKLab / OKLCh 黑白边界：正确处理零、最大和超范围亮度，保留 alpha。分支：`fix/05-oklab-lightness-boundaries`。8 组数字/百分比边界覆盖两个空间；全量 815 测试及类型检查通过。双语文档说明中间亮度仍采用通道裁剪。
 - [ ] 06 广色域负通道：修正扩展传递函数，以独立参考向量验证 P3、ProPhoto 和相关转换。建议分支：`fix/06-signed-transfer-functions`。
 - [ ] 07 HSL 无彩色插值：处理无意义的色相，覆盖白/灰/黑与彩色之间的双向插值。建议分支：`fix/07-achromatic-interpolation`。
 - [ ] 08 色板实例选项：保留基础色透明度和小数配置，明确派生色的透明度策略。建议分支：`fix/08-palette-options`。
