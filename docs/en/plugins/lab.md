@@ -1,5 +1,17 @@
 # lab / lch
 
+## Explicit CSS APIs
+
+Legacy data methods, string methods and parsers keep the configured white point (D65 by default). `toCssLabString()` / `toCssLchString()` and format keys `cssLab` / `cssLch` always use CSS D50, independently of plugin reconfiguration.
+
+```ts
+import { parseCssLab } from '@xpyjs/color/plugins/lab'
+xcolor('#f00').toCssLabString() // D50 CSS lab(); requires the lab plugin
+const rgba = parseCssLab('lab(54.29% 80.81 69.89 / .5)') // No registration required; sRGB RGBA or null
+```
+
+`parseCssLab()` parses CSS Lab/LCH with D50, preserves alpha, maps black/white endpoints and clips to sRGB. Use [colorSpace](./colorSpace) records to retain out-of-gamut coordinates. Legacy `lab` / `lch` format keys keep their previous meaning.
+
 CIE Lab and CIE LCH perceptual color space support. Lab is designed based on human visual perception and is commonly used for color difference calculations.
 
 The plugin retains its D65 reference white for compatibility. CSS Color 4 Lab and LCH use D50, so equivalent coordinates may render differently.

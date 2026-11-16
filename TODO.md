@@ -20,7 +20,7 @@
 - [x] 09a 前置修复：跨空间往返测试发现 D65↔D50 矩阵系数错误。独立分支 `fix/09a-chromatic-adaptation`；按 CSS Color 4 Bradford 参考矩阵修正，验证标准白点、带负值 XYZ 往返并更新 ProPhoto 参考向量。
 
 - [x] 09 广色域计算模型：统一带空间标识的数据、直接跨空间转换、色域检测、显式映射和延迟裁剪；接通现有 wide-color 记录。分支：`feat/09-color-space-records`；新增 colorSpace 可选模块，13 个空间，无裁剪转换、色域检测、clip / OKLCh 降色度映射、实例导出；保持旧实例模型。26 项新测试，全量 860 测试、覆盖率门槛、类型检查、111 个构建输出、ESM/CJS 消费及四种 TS 解析模式通过。基于记录的渐变和色差分别在 15/16 项继续。
-- [ ] 10 Lab 与 CSS：区分 D65 数据计算和 D50 CSS 解析/输出，制定兼容策略。
+- [x] 10 Lab 与 CSS：区分 D65 数据计算和 D50 CSS 解析/输出，制定兼容策略。分支：`feat/10-explicit-css-lab`。保留旧默认；新增 parseCssLab、toCssLabString/toCssLchString 及 cssLab/cssLch 格式键，D50 始终明确。黑白边界、alpha、配置独立性与无效输入回归通过；全量 863 测试和类型检查通过，双语文档同步。
 - [ ] 11 精度：统一无损数据输出和可配置序列化精度，覆盖 RGB/alpha/HSL/HSV/Lab/OKLab/XYZ 往返。
 - [ ] 12 颜色空间 API 闭环：带空间标识的对象输入或显式工厂、配套 setter；修正 Partial 类型与运行时要求不一致。
 

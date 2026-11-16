@@ -1,5 +1,17 @@
 # lab / lch
 
+## 明确用于 CSS 的入口
+
+兼容旧版本，`toLab()`、`toLch()`、`toLabString()`、`toLchString()` 及默认解析继续使用插件配置的白点（默认 D65）。新增 `toCssLabString()` / `toCssLchString()` 和格式键 `cssLab` / `cssLch` 始终使用 CSS 的 D50，不受插件重装配置影响。
+
+```ts
+import { parseCssLab } from '@xpyjs/color/plugins/lab'
+xcolor('#f00').toCssLabString() // D50 CSS lab()，需要注册 lab 插件
+const rgba = parseCssLab('lab(54.29% 80.81 69.89 / .5)') // 无需注册，返回 sRGB RGBA 或 null
+```
+
+`parseCssLab()` 专门解析 CSS Lab/LCH，采用 D50，保留 alpha，映射黑白端点并裁剪到 sRGB。若要保留超色域坐标，使用 [colorSpace](./colorSpace) 的记录 API。旧 `lab` / `lch` 格式键保持原语义。
+
 CIE Lab 和 CIE LCH 感知色彩空间支持。Lab 基于人眼感知设计，常用于色差计算。
 
 插件沿用 D65 参考白点。CSS Color 4 的 Lab 与 LCH 使用 D50，因此相同坐标的渲染结果可能不同。
