@@ -1,4 +1,4 @@
-import { defineMethod, Logger, parseColor as parseSrgb, parseFunctionalChannels, type XColorPlugin } from "@xpyjs/color";
+import { XColor, defineMethod, Logger, parseColor as parseSrgb, parseFunctionalChannels, registerColorParser, type XColorOptions, type XColorPlugin } from "@xpyjs/color";
 import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 import { parseCoordinates } from "../wide-color";
 import { fromXyzD65, toXyzD65, isRgbSpace, type ColorSpace, type RGBSpace, type Coordinates } from "./conversion";
@@ -15,7 +15,7 @@ export interface XColorSpaceRecord {
   readonly alpha: number;
 }
 
-const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv"];
+const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv", "hwb"];
 
 /** Precision for coordinate serialization; never changes the stored record. */
 export interface XColorSpaceFormatOptions {
@@ -47,7 +47,7 @@ export function parseColorSpace(input: string): XColorSpaceRecord | null {
     }
     const parsed = parseFunctionalChannels(input, space, 3);
     if (!parsed) continue;
-    if (space === "hsl" || space === "hsv") {
+    if (space === "hsl" || space === "hsv" || space === "hwb") {
       const values = [hueToken(parsed.channels[0]), numericToken(parsed.channels[1],100), numericToken(parsed.channels[2],100)];
       const alpha = parsed.alpha === undefined ? 1 : numericToken(parsed.alpha,1);
       if (![...values,alpha].every(Number.isFinite)) return null;
@@ -140,7 +140,7 @@ export function formatColorSpace(color: XColorSpaceRecord, options: XColorSpaceF
   const number = (value: number) => precision === "full" ? value : Number(value.toFixed(precision));
   const coordinates = color.coordinates.map(number);
   const alpha = number(color.alpha);
-  if (color.space === "hsl" || color.space === "hsv") {
+  if (color.space === "hsl" || color.space === "hsv" || color.space === "hwb") {
     return `${color.space}(${coordinates[0]} ${coordinates[1]}% ${coordinates[2]}%${alphaSuffix(alpha)})`;
   }
   const values = coordinates.join(" ");
@@ -150,7 +150,19 @@ export function formatColorSpace(color: XColorSpaceRecord, options: XColorSpaceF
 }
 
 declare module "@xpyjs/color" {
+  interface XColorInputObjectMap {
+    colorSpace: XColorSpaceRecord;
+  }
   interface XColor {
+    /** Get an independent full-precision sRGB coordinate record. @returns Current coordinates and alpha */
+    colorSpace(): XColorSpaceRecord;
+    /**
+     * Replace the current color from an explicitly tagged space record.
+     * @param value - Coordinates and alpha; conversion to this sRGB instance clips out-of-gamut channels
+     * @returns Current instance for chaining, retaining its precision options
+     * @throws For invalid records, without modifying this instance
+     */
+    colorSpace(value: XColorSpaceRecord): this;
     /**
      * Convert the current sRGB instance to an unclipped coordinate record.
      * Already-clipped input cannot be recovered; use parseColorSpace for wide input.
@@ -162,9 +174,35 @@ declare module "@xpyjs/color" {
   }
 }
 
+/**
+ * Create an sRGB instance from a tagged record without registering the plugin.
+ * @param color - Explicit source coordinates and alpha
+ * @param options - Instance options, e.g. useDecimal
+ * @returns A new instance; out-of-sRGB channels are clipped
+ * @throws For invalid records
+ */
+export function fromColorSpace(color: XColorSpaceRecord, options?: XColorOptions): XColor {
+  const converted = convertColorSpace(color, "srgb");
+  const [r,g,b] = converted.coordinates;
+  return new XColor({ r:r*255,g:g*255,b:b*255,a:converted.alpha }, options);
+}
+
 const colorSpace: XColorPlugin = {
   name: "@xpyjs/color/plugins/colorSpace",
   install(_option, cls) {
+    registerColorParser(value => {
+      if (!value || typeof value !== "object" || !("space" in value)) return null;
+      const converted = convertColorSpace(value as XColorSpaceRecord, "srgb");
+      const [r,g,b] = converted.coordinates;
+      return { r:r*255,g:g*255,b:b*255,a:converted.alpha };
+    }, { priority: "before" });
+
+    defineMethod(cls, "colorSpace", function (value?: XColorSpaceRecord) {
+      if (value === undefined) return this.toColorSpace();
+      const converted = convertColorSpace(value, "srgb");
+      const [r,g,b] = converted.coordinates;
+      return this.rgb(r*255,g*255,b*255,converted.alpha);
+    });
     defineMethod(cls, "toColorSpace", function (space: XColorSpace = "srgb") {
       if (!this.isValid()) throw Logger.createError("Invalid source color");
       return convertColorSpace({ space: "srgb", coordinates: [this.red()/255,this.green()/255,this.blue()/255], alpha: this.alpha() }, space);

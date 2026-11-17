@@ -44,6 +44,18 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## 与 XColor 连接
 
+注册插件后可以直接传入带标识的记录，并通过 `colorSpace()` getter/setter 读取或替换颜色。HWB 记录也已支持，坐标顺序为 `[h, w, b]`；不要把无标识的 Lab/HWB 对象直接交给 RGB 猜测解析。
+
+```ts
+xcolor.use(colorSpace)
+const record = { space: 'hwb' as const, coordinates: [0, 0, 0] as const, alpha: .5 }
+xcolor(record).colorSpace(record).toHex() // '#ff000080'
+```
+
+不注册插件时可使用命名导出 `fromColorSpace(record, options?)`。创建/修改 `XColor` 时会显式进入 sRGB 并裁剪；需要保持广色域时继续使用记录纯函数。setter 保留当前实例精度选项，验证失败不修改原实例。
+
+类型现在与解析器一致：HSL/HSV 必须给齐三个通道，CMYK 必须给齐四个墨色通道，RGB 至少需要 r/g/b 之一；alpha 可选。原先仅因 Partial 类型而通过编译的无效对象现在会报类型错误。
+
 纯函数无需注册插件。需要从已有实例导出记录时：
 
 ```ts

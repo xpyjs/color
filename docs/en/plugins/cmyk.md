@@ -1,5 +1,7 @@
 # cmyk
 
+`color.cmyk()` aliases `toCmyk()`. `color.cmyk({ c, m, y, k, a? })` updates and returns the current instance, preserving alpha when omitted. Non-finite channels throw before mutation. Object inputs require all four ink channels, matching the runtime parser.
+
 CMYK print color space support. Provides CMYK output methods, string format registration, and CMYK input parsing.
 
 ## Install

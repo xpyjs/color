@@ -25,14 +25,14 @@ let _globalOpts: XColorOptions = {};
 /**
  * Internal map that associates short key names with the corresponding partial
  * color-object shapes accepted by the constructor.
- * Plugins can augment this interface (e.g. the CMYK plugin adds `cmyk: Partial<CMYK>`)
+ * Plugins can augment this interface (e.g. the CMYK plugin adds `cmyk: CMYK`)
  * so that the object-input union automatically widens.
  * @internal
  */
 export interface XColorInputObjectMap {
-  rgba: Partial<RGBA>;
-  hsla: Partial<HSLA>;
-  hsva: Partial<HSVA>;
+  rgba: Partial<RGBA> & ({ r: number } | { g: number } | { b: number });
+  hsla: Omit<HSLA, "a"> & { a?: number };
+  hsva: Omit<HSVA, "a"> & { a?: number };
 }
 
 /**

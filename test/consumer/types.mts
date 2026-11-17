@@ -2,6 +2,11 @@ import xcolor, { defineMethod, registerStringFormatter } from "@xpyjs/color";
 import type { XColor, XColorPlugin } from "@xpyjs/color";
 import lab from "@xpyjs/color/plugins/lab";
 import theme from "@xpyjs/color/plugins/theme";
+import cmyk from "@xpyjs/color/plugins/cmyk";
+xcolor.use(cmyk);
+xcolor({ c:0,m:100,y:100,k:0 }).cmyk({c:100,m:0,y:100,k:0});
+// @ts-expect-error CMYK requires all four ink channels
+xcolor({ c:20 });
 import colorSpace, { parseColorSpace, convertColorSpace, mapToGamut, type XColorSpaceRecord } from "@xpyjs/color/plugins/colorSpace";
 
 xcolor.use(colorSpace);
@@ -10,6 +15,13 @@ const converted = convertColorSpace(wide, "oklab");
 const spaceName: "oklab" = converted.space;
 mapToGamut(converted, "srgb");
 xcolor("#f00").toColorSpace("xyz-d50");
+xcolor(wide).colorSpace(converted).colorSpace();
+// @ts-expect-error HSL requires all three channels
+xcolor({ h: 120, s: 50 });
+// @ts-expect-error At least one RGB channel is required
+xcolor({ a: .5 });
+// @ts-expect-error Empty objects are not valid colors
+xcolor({});
 
 declare module "@xpyjs/color" {
   interface XColor { toMyString(): string }

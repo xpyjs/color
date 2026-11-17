@@ -1,11 +1,37 @@
 import { describe, expect, it } from "vitest";
 import xcolor from "../../src";
-import colorSpace, { convertColorSpace, parseColorSpace, formatColorSpace, inGamut, mapToGamut, type XColorSpace } from "../../src/plugins/colorSpace";
+import colorSpace, { fromColorSpace, convertColorSpace, parseColorSpace, formatColorSpace, inGamut, mapToGamut, type XColorSpace } from "../../src/plugins/colorSpace";
 import { parseWideColor } from "../../src/plugins/displayP3";
 
 const spaces: XColorSpace[] = ["srgb","srgb-linear","display-p3","a98-rgb","prophoto-rgb","rec2020","xyz","xyz-d65","xyz-d50","lab","lch","oklab","oklch"];
 
 describe("xcolor coordinate records", () => {
+  it.each(["lab", "oklab", "hsl", "hsv", "hwb", "display-p3", "xyz-d50"] as const)("accepts explicitly tagged %s objects and chainable replacement", space => {
+    xcolor.use(colorSpace);
+    const source = xcolor("#f00").alpha(.1234).toColorSpace(space);
+    const color = fromColorSpace(source);
+    expect(color.toHex()).toBe(xcolor(source).toHex());
+    expect(color.clone().alpha(1).toHex()).toBe("#ff0000");
+    const target = xcolor("#000", {useDecimal:true});
+    expect(target.colorSpace(source)).toBe(target);
+    expect(target.colorSpace().alpha).toBe(.1234);
+    expect(target.red(12.5).red()).toBe(12.5);
+    expect(source.space).toBe(space);
+  });
+
+  it("validates tagged setters atomically and handles HWB normalization", () => {
+    xcolor.use(colorSpace);
+    const target = xcolor("#123456");
+    expect(()=>target.colorSpace({space:"lab",coordinates:[50,NaN,0],alpha:1})).toThrow();
+    expect(target.toHex()).toBe("#123456");
+    expect(fromColorSpace(parseColorSpace("hwb(90 80% 80% / .25)")!).toHex()).toBe("#80808040");
+    const value = target.toColorSpace("hwb");
+    const reparsed = parseColorSpace(formatColorSpace(value))!;
+    reparsed.coordinates.forEach((v,i)=>expect(v).toBeCloseTo(value.coordinates[i],12));
+    expect(reparsed.alpha).toBe(value.alpha);
+    expect(fromColorSpace({space:"hsv",coordinates:[-120,100,100],alpha:1}).toHex()).toBe("#0000ff");
+  });
+
   it.each(["hsl", "hsv", "lab", "oklab", "xyz-d50", "srgb"] as const)("keeps tiny alpha and dark RGB detail through full-precision %s output", space => {
     xcolor.use(colorSpace);
     const source = xcolor({ r:1.25,g:2.5,b:3.75,a:.000123456789 }, { useDecimal:true });

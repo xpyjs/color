@@ -9,6 +9,9 @@ const wide: colorSpace.XColorSpaceRecord = colorSpace.parseColorSpace("color(dis
 const converted = colorSpace.convertColorSpace(wide, "oklab");
 const spaceName: "oklab" = converted.space;
 colorSpace.mapToGamut(converted, "srgb");
+xcolor(wide).colorSpace(converted);
+// @ts-expect-error HSV requires all three channels
+xcolor({ h: 120, v: 50 });
 import defaultFactory from "@xpyjs/color";
 
 xcolor.use(lab, { whitePoint: "D50" }).use(palette);

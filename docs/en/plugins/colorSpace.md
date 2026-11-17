@@ -1,5 +1,9 @@
 # colorSpace - Unclipped coordinate records
 
+After registration, `xcolor(record)` accepts tagged objects and `colorSpace()` / `colorSpace(record)` provide a getter and chainable setter. HWB records use `[h, w, b]`. Without registration, use the named `fromColorSpace(record, options?)` factory. Creating or updating an `XColor` explicitly enters sRGB and clips; retain records for wide-gamut calculations. Invalid setters leave the instance unchanged, and valid setters keep its precision options.
+
+Input types now match the parsers: HSL/HSV require all three channels, CMYK all four ink channels, and RGB at least one of r/g/b. Alpha is optional. Previously accepted but invalid Partial objects now produce type errors. Untagged Lab/HWB objects are not supported input formats; use tagged records instead.
+
 This module works with `{ space, coordinates, alpha }` records independently of `XColor`. Conversion does not clip through sRGB, mutate input, or round coordinates for display. Records from existing `parseWideColor()` exports are accepted directly.
 
 ```ts
