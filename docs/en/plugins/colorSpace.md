@@ -18,6 +18,23 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+## CSS expressions and explicit context
+
+`resolveCssColor(input, context?)` evaluates literals, two-color `color-mix(in space, color percentage?, color percentage?)`, and relative RGB/HSL/HWB/Lab/LCH/OKLab/OKLCh/`color()` functions. It returns unclipped records or null for invalid/unresolved inputs, without registration.
+
+```ts
+import { resolveCssColor, fromColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const mixed = resolveCssColor('color-mix(in srgb, var(--brand), currentColor)', { variables: { '--brand': 'red' }, currentColor: 'blue' })!
+fromColorSpace(mixed).toHex() // '#800080'
+resolveCssColor('oklch(from red calc(l * .8) c h)') // Retains target coordinates
+```
+
+Mix weights default to 50/50; one omitted weight complements the other. Totals below 100% reduce alpha; totals above 100% are normalized. Mixing premultiplies non-hue coordinates by alpha. Polar spaces support shorter (default), longer, increasing and decreasing hue paths. Analogous missing components/sets are carried forward and filled, remaining none when both are missing. Neutral hues borrow the chromatic endpoint's hue.
+
+Relative channel keywords use target units: rgb r/g/b use 0–255; `color(... srgb ...)` uses 0–1. Omitted alpha inherits the origin; explicit alpha is clamped to 0–1, while coordinates remain unclipped. The numeric `calc()` subset supports finite numbers, channel keywords, `+ - * /` and parentheses, without JavaScript execution. Percentages/dimensions inside calc and other math functions are unsupported.
+
+Context resolves **whole-color** `var(--name[, fallback])` and currentColor only. Custom property names are case-sensitive; values may be strings or records. No DOM access or channel-level variable substitution occurs. Limits: 16384 characters, 32 nesting levels, 256 color resolutions and 256 calc tokens. Cycles, overflow and division by zero return null. More than two mix colors, weights before colors, CSS comments/escapes, custom profiles, system colors, light-dark and contrast-color are unsupported. This bounded evaluator is not a complete CSS Color 5 implementation.
+
 ## Strict CSS literals and missing components
 
 `parseCssColor(input, { syntax: 'strict' })` independently parses complete literals: hex, all CSS named colors, transparent, RGB/HSL/HWB, Lab/LCH/OKLab/OKLCh and the predefined `color()` spaces above. Registration is unnecessary. Modern syntax accepts `none`; comma syntax is limited to RGB/HSL, with consistent number/percentage RGB channels.

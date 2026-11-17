@@ -42,6 +42,8 @@ async function smoke() {
   assert.strictEqual(spaces.mapToGamut(coordinateColor).alpha, .25);
   cjs.use(spaces);
   const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
+  assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
+  assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");
   assert.deepStrictEqual(missing.missing, [true, false, false, true]);
   assert.strictEqual(spaces.formatColorSpace(missing), "color(srgb-linear none 0.5 0 / none)");
   assert.strictEqual(spaces.parseCssColor("rgb(1, 2%, 3)"), null);

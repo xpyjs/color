@@ -18,6 +18,9 @@ xcolor("#f00").toColorSpace("xyz-d50");
 xcolor(wide).colorSpace(converted).colorSpace();
 import { parseCssColor, type XColorCssParseOptions } from "@xpyjs/color/plugins/colorSpace";
 const cssOptions: XColorCssParseOptions = { syntax: "strict" };
+import { resolveCssColor, type XColorCssContext } from "@xpyjs/color/plugins/colorSpace";
+const cssContext: XColorCssContext = {currentColor: "red", variables: {"--brand": wide}};
+resolveCssColor("color-mix(in oklch, currentColor, var(--brand))", cssContext);
 const cssRecord = parseCssColor("rgb(none 0 0 / none)", cssOptions)!;
 const missingAlpha: boolean | undefined = cssRecord.missing?.[3];
 // @ts-expect-error Unknown syntax policy

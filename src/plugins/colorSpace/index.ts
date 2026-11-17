@@ -2,6 +2,8 @@ import { XColor, defineMethod, Logger, parseColor as parseSrgb, parseFunctionalC
 import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 import { parseCoordinates } from "../wide-color";
 import { parseCssLiteral } from "./css";
+import { evaluateCssExpression, type XColorCssContext } from "./expression";
+export type { XColorCssContext } from "./expression";
 import { fromXyzD65, toXyzD65, isRgbSpace, type ColorSpace, type RGBSpace, type Coordinates } from "./conversion";
 
 /** Supported coordinate spaces. Lab/LCH use the CSS D50 white point. */
@@ -36,6 +38,18 @@ export interface XColorCssParseOptions {
 export function parseCssColor(input: string, options: XColorCssParseOptions = {}): XColorSpaceRecord | null {
   if (options.syntax !== undefined && options.syntax !== "strict" && options.syntax !== "loose") throw Logger.createError("Unknown CSS syntax policy");
   return parseCssLiteral(input) ?? (options.syntax === "loose" ? parseColorSpace(input) : null);
+}
+
+/**
+ * Resolve CSS literals, two-color color-mix(), and relative color functions.
+ * Relative calc supports finite numbers, channel keywords, arithmetic and parentheses.
+ * @param input - Expression (maximum 16384 characters, 32 nesting levels, 256 resolution steps)
+ * @param context - Explicit currentColor and whole-color custom properties; no DOM lookup
+ * @returns Independent coordinates, or null for unresolved/invalid/unsupported expressions
+ * @see https://www.w3.org/TR/css-color-5/
+ */
+export function resolveCssColor(input: string, context: XColorCssContext = {}): XColorSpaceRecord | null {
+  return evaluateCssExpression(input, context, convertColorSpace);
 }
 
 const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv", "hwb"];

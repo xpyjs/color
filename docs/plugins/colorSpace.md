@@ -30,6 +30,23 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## API
 
+### CSS 表达式和显式上下文
+
+`resolveCssColor(input, context?)` 支持字面量、双颜色 `color-mix(in space, color percentage?, color percentage?)`、相对 RGB/HSL/HWB/Lab/LCH/OKLab/OKLCh/`color()`。返回未裁剪的记录，无效或无法解析返回 null，不需要注册插件。
+
+```ts
+import { resolveCssColor, fromColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const mixed = resolveCssColor('color-mix(in srgb, var(--brand), currentColor)', { variables: { '--brand': 'red' }, currentColor: 'blue' })!
+fromColorSpace(mixed).toHex() // '#800080'
+resolveCssColor('oklch(from red calc(l * .8) c h)') // 保留空间坐标
+```
+
+混色默认各 50%；单个省略权重补足 100%；权重总和不足 100% 会降低 alpha，总和超过 100% 则归一化。按 alpha 预乘，柱坐标色相不预乘；支持 shorter（默认）、longer、increasing、decreasing hue，仅柱坐标可指定色相路径。缺失通道按对应分量/集合传递与补全，双方均缺失时保留 none，无彩色色相不影响彩色端。
+
+相对颜色的通道关键词使用目标空间标度；rgb 的 r/g/b 为 0–255，`color(... srgb ...)` 为 0–1。省略 alpha 继承源值，显式 alpha 限制到 0–1，颜色坐标不提前裁剪。`calc()` 子集支持有限数字、通道关键词、`+ - * /` 和括号，不执行 JavaScript；不支持 calc 内百分比/单位、其他数学函数。
+
+上下文只解析**整种颜色**的 `var(--name[, fallback])` 和 currentColor；变量名区分大小写，可传字符串或记录。不读取 DOM，不替换通道内部变量。限制为 16384 字符、32 层嵌套、256 次颜色解析，calc 最多 256 token；循环、溢出和除零返回 null。暂不支持多于两个混色参数、权重在颜色前、CSS 注释/转义、自定义 profile、系统颜色、light-dark 和 contrast-color。这里是有明确语法范围的表达式求值器，不宣称完整 CSS Color 5 实现。
+
 ### 严格 CSS 字面量与缺失通道
 
 `parseCssColor(input, { syntax: 'strict' })` 默认严格检查完整字面量：Hex、所有 CSS 命名色、transparent、RGB/HSL/HWB、Lab/LCH/OKLab/OKLCh 和上列预定义 `color()` 空间。它不依赖全局插件注册。现代语法允许 `none`，逗号语法仅允许 RGB/HSL，并检查 RGB 的数字/百分比一致性。
