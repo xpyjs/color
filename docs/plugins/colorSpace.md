@@ -30,6 +30,25 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## API
 
+### 感知比较、排序与去重
+
+`colorDifference(a, b, { metric? })` 默认使用 CIEDE2000（D50，kL/kC/kH 均为 1）；也支持 `cie76` 和未乘 100 的 `oklab` 欧氏距离。全精度计算，不先裁剪到 sRGB。旧 lab 插件的 `.deltaE()` 保持原行为。
+
+```ts
+import { parseCssColor, colorDifference, isColorSimilar, sortColors, deduplicateColors } from '@xpyjs/color/plugins/colorSpace'
+const colors = ['red', '#ff0100', 'blue'].map(value => parseCssColor(value)!)
+colorDifference(colors[0], colors[1]) // CIEDE2000 距离
+isColorSimilar(colors[0], colors[1], { tolerance: 2 }) // 包含阈值边界
+deduplicateColors(colors) // 顺序保留首个代表色
+sortColors(colors, { by: 'distance', reference: colors[0] }) // 按到参考色的距离排序
+```
+
+坐标距离忽略 alpha，不代表透明色合成后的外观差异。`isColorSimilar` / `deduplicateColors` 同时要求 alpha 差值不超过 `alphaTolerance`（默认 0，范围 0–1）；距离 `tolerance` 默认 CIE 指标为 2、OKLab 为 .02，可设置任意非负有限值，均含等于。缺失通道在比较时按零处理。
+
+`sortColors` 默认按 OKLCh lightness 升序，也可按 chroma、hue 或到 reference 的 distance 排序；`descending` 反转主键，相同键保留输入顺序。无彩色的数值色相采用转换结果 0。输出保留原空间，记录与数组独立。去重逐一比较已保留代表色，最坏 O(n²)；容差相似关系不传递，调整输入顺序可能改变代表色，不是聚类算法。
+
+CIEDE2000 以 [Sharma/Wu/Dalal 参考数据](https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/) 的 34 组向量验证，包括中性色及 180° 色相边界。
+
 ### 多色标渐变
 
 `createColorGradient(stops, options?)` 创建输入快照，默认在 OKLab 插值，不修改输入。每个色标为 `{ color: record, position?: number }`，数量 2–10000；`at(value)` 按数据域采样，`colors(count = 5)` 均匀采样并包含域端点。

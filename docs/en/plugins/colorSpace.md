@@ -18,6 +18,25 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+## Perceptual comparison, sorting and deduplication
+
+`colorDifference(a, b, { metric? })` defaults to CIEDE2000 (D50, kL/kC/kH = 1), with `cie76` and unscaled `oklab` Euclidean distance available. Calculations use full precision without sRGB clipping. The legacy lab plugin `.deltaE()` remains unchanged.
+
+```ts
+import { parseCssColor, colorDifference, isColorSimilar, sortColors, deduplicateColors } from '@xpyjs/color/plugins/colorSpace'
+const colors = ['red', '#ff0100', 'blue'].map(value => parseCssColor(value)!)
+colorDifference(colors[0], colors[1]) // CIEDE2000 distance
+isColorSimilar(colors[0], colors[1], { tolerance: 2 }) // Inclusive limit
+deduplicateColors(colors) // Keep the first representative
+sortColors(colors, { by: 'distance', reference: colors[0] })
+```
+
+Coordinate distance ignores alpha and does not measure composited appearance. `isColorSimilar` / `deduplicateColors` also check `alphaTolerance` (default 0, range 0–1). Coordinate `tolerance` defaults to 2 for CIE metrics or .02 for OKLab; any nonnegative finite limit is allowed. Both limits are inclusive. Missing components resolve to zero for comparisons.
+
+`sortColors` defaults to ascending OKLCh lightness; chroma, hue and distance to a required reference are available. `descending` reverses the primary key while ties retain input order. Neutral numerical hue uses the conversion result of zero. Outputs are independent source-space records. Deduplication compares each candidate with retained representatives, worst-case O(n²). Similarity is not transitive, so order may affect representatives; this is not clustering.
+
+CIEDE2000 is verified against all 34 [Sharma/Wu/Dalal reference vectors](https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/), including neutral colors and 180° hue boundaries.
+
 ## Multi-stop gradients
 
 `createColorGradient(stops, options?)` snapshots 2–10000 `{ color: record, position?: number }` stops and defaults to OKLab interpolation. `at(value)` samples the data domain; `colors(count = 5)` samples uniformly, including domain endpoints.

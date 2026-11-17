@@ -44,6 +44,10 @@ async function smoke() {
   const gradient = spaces.createColorGradient([{color:spaces.parseCssColor("red")},{color:spaces.parseCssColor("blue")}],{space:"srgb"});
   assert.strictEqual(spaces.fromColorSpace(gradient.at(.5)).toHex(), "#800080");
   assert.strictEqual(gradient.colors().length, 5);
+  assert.strictEqual(spaces.colorDifference(coordinateColor, coordinateColor), 0);
+  assert.strictEqual(spaces.isColorSimilar(coordinateColor, coordinateColor), true);
+  assert.strictEqual(spaces.deduplicateColors([coordinateColor, coordinateColor]).length, 1);
+  assert.strictEqual(spaces.sortColors([coordinateColor],{by:"distance",reference:coordinateColor}).length, 1);
   const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");

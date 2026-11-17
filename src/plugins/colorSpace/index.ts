@@ -4,6 +4,8 @@ import { parseCoordinates } from "../wide-color";
 import { parseCssLiteral } from "./css";
 import { evaluateCssExpression, type XColorCssContext } from "./expression";
 import { buildGradient, type XColorGradient, type XColorGradientOptions, type XColorGradientStop } from "./gradient";
+import { difference, similar, sort, deduplicate, type XColorDifferenceOptions, type XColorSimilarityOptions, type XColorSortOptions } from "./comparison";
+export type { XColorDifferenceMetric, XColorDifferenceOptions, XColorSimilarityOptions, XColorSortOptions } from "./comparison";
 export type { XColorGradient, XColorGradientOptions, XColorGradientStop } from "./gradient";
 export type { HuePath as XColorHuePath } from "./interpolation";
 export type { XColorCssContext } from "./expression";
@@ -66,6 +68,51 @@ export function resolveCssColor(input: string, context: XColorCssContext = {}): 
  */
 export function createColorGradient(stops: readonly XColorGradientStop[], options: XColorGradientOptions = {}): XColorGradient {
   return buildGradient(stops, options, convertColorSpace);
+}
+
+/**
+ * Measure full-precision coordinate difference without sRGB clipping. Alpha is ignored.
+ * @param a - First color; missing components resolve to zero
+ * @param b - Second color
+ * @param options - ciede2000 (default, D50, kL=kC=kH=1), cie76, or unscaled oklab distance
+ * @returns Nonnegative distance in the selected metric's units
+ * @throws For invalid records, options or numerical overflow
+ * @see https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/
+ */
+export function colorDifference(a: XColorSpaceRecord, b: XColorSpaceRecord, options: XColorDifferenceOptions = {}): number {
+  return difference(a,b,options,convertColorSpace);
+}
+
+/**
+ * Compare coordinate distance and alpha using inclusive tolerances.
+ * @param a - First color
+ * @param b - Second color
+ * @param options - Metric, distance tolerance (2 CIE or .02 OKLab), alpha tolerance (default 0)
+ * @returns Whether both tolerances pass; does not compare composited appearance
+ */
+export function isColorSimilar(a: XColorSpaceRecord, b: XColorSpaceRecord, options: XColorSimilarityOptions = {}): boolean {
+  return similar(a,b,options,convertColorSpace);
+}
+
+/**
+ * Stable perceptual sorting without mutating inputs.
+ * @param colors - Source records
+ * @param options - OKLCh lightness (default), chroma, hue, or distance to a required reference
+ * @returns Independent records in the selected order, retaining original spaces
+ */
+export function sortColors(colors: readonly XColorSpaceRecord[], options: XColorSortOptions = {}): XColorSpaceRecord[] {
+  return sort(colors,options,convertColorSpace);
+}
+
+/**
+ * Keep the first representative of each similar color in input order.
+ * Similarity is not transitive; each candidate is compared with already-kept representatives.
+ * @param colors - Source records
+ * @param options - Metric and inclusive coordinate/alpha tolerances
+ * @returns Independent records without mutating inputs; worst-case quadratic comparisons
+ */
+export function deduplicateColors(colors: readonly XColorSpaceRecord[], options: XColorSimilarityOptions = {}): XColorSpaceRecord[] {
+  return deduplicate(colors,options,convertColorSpace);
 }
 
 const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv", "hwb"];

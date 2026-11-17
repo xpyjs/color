@@ -29,7 +29,7 @@
 - [x] 13 CSS 解析：独立 parseCssColor 严格/宽松入口，srgb-linear 注册输入，none 标记与序列化保留，普通转换按零解析；明确上下文、表达式和 CSS 词法边界，补齐实例 Lab/OKLab 黑白端点。分支：`codex/13-css-parsing`；928 项测试、覆盖率门槛、类型检查、111 个构建输出与 ESM/CJS/四种 TS 消费模式通过，双语文档同步。
 - [x] 14 CSS 表达式：独立 resolveCssColor 支持双颜色 color-mix、相对颜色和数值 calc 子集；显式 currentColor/整色变量上下文，缺失分量传递、alpha 预乘、四色相路径及循环边界。分支：`codex/14-css-expressions`；973 项测试、覆盖率、类型检查、111 个构建输出、ESM/CJS 与四种 TS 消费模式通过。双语文档列明支持的语法子集及限制。
 - [x] 15 渐变：createColorGradient 支持多色标、可选位置、重复位置突变、数据域、所有记录空间和四色相路径；输入快照、独立采样、缺失通道及 alpha 预乘。分支：`codex/15-multi-stop-gradients`；991 项测试、类型检查、111 个构建输出、ESM/CJS 和四种 TS 消费模式通过，双语文档同步。
-- [ ] 16 感知比较：CIEDE2000、OKLab 距离、可配置容差、感知排序和去重。
+- [x] 16 感知比较：colorDifference（CIEDE2000/CIE76/OKLab）、isColorSimilar、稳定 sortColors 和顺序 deduplicateColors；独立 alpha 容差、保留广色域。分支：`codex/16-perceptual-comparison`；34 组 CIEDE2000 作者参考向量正反向验证，全量 1030 测试、覆盖率、类型检查、111 构建输出及 ESM/CJS/四种 TS 消费模式通过，双语文档明确指标单位和去重语义。
 - [ ] 17 无障碍增强：自动调整到目标对比度，验证主题文字/背景配对。
 - [ ] 18 感知色板：感知均匀、亮度单调、稳定映射和对比度约束。
 - [ ] 19 独立主题实例：隔离配置和注入生命周期，提供暗色变量快照。
