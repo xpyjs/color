@@ -20,6 +20,11 @@ import { parseCssColor, type XColorCssParseOptions } from "@xpyjs/color/plugins/
 const cssOptions: XColorCssParseOptions = { syntax: "strict" };
 import { resolveCssColor, type XColorCssContext } from "@xpyjs/color/plugins/colorSpace";
 const cssContext: XColorCssContext = {currentColor: "red", variables: {"--brand": wide}};
+import { createColorGradient, type XColorGradient, type XColorHuePath } from "@xpyjs/color/plugins/colorSpace";
+const huePath: XColorHuePath = "shorter";
+const gradient: XColorGradient = createColorGradient([{color:wide},{color:converted}],{space:"oklch",hue:huePath,domain:[0,100]});
+gradient.at(50);
+gradient.colors(7);
 resolveCssColor("color-mix(in oklch, currentColor, var(--brand))", cssContext);
 const cssRecord = parseCssColor("rgb(none 0 0 / none)", cssOptions)!;
 const missingAlpha: boolean | undefined = cssRecord.missing?.[3];

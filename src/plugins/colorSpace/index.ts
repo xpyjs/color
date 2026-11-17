@@ -3,6 +3,9 @@ import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 import { parseCoordinates } from "../wide-color";
 import { parseCssLiteral } from "./css";
 import { evaluateCssExpression, type XColorCssContext } from "./expression";
+import { buildGradient, type XColorGradient, type XColorGradientOptions, type XColorGradientStop } from "./gradient";
+export type { XColorGradient, XColorGradientOptions, XColorGradientStop } from "./gradient";
+export type { HuePath as XColorHuePath } from "./interpolation";
 export type { XColorCssContext } from "./expression";
 import { fromXyzD65, toXyzD65, isRgbSpace, type ColorSpace, type RGBSpace, type Coordinates } from "./conversion";
 
@@ -50,6 +53,19 @@ export function parseCssColor(input: string, options: XColorCssParseOptions = {}
  */
 export function resolveCssColor(input: string, context: XColorCssContext = {}): XColorSpaceRecord | null {
   return evaluateCssExpression(input, context, convertColorSpace);
+}
+
+/**
+ * Create a reusable, unclipped multi-stop color gradient with a snapshot of its inputs.
+ * Missing positions are distributed evenly between anchors; duplicate positions form hard stops.
+ * Missing components carry forward and non-hue coordinates use premultiplied alpha.
+ * @param stops - 2–10000 color records with optional normalized positions
+ * @param options - Space (default oklab), polar hue path, and finite increasing data domain
+ * @returns at(value) and colors(count = 5), returning independent coordinate records
+ * @throws For invalid stops, positions, options, sample values or counts
+ */
+export function createColorGradient(stops: readonly XColorGradientStop[], options: XColorGradientOptions = {}): XColorGradient {
+  return buildGradient(stops, options, convertColorSpace);
 }
 
 const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv", "hwb"];

@@ -18,6 +18,21 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+## Multi-stop gradients
+
+`createColorGradient(stops, options?)` snapshots 2–10000 `{ color: record, position?: number }` stops and defaults to OKLab interpolation. `at(value)` samples the data domain; `colors(count = 5)` samples uniformly, including domain endpoints.
+
+```ts
+import { createColorGradient, parseCssColor, formatColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const gradient = createColorGradient(['red', 'gold', 'blue'].map(value => ({ color: parseCssColor(value)! })), { space: 'oklch', hue: 'shorter', domain: [0, 100] })
+formatColorSpace(gradient.at(50)) // Middle stop
+gradient.colors(7) // Seven independent coordinate records
+```
+
+Positions are nondecreasing numbers in [0,1]. Omitted first/last positions default to 0/1; intervening positions are evenly distributed between anchors. Duplicate positions form hard stops, selecting the last stop at that position. Outer colors extend to the ends. `domain` is a finite increasing pair, default [0,1]; out-of-domain samples clamp. Counts must be integers from 2 to 10000; invalid options throw.
+
+All record spaces are supported, including Lab/LCH/OKLCh and wide RGB. Output retains the interpolation space without clipping. Polar spaces accept shorter/longer/increasing/decreasing hue paths. Missing components carry forward; alpha premultiplication applies to non-hue coordinates. Input and output arrays are independent. The existing instance `.scale()` keeps its two-color API; this API does not parse CSS gradient strings.
+
 ## CSS expressions and explicit context
 
 `resolveCssColor(input, context?)` evaluates literals, two-color `color-mix(in space, color percentage?, color percentage?)`, and relative RGB/HSL/HWB/Lab/LCH/OKLab/OKLCh/`color()` functions. It returns unclipped records or null for invalid/unresolved inputs, without registration.

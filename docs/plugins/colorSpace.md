@@ -30,6 +30,21 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## API
 
+### 多色标渐变
+
+`createColorGradient(stops, options?)` 创建输入快照，默认在 OKLab 插值，不修改输入。每个色标为 `{ color: record, position?: number }`，数量 2–10000；`at(value)` 按数据域采样，`colors(count = 5)` 均匀采样并包含域端点。
+
+```ts
+import { createColorGradient, parseCssColor, formatColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const gradient = createColorGradient(['red', 'gold', 'blue'].map(value => ({ color: parseCssColor(value)! })), { space: 'oklch', hue: 'shorter', domain: [0, 100] })
+formatColorSpace(gradient.at(50)) // 中间色标
+gradient.colors(7) // 七个独立颜色记录
+```
+
+`position` 使用 0–1 标度，必须非递减；省略的首末位置默认为 0/1，其余按相邻锚点均分。重复位置形成突变，同位置取最后一个色标；首末色标之外延用端点颜色。`domain` 为有限递增数对，默认 `[0,1]`，域外采样夹到端点。`colors` 数量为 2–10000 的整数，无效参数抛错。
+
+支持所有记录空间，包括 Lab/LCH/OKLCh 和广色域 RGB；输出保留指定空间，不自动裁剪。`hue` 可选 shorter/longer/increasing/decreasing，仅柱坐标接受显式策略。使用 alpha 预乘及缺失通道补全，输入和返回记录互不共享可变数组。已有实例 `.scale()` 保持原有两色 API；该接口不是 CSS 渐变字符串解析器。
+
 ### CSS 表达式和显式上下文
 
 `resolveCssColor(input, context?)` 支持字面量、双颜色 `color-mix(in space, color percentage?, color percentage?)`、相对 RGB/HSL/HWB/Lab/LCH/OKLab/OKLCh/`color()`。返回未裁剪的记录，无效或无法解析返回 null，不需要注册插件。
