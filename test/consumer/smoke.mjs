@@ -41,6 +41,11 @@ async function smoke() {
   assert.ok(spaces.convertColorSpace(coordinateColor, "srgb").coordinates[0] > 1);
   assert.strictEqual(spaces.mapToGamut(coordinateColor).alpha, .25);
   cjs.use(spaces);
+  const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
+  assert.deepStrictEqual(missing.missing, [true, false, false, true]);
+  assert.strictEqual(spaces.formatColorSpace(missing), "color(srgb-linear none 0.5 0 / none)");
+  assert.strictEqual(spaces.parseCssColor("rgb(1, 2%, 3)"), null);
+  assert.strictEqual(xcolor("color(srgb-linear .21404114048223255 0 0)").toHex(), "#800000");
   assert.strictEqual(xcolor("#f00").toColorSpace("oklab").space, "oklab");
   assert.strictEqual(cjs.isValidInput("bogus"), false);
 

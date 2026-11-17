@@ -1,6 +1,7 @@
 import { XColor, defineMethod, Logger, parseColor as parseSrgb, parseFunctionalChannels, registerColorParser, type XColorOptions, type XColorPlugin } from "@xpyjs/color";
 import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 import { parseCoordinates } from "../wide-color";
+import { parseCssLiteral } from "./css";
 import { fromXyzD65, toXyzD65, isRgbSpace, type ColorSpace, type RGBSpace, type Coordinates } from "./conversion";
 
 /** Supported coordinate spaces. Lab/LCH use the CSS D50 white point. */
@@ -13,6 +14,28 @@ export interface XColorSpaceRecord {
   readonly space: XColorSpace;
   readonly coordinates: readonly [number, number, number];
   readonly alpha: number;
+  /** Explicit CSS none flags for the three coordinates and alpha. Numeric placeholders are zero. */
+  readonly missing?: readonly [boolean, boolean, boolean, boolean];
+}
+
+/** Syntax policy for the explicit CSS parser. */
+export interface XColorCssParseOptions {
+  /** strict (default): CSS literals only; loose also accepts existing library syntax. */
+  syntax?: "strict" | "loose";
+}
+
+/**
+ * Parse standalone CSS color literals, retaining wide coordinates and explicit none flags.
+ * Supports hex, named colors, rgb/hsl/hwb/Lab/OKLab and predefined color() spaces.
+ * Expressions, CSS escapes/comments, custom profiles and context-dependent keywords return null.
+ * @param input - Complete literal, without a CSS declaration
+ * @param options - Strict literal grammar by default; loose enables legacy library fallbacks
+ * @returns An independent record or null; never resolves currentColor or variables implicitly
+ * @see https://www.w3.org/TR/css-color-4/#missing
+ */
+export function parseCssColor(input: string, options: XColorCssParseOptions = {}): XColorSpaceRecord | null {
+  if (options.syntax !== undefined && options.syntax !== "strict" && options.syntax !== "loose") throw Logger.createError("Unknown CSS syntax policy");
+  return parseCssLiteral(input) ?? (options.syntax === "loose" ? parseColorSpace(input) : null);
 }
 
 const SPACES: readonly XColorSpace[] = ["srgb", "srgb-linear", "display-p3", "a98-rgb", "prophoto-rgb", "rec2020", "xyz", "xyz-d65", "xyz-d50", "lab", "lch", "oklab", "oklch", "hsl", "hsv", "hwb"];
@@ -28,6 +51,9 @@ function validate(color: XColorSpaceRecord): void {
       ![...color.coordinates, color.alpha].every(Number.isFinite) || color.alpha < 0 || color.alpha > 1) {
     throw Logger.createError("Invalid color-space record");
   }
+  if (color.missing !== undefined && (!Array.isArray(color.missing) || color.missing.length !== 4 || !color.missing.every(v => typeof v === "boolean"))) {
+    throw Logger.createError("Invalid missing-channel flags");
+  }
 }
 
 /**
@@ -39,6 +65,7 @@ function validate(color: XColorSpaceRecord): void {
  */
 export function parseColorSpace(input: string): XColorSpaceRecord | null {
   if (typeof input !== "string") return null;
+  if (/\bnone\b/i.test(input)) return parseCssLiteral(input);
   for (const space of SPACES) {
     if (isRgbSpace(space) || space.startsWith("xyz")) {
       const parsed = parseCoordinates(input, space);
@@ -67,6 +94,7 @@ export function parseColorSpace(input: string): XColorSpaceRecord | null {
 
 /**
  * Convert between spaces without clipping, rounding, or modifying the input.
+ * Outside interpolation, missing components resolve to zero and their flags are removed.
  * @param color - A validated coordinate record (including existing parseWideColor results)
  * @param space - Destination space
  * @returns Independent target coordinates, preserving alpha
@@ -75,9 +103,10 @@ export function parseColorSpace(input: string): XColorSpaceRecord | null {
 export function convertColorSpace<Space extends XColorSpace>(color: XColorSpaceRecord, space: Space): XColorSpaceRecord & { readonly space: Space } {
   validate(color);
   if (!SPACES.includes(space)) throw Logger.createError("Unknown target color space");
-  const coordinates: Coordinates = color.space === space ? [...color.coordinates] : fromXyzD65(space, toXyzD65(color.space, color.coordinates));
+  const source = color.coordinates.map((v, i) => color.missing?.[i] ? 0 : v) as Coordinates;
+  const coordinates: Coordinates = color.space === space ? source : fromXyzD65(space, toXyzD65(color.space, source));
   if (!coordinates.every(Number.isFinite)) throw Logger.createError("Color conversion overflow");
-  return { space, coordinates, alpha: color.alpha };
+  return { space, coordinates, alpha: color.missing?.[3] ? 0 : color.alpha };
 }
 
 /**
@@ -114,7 +143,7 @@ export function mapToGamut<Space extends XColorRgbSpace = "srgb">(
   if (method === "clip" || inGamut(color, space)) return clip(color);
   const lch = convertColorSpace(color, "oklch");
   const [l,c,h] = lch.coordinates;
-  if (l <= 0 || l >= 1) return { space, coordinates: l <= 0 ? [0,0,0] : [1,1,1], alpha: color.alpha };
+  if (l <= 0 || l >= 1) return { space, coordinates: l <= 0 ? [0,0,0] : [1,1,1], alpha: lch.alpha };
   let low = 0, high = c;
   for (let i = 0; i < 32; i++) {
     const mid = (low+high)/2;
@@ -138,15 +167,17 @@ export function formatColorSpace(color: XColorSpaceRecord, options: XColorSpaceF
     throw Logger.createError("Output precision must be full or an integer from 0 to 15");
   }
   const number = (value: number) => precision === "full" ? value : Number(value.toFixed(precision));
-  const coordinates = color.coordinates.map(number);
+  const coordinates = color.coordinates.map((v, i) => color.missing?.[i] ? "none" : number(v));
   const alpha = number(color.alpha);
+  const suffix = color.missing?.[3] ? " / none" : alphaSuffix(alpha);
   if (color.space === "hsl" || color.space === "hsv" || color.space === "hwb") {
-    return `${color.space}(${coordinates[0]} ${coordinates[1]}% ${coordinates[2]}%${alphaSuffix(alpha)})`;
+    const percent = (i: number) => coordinates[i] === "none" ? "none" : `${coordinates[i]}%`;
+    return `${color.space}(${coordinates[0]} ${percent(1)} ${percent(2)}${suffix})`;
   }
   const values = coordinates.join(" ");
   return isRgbSpace(color.space) || color.space.startsWith("xyz")
-    ? `color(${color.space} ${values}${alphaSuffix(alpha)})`
-    : `${color.space}(${values}${alphaSuffix(alpha)})`;
+    ? `color(${color.space} ${values}${suffix})`
+    : `${color.space}(${values}${suffix})`;
 }
 
 declare module "@xpyjs/color" {
@@ -182,26 +213,39 @@ declare module "@xpyjs/color" {
  * @throws For invalid records
  */
 export function fromColorSpace(color: XColorSpaceRecord, options?: XColorOptions): XColor {
+  return new XColor(instanceRgba(color), options);
+}
+
+// Resolve display endpoints without changing the unclipped coordinate conversion API.
+function instanceRgba(color: XColorSpaceRecord) {
   const converted = convertColorSpace(color, "srgb");
-  const [r,g,b] = converted.coordinates;
-  return new XColor({ r:r*255,g:g*255,b:b*255,a:converted.alpha }, options);
+  let [r,g,b] = converted.coordinates;
+  if (["lab", "lch", "oklab", "oklch"].includes(color.space)) {
+    const l = color.missing?.[0] ? 0 : color.coordinates[0];
+    if (l <= 0) r = g = b = 0;
+    else if (l >= (color.space.startsWith("ok") ? 1 : 100)) r = g = b = 1;
+  }
+  return { r:r*255,g:g*255,b:b*255,a:converted.alpha };
 }
 
 const colorSpace: XColorPlugin = {
   name: "@xpyjs/color/plugins/colorSpace",
   install(_option, cls) {
     registerColorParser(value => {
+      if (typeof value === "string") {
+        if (!/\bnone\b/i.test(value) && !/^\s*color\(\s*srgb-linear\s/i.test(value)) return null;
+        const parsed = parseCssLiteral(value);
+        if (!parsed) return null;
+        return instanceRgba(parsed);
+      }
       if (!value || typeof value !== "object" || !("space" in value)) return null;
-      const converted = convertColorSpace(value as XColorSpaceRecord, "srgb");
-      const [r,g,b] = converted.coordinates;
-      return { r:r*255,g:g*255,b:b*255,a:converted.alpha };
+      return instanceRgba(value as XColorSpaceRecord);
     }, { priority: "before" });
 
     defineMethod(cls, "colorSpace", function (value?: XColorSpaceRecord) {
       if (value === undefined) return this.toColorSpace();
-      const converted = convertColorSpace(value, "srgb");
-      const [r,g,b] = converted.coordinates;
-      return this.rgb(r*255,g*255,b*255,converted.alpha);
+      const {r,g,b,a} = instanceRgba(value);
+      return this.rgb(r,g,b,a);
     });
     defineMethod(cls, "toColorSpace", function (space: XColorSpace = "srgb") {
       if (!this.isValid()) throw Logger.createError("Invalid source color");

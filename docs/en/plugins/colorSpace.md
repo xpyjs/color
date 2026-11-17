@@ -18,6 +18,23 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+## Strict CSS literals and missing components
+
+`parseCssColor(input, { syntax: 'strict' })` independently parses complete literals: hex, all CSS named colors, transparent, RGB/HSL/HWB, Lab/LCH/OKLab/OKLCh and the predefined `color()` spaces above. Registration is unnecessary. Modern syntax accepts `none`; comma syntax is limited to RGB/HSL, with consistent number/percentage RGB channels.
+
+```ts
+import { parseCssColor, formatColorSpace, convertColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const missing = parseCssColor('oklch(.6 .2 none / none)')!
+formatColorSpace(missing) // 'oklch(0.6 0.2 none / none)'
+convertColorSpace(missing, 'srgb').alpha // 0 (ordinary conversion, not interpolation)
+```
+
+The optional `missing` tuple contains four booleans for the coordinates and alpha, with zero numeric placeholders. Serialization retains `none`; ordinary conversion resolves missing components to zero and removes the flags. Interpolation needs a separate carry-forward step, reserved for the gradient API. `parseColorSpace` also retains explicit `none`. See [CSS Color 4 missing components](https://www.w3.org/TR/css-color-4/#missing).
+
+`syntax: 'loose'` tries existing library syntax (such as HSV) after strict parsing fails. Registering colorSpace additionally enables `color(srgb-linear …)` and `none` strings; other strings continue through existing parsers. Instance factories/setters resolve Lab/OKLab lightness endpoints to black/white; pure coordinate conversion keeps the mathematical result.
+
+This is a literal parser, not a complete CSS stylesheet parser: CSS comments/escapes, math functions, relative colors, color-mix, custom profiles, currentColor, var() and system colors return null. Expressions and context resolution belong to a separate expression API; environment values are never guessed.
+
 | Function | Behavior |
 | --- | --- |
 | `parseColorSpace(string)` | Retains source coordinates; returns null on unsupported syntax. Core formats and registered parsers fall back to an sRGB record |

@@ -30,6 +30,23 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## API
 
+### 严格 CSS 字面量与缺失通道
+
+`parseCssColor(input, { syntax: 'strict' })` 默认严格检查完整字面量：Hex、所有 CSS 命名色、transparent、RGB/HSL/HWB、Lab/LCH/OKLab/OKLCh 和上列预定义 `color()` 空间。它不依赖全局插件注册。现代语法允许 `none`，逗号语法仅允许 RGB/HSL，并检查 RGB 的数字/百分比一致性。
+
+```ts
+import { parseCssColor, formatColorSpace, convertColorSpace } from '@xpyjs/color/plugins/colorSpace'
+const missing = parseCssColor('oklch(.6 .2 none / none)')!
+formatColorSpace(missing) // 'oklch(0.6 0.2 none / none)'
+convertColorSpace(missing, 'srgb').alpha // 0（普通转换，不是插值）
+```
+
+可选 `missing` 是三个坐标和 alpha 的四个布尔标记，数值占位为 0。序列化保留 `none`；普通转换将缺失通道解析为 0 并移除标记。插值补全不能用普通转换代替，将由渐变 API 负责。`parseColorSpace` 同样保留显式 `none`。参见 [CSS Color 4 缺失通道](https://www.w3.org/TR/css-color-4/#missing)。
+
+`syntax: 'loose'` 在严格解析失败后尝试已有库语法（例如 HSV）。注册 colorSpace 插件额外接通 `color(srgb-linear …)` 和 `none` 字符串，其余字符串仍由已有解析器处理。实例工厂和 setter 在 Lab/OKLab 亮度端点输出黑/白，纯坐标转换仍保留数学结果。
+
+这是字面量解析器，不是完整 CSS 样式解析器：CSS 注释/转义、数学函数、相对颜色、color-mix、自定义 profile、currentColor、var() 和系统颜色返回 null。上下文与表达式另由表达式 API 处理，不推测环境值。
+
 | 方法 | 行为 |
 | --- | --- |
 | `parseColorSpace(string)` | 保留原空间坐标；无法解析返回 null。普通 Hex/RGB/HSL 等由当前核心解析器解析为 sRGB 记录 |

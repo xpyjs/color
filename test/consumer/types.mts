@@ -16,6 +16,12 @@ const spaceName: "oklab" = converted.space;
 mapToGamut(converted, "srgb");
 xcolor("#f00").toColorSpace("xyz-d50");
 xcolor(wide).colorSpace(converted).colorSpace();
+import { parseCssColor, type XColorCssParseOptions } from "@xpyjs/color/plugins/colorSpace";
+const cssOptions: XColorCssParseOptions = { syntax: "strict" };
+const cssRecord = parseCssColor("rgb(none 0 0 / none)", cssOptions)!;
+const missingAlpha: boolean | undefined = cssRecord.missing?.[3];
+// @ts-expect-error Unknown syntax policy
+parseCssColor("red", { syntax: "browser" });
 // @ts-expect-error HSL requires all three channels
 xcolor({ h: 120, s: 50 });
 // @ts-expect-error At least one RGB channel is required
