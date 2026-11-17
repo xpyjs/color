@@ -2,6 +2,19 @@
 
 Simulate Photoshop/CSS layer blend modes, blending two colors using a specified algorithm.
 
+## Nonseparable blending and compositing
+
+`blend(source, mode = 'normal')` also supports hue, saturation, color and luminosity using the [W3C nonseparable formulas](https://www.w3.org/TR/compositing-1/#blendingnonseparable). Lum/Sat/ClipColor operations are not HSL component replacement or WCAG relative luminance.
+
+```ts
+xcolor('#ff0000').blend('#0000ff', 'color')
+xcolor('#0000ff').composite('#ff0080', 'source-over')
+```
+
+`destination.composite(source, operator = 'source-over')` computes a single encoded-sRGB RGBA pixel. Operators: clear, copy, destination, source-over, destination-over, source-in, destination-in, source-out, destination-out, source-atop, destination-atop, xor and lighter. Lighter adds and clamps premultiplied channels/alpha; it differs from the component-wise lighten blend mode.
+
+Both operations return independent instances retaining destination precision options. Zero-coverage composition yields transparent black. Invalid colors/operators throw. Shape coverage, layer-group isolation and Canvas drawing regions are outside this pixel API.
+
 ## Install
 
 ```ts

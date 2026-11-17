@@ -74,3 +74,6 @@ const independentTheme: XColorThemeInstance = createTheme({colors:{primary:"#f00
 independentTheme.update({colors:{primary:"#00f"}}).getVars("dark");
 independentTheme.remove();
 xcolor.getThemeVars("dark");
+import blend from "@xpyjs/color/plugins/blend";
+xcolor.use(blend);
+xcolor("#f00").blend("#00f","luminosity").composite("#fff8","xor");
