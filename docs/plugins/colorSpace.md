@@ -30,6 +30,20 @@ formatColorSpace(record, { precision: 4 }) // 仅输出时统一舍入坐标和 
 
 ## API
 
+### 感知色板
+
+`generatePerceptualPalette(base, options?)` 固定 white=50、base=500、black=950。返回 `{ shade, source, color, contrast? }[]`：source 是 OKLCh 目标，color 是降低色度映射后的 sRGB 显示色。默认等级为 50、100、200…900、950；自定义 `shades` 允许 50–950 的有限数字，保留顺序和重复，任何子集都不改变同一 shade 的颜色。
+
+```ts
+import { generatePerceptualPalette, parseCssColor } from '@xpyjs/color/plugins/colorSpace'
+const palette = generatePerceptualPalette(parseCssColor('red')!)
+const textShades = generatePerceptualPalette(parseCssColor('red')!, { shades: [900, 950], contrast: { background: parseCssColor('white')!, target: 4.5 } })
+```
+
+固定色相，两段分别线性改变 OKLab 明度与色度，目标明度单调；每段映射前的等间隔 shade 具有相等 OKLab 距离。色域映射可能改变距离，这不是全色阶等 ΔE 保证。基础 OKLab 明度必须在 0–1 内，所有输出保留 alpha。现有 palette 插件算法和默认行为不变。
+
+可选 contrast 在**映射后的显示色及 alpha 合成结果**上验证，要求不透明背景；target 默认 4.5，可设置 1–21，shades 可限定检查等级。默认 policy='throw'，不满足立即抛错；policy='report' 返回每项的 ratio/target/passes。不自动牺牲明度顺序或移动 500 锚点来达标；需要自动调节单色可使用 a11y 的 adjustContrast。
+
 ### 感知比较、排序与去重
 
 `colorDifference(a, b, { metric? })` 默认使用 CIEDE2000（D50，kL/kC/kH 均为 1）；也支持 `cie76` 和未乘 100 的 `oklab` 欧氏距离。全精度计算，不先裁剪到 sRGB。旧 lab 插件的 `.deltaE()` 保持原行为。

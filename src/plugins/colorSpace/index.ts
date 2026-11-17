@@ -4,6 +4,8 @@ import { parseCoordinates } from "../wide-color";
 import { parseCssLiteral } from "./css";
 import { evaluateCssExpression, type XColorCssContext } from "./expression";
 import { buildGradient, type XColorGradient, type XColorGradientOptions, type XColorGradientStop } from "./gradient";
+import { perceptualPalette, type XColorPerceptualPaletteOptions, type XColorPerceptualShade } from "./palette";
+export type { XColorPerceptualPaletteOptions, XColorPerceptualShade } from "./palette";
 import { difference, similar, sort, deduplicate, type XColorDifferenceOptions, type XColorSimilarityOptions, type XColorSortOptions } from "./comparison";
 export type { XColorDifferenceMetric, XColorDifferenceOptions, XColorSimilarityOptions, XColorSortOptions } from "./comparison";
 export type { XColorGradient, XColorGradientOptions, XColorGradientStop } from "./gradient";
@@ -68,6 +70,19 @@ export function resolveCssColor(input: string, context: XColorCssContext = {}): 
  */
 export function createColorGradient(stops: readonly XColorGradientStop[], options: XColorGradientOptions = {}): XColorGradient {
   return buildGradient(stops, options, convertColorSpace);
+}
+
+/**
+ * Generate stable OKLCh shades through white (50), base (500), and black (950).
+ * @param base - Source record with OKLab lightness in [0,1]
+ * @param options - Requested shades and optional final-display contrast constraints
+ * @returns Independent OKLCh targets and chroma-mapped sRGB colors, preserving alpha
+ * Target lightness is monotonic; perceptual spacing is linear on each side of the base
+ * before gamut mapping. Mapping can change distances; this is not an equal-ΔE palette.
+ * @throws For invalid inputs or unmet contrast constraints (unless policy is report)
+ */
+export function generatePerceptualPalette(base: XColorSpaceRecord, options: XColorPerceptualPaletteOptions = {}): XColorPerceptualShade[] {
+  return perceptualPalette(base,options,convertColorSpace,color=>mapToGamut(color,"srgb","oklch-chroma"));
 }
 
 /**

@@ -18,6 +18,20 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+## Perceptual palettes
+
+`generatePerceptualPalette(base, options?)` fixes white=50, base=500 and black=950. Entries are `{ shade, source, color, contrast? }`: source is the OKLCh target; color is sRGB mapped by chroma reduction. Default shades are 50,100,200…900,950. Custom `shades` accepts finite numbers in [50,950], preserving order and duplicates. Subsets never change the color assigned to a shade.
+
+```ts
+import { generatePerceptualPalette, parseCssColor } from '@xpyjs/color/plugins/colorSpace'
+const palette = generatePerceptualPalette(parseCssColor('red')!)
+const textShades = generatePerceptualPalette(parseCssColor('red')!, { shades: [900, 950], contrast: { background: parseCssColor('white')!, target: 4.5 } })
+```
+
+Hue is fixed; lightness/chroma vary linearly on each side of the base. Target lightness is monotonic and equal shade intervals within each segment have equal OKLab distances before mapping. Gamut mapping can alter distances; this is not an equal-ΔE guarantee across the entire palette. Base OKLab lightness must be in [0,1]. Alpha is preserved; existing palette-plugin defaults remain unchanged.
+
+Optional contrast constraints validate the **mapped display colors after alpha compositing** against an opaque background. Target defaults to 4.5 (range 1–21); shades can restrict checked levels. Default policy='throw' rejects unmet constraints; policy='report' returns ratio/target/passes per checked entry. Constraints do not silently move the 500 anchor or sacrifice lightness ordering. Use a11y adjustContrast for automatic single-color adjustments.
+
 ## Perceptual comparison, sorting and deduplication
 
 `colorDifference(a, b, { metric? })` defaults to CIEDE2000 (D50, kL/kC/kH = 1), with `cie76` and unscaled `oklab` Euclidean distance available. Calculations use full precision without sRGB clipping. The legacy lab plugin `.deltaE()` remains unchanged.

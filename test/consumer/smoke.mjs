@@ -48,6 +48,9 @@ async function smoke() {
   assert.strictEqual(spaces.isColorSimilar(coordinateColor, coordinateColor), true);
   assert.strictEqual(spaces.deduplicateColors([coordinateColor, coordinateColor]).length, 1);
   assert.strictEqual(spaces.sortColors([coordinateColor],{by:"distance",reference:coordinateColor}).length, 1);
+  const shades = spaces.generatePerceptualPalette(spaces.parseCssColor("red"),{shades:[500,950]});
+  assert.deepStrictEqual(shades.map(entry=>entry.shade),[500,950]);
+  assert.strictEqual(spaces.fromColorSpace(shades[1].color).toHex(),"#000000");
   const accessibility = require("@xpyjs/color/plugins/a11y");
   const adjusted = accessibility.adjustContrast("#777","#fff");
   assert.strictEqual(adjusted.met, true);

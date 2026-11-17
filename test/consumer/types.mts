@@ -31,6 +31,8 @@ colorDifference(wide, converted, {metric});
 isColorSimilar(wide, converted, {metric, tolerance:2, alphaTolerance:0});
 sortColors([wide,converted],{by:"distance",reference:wide});
 deduplicateColors([wide,converted]);
+import { generatePerceptualPalette, type XColorPerceptualShade } from "@xpyjs/color/plugins/colorSpace";
+const perceptualShades: XColorPerceptualShade[] = generatePerceptualPalette(wide,{shades:[500,950]});
 import { adjustContrast, auditContrastPairs, type XColorContrastAdjustment } from "@xpyjs/color/plugins/a11y";
 const adjusted: XColorContrastAdjustment = adjustContrast("#777","#fff",{target:4.5});
 auditContrastPairs({text:adjusted.color,surface:"#fff"},[{foreground:"text",background:"surface"}]);
