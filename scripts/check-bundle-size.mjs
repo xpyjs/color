@@ -1,17 +1,17 @@
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
-// Ceilings are measured the way CI measures them: Node 22 with Node's default gzip
-// level, plus a small (~0.25%) buffer so ordinary edits are not blocked by noise.
-// gzip output depends on the zlib build bundled with Node — Node 18 reports ~20
-// bytes less than Node 22 for these same files — so always re-measure with the CI
-// Node version before changing these numbers.
-const ceilings = { "index.cjs": 5636, "index.esm.js": 5608, "index.umd.js": 5654 };
+// One checked-in source of truth for measured baselines and acceptance limits.
+// Re-measure with CI's Node major before changing the budget; gzip depends on zlib.
+const budget = JSON.parse(readFileSync(new URL("../bundle-budget.json", import.meta.url), "utf8"));
 
 const exceeded = [];
-for (const [file, ceiling] of Object.entries(ceilings)) {
-  const bytes = gzipSync(readFileSync(new URL(`../dist/${file}`, import.meta.url))).length;
-  console.log(`${file}: ${bytes} bytes gzip (limit ${ceiling})`);
+for (const [file, entry] of Object.entries(budget.files)) {
+  const ceiling = entry.maxGzipBytes;
+  if (!Number.isInteger(ceiling) || ceiling <= 0) throw new Error(`Invalid gzip budget: ${file}`);
+  const data = readFileSync(new URL(`../dist/${file}`, import.meta.url));
+  const bytes = gzipSync(data).length;
+  console.log(`${file}: ${data.length} bytes minified; ${bytes} bytes gzip (limit ${ceiling})`);
   if (bytes > ceiling) exceeded.push(file);
 }
 

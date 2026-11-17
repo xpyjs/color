@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  A tiny (<b>~4KB</b> gzipped), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
+  A small (<b>~6.1 kB</b> gzipped core), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## ✨ Features
 
-- 🪶 **Tiny** — ~4KB gzipped core, zero dependencies
+- 🪶 **Small core** — ~19.3 kB minified / ~6.1 kB gzip, zero runtime dependencies; optional plugins are additional
 - 🔌 **Plugin System** — Extend functionality like dayjs, load what you need
 - 🎯 **TypeScript First** — Full type definitions and IntelliSense
 - ⛓️ **Chainable API** — Fluent interface for all operations

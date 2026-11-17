@@ -131,7 +131,7 @@ description: 涉及到整个库的核心设计原则、命名规范、API 设计
 ### 与 chroma.js 的差异
 
 - chroma.js 使用 Lab 空间操作，默认值为 1；我们使用 HSL 空间，默认值为 10
-- chroma.js 核心 40KB min / 16KB gzip；我们核心 ~10KB min / ~4KB gzip
+- 本库核心实测约 19.3 kB min / 6.1 kB gzip（Node 22）；插件另计。当前验收预算为每个核心产物 6 KiB，5 KiB 为优化目标。以根目录 bundle-budget.json 和 docs/bundle-size.md 为准；竞品数据应单独注明版本与测量方法。
 - Lab 功能通过可选的 lab 插件提供
 
 ### 与 color 的差异
