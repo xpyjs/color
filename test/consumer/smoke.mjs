@@ -48,6 +48,10 @@ async function smoke() {
   assert.strictEqual(spaces.isColorSimilar(coordinateColor, coordinateColor), true);
   assert.strictEqual(spaces.deduplicateColors([coordinateColor, coordinateColor]).length, 1);
   assert.strictEqual(spaces.sortColors([coordinateColor],{by:"distance",reference:coordinateColor}).length, 1);
+  const accessibility = require("@xpyjs/color/plugins/a11y");
+  const adjusted = accessibility.adjustContrast("#777","#fff");
+  assert.strictEqual(adjusted.met, true);
+  assert.strictEqual(accessibility.auditContrastPairs({text:adjusted.color,surface:"#fff"},[{foreground:"text",background:"surface"}])[0].passes, true);
   const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");

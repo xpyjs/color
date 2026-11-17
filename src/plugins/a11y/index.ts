@@ -3,8 +3,8 @@ import { compositeRgb, luminanceRatio } from "../../color-math";
 // Plugin: a11y - Accessibility utilities
 // =======================================
 
-import type { XColorPlugin, XColorInput, XColor } from "@xpyjs/color";
-import { defineMethod, Logger, relativeLuminance, round } from "@xpyjs/color";
+import type { XColorPlugin, XColorInput } from "@xpyjs/color";
+import { XColor, defineMethod, Logger, relativeLuminance, round } from "@xpyjs/color";
 
 /**
  * WCAG 2.0 conformance level.
@@ -38,6 +38,108 @@ export interface XColorReadabilityOptions extends XColorContrastOptions {
   level?: WCAGLevel;
   /** Text size category. @default 'normal' */
   size?: WCAGSize;
+}
+
+/** Target contrast and permitted adjustment direction. */
+export interface XColorContrastAdjustmentOptions extends XColorContrastOptions {
+  /** Required contrast in [1,21], default 4.5. */
+  target?: number;
+  /** Search toward black, white, or both (default auto). Alpha stays unchanged. */
+  direction?: "auto" | "darker" | "lighter";
+}
+
+/** Explicit success/failure, including the actual unrounded achieved ratio. */
+export interface XColorContrastAdjustment {
+  color: XColor;
+  ratio: number;
+  target: number;
+  met: boolean;
+  changed: boolean;
+}
+
+/** Named theme token pair; both keys must exist in the supplied color map. */
+export interface XColorContrastPair {
+  foreground: string;
+  background: string;
+  /** Per-pair target overrides the global target (default 4.5). */
+  target?: number;
+}
+
+/** One theme-pair audit result. */
+export interface XColorContrastPairResult extends XColorContrastPair {
+  target: number;
+  ratio: number;
+  passes: boolean;
+}
+
+function contrastTarget(target = 4.5): number {
+  if (!Number.isFinite(target) || target < 1 || target > 21) throw Logger.createError("Contrast target must be within [1,21]");
+  return target;
+}
+
+/**
+ * Adjust a foreground toward black/white until it reaches the requested WCAG ratio.
+ * @param foreground - Color to adjust; source instances retain their precision options
+ * @param background - Background, optionally composited over options.backdrop
+ * @param options - Target (default 4.5) and direction (default auto)
+ * @returns Independent color and actual ratio. Unreachable targets return met=false and the best endpoint.
+ * Alpha is preserved. Auto selects the passing direction with the smallest RGB change.
+ * @throws For invalid colors, target/direction, or an unresolved translucent background
+ * @see https://www.w3.org/TR/WCAG22/#contrast-minimum
+ */
+export function adjustContrast(foreground: XColorInput, background: XColorInput, options: XColorContrastAdjustmentOptions = {}): XColorContrastAdjustment {
+  const target = contrastTarget(options.target), direction = options.direction ?? "auto";
+  if (!["auto","darker","lighter"].includes(direction)) throw Logger.createError("Invalid contrast adjustment direction");
+  const source = new XColor(foreground);
+  const backdrop = opaqueBackground(new XColor(background,{useDecimal:true}),options,XColor);
+  if (!source.isValid() || !backdrop) throw Logger.createError("Contrast adjustment requires valid colors and a resolved background");
+  const initial = rawContrast(source,backdrop);
+  const result = (color: XColor): XColorContrastAdjustment => {
+    const ratio = rawContrast(color,backdrop);
+    return {color,ratio,target,met:ratio >= target,changed:color.red() !== source.red() || color.green() !== source.green() || color.blue() !== source.blue()};
+  };
+  if (initial >= target) return result(source);
+  const search = (endpoint: number): XColorContrastAdjustment => {
+    const candidate = (t: number) => new XColor({r:source.red()+(endpoint-source.red())*t,g:source.green()+(endpoint-source.green())*t,b:source.blue()+(endpoint-source.blue())*t,a:source.alpha()},source._opts);
+    let best = candidate(1);
+    if (rawContrast(best,backdrop) < target) return result(best);
+    let low = 0, high = 1;
+    for (let i = 0; i < 48; i++) {
+      const middle = (low+high)/2, color = candidate(middle);
+      if (rawContrast(color,backdrop) >= target) { high = middle; best = color; }
+      else low = middle;
+    }
+    return result(best);
+  };
+  if (direction === "darker") return search(0);
+  if (direction === "lighter") return search(255);
+  const dark = search(0), light = search(255);
+  if (!dark.met && !light.met) return dark.ratio >= light.ratio ? dark : light;
+  if (!dark.met) return light;
+  if (!light.met) return dark;
+  const distance = (color: XColor) => (color.red()-source.red())**2+(color.green()-source.green())**2+(color.blue()-source.blue())**2;
+  return distance(dark.color) <= distance(light.color) ? dark : light;
+}
+
+/**
+ * Audit explicit foreground/background pairs from a flat theme token or CSS-variable map.
+ * @param colors - Named concrete colors (e.g. getThemeVars()); unresolved var() values are invalid
+ * @param pairs - Token-name pairs and optional per-pair contrast targets
+ * @param options - Default target 4.5 and optional opaque backdrop
+ * @returns Independent per-pair results with unrounded ratios; never mutates the theme
+ * @throws For missing tokens, invalid values/targets, or unresolved translucent backgrounds
+ */
+export function auditContrastPairs(colors: Readonly<Record<string,XColorInput>>, pairs: readonly XColorContrastPair[], options: XColorContrastOptions & {target?:number} = {}): XColorContrastPairResult[] {
+  const defaultTarget = contrastTarget(options.target);
+  return pairs.map(pair => {
+    if (!Object.prototype.hasOwnProperty.call(colors,pair.foreground) || !Object.prototype.hasOwnProperty.call(colors,pair.background)) throw Logger.createError(`Missing contrast pair token: ${pair.foreground} / ${pair.background}`);
+    const target = contrastTarget(pair.target ?? defaultTarget);
+    const foreground = new XColor(colors[pair.foreground],{useDecimal:true});
+    const background = opaqueBackground(new XColor(colors[pair.background],{useDecimal:true}),options,XColor);
+    if (!foreground.isValid() || !background) throw Logger.createError(`Invalid contrast pair: ${pair.foreground} / ${pair.background}`);
+    const ratio = rawContrast(foreground,background);
+    return {foreground:pair.foreground,background:pair.background,target,ratio,passes:ratio >= target};
+  });
 }
 
 declare module "@xpyjs/color" {
