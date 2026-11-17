@@ -12,6 +12,24 @@ Want to see theme colors in action? Try [Theme Studio](/en/theme-studio) — ent
 Theme reuses the [palette](/en/plugins/palette) algorithms. Registering the theme plugin is sufficient.
 :::
 
+## Independent theme instances
+
+The named `createTheme(options, { styleId? }?)` export needs no global registration. Each instance owns its configuration, cache and style element. Input configurations and returned options/variables are defensive snapshots; generator callbacks retain function identity.
+
+```ts
+import { createTheme } from '@xpyjs/color/plugins/theme'
+const panel = createTheme({ colors: { primary: '#1890ff' }, cssSelector: '.panel', darkMode: 'class', darkSelector: '.panel.dark' })
+panel.inject()
+panel.update({ colors: { primary: '#722ed1' } }).getVars('dark')
+panel.remove()
+```
+
+Methods: `getCss()`, `getVars('light' | 'dark')` (default light), `getOptions()`, `update(partial, deep = true)`, `inject()` and `remove()`. Updates validate before replacing state and owned DOM content. Remove deletes only the owned element, retains configuration and permits reinjection. SSR inject returns CSS without DOM access.
+
+Style IDs are generated unless explicitly supplied. Existing same-ID elements are never adopted or overwritten. Choose distinct cssSelector/darkSelector or prefix settings when themes should not overlap in CSS; state isolation does not change the cascade. The legacy global plugin keeps its API and style element.
+
+Dark snapshots include unchanged light/custom variables. With darkMode disabled they equal the light snapshot. `xcolor.getThemeVars('dark')` and `generateTheme(options).darkVars` expose the same complete dark snapshot.
+
 ## Install
 
 ```ts

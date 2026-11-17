@@ -225,7 +225,7 @@ export function resolveThemeConfig(
 
   var css = buildCssString(vars, darkMode ? darkVars : null, options, cls);
 
-  return { css: css, vars: vars, colors: colorPalettes };
+  return { css: css, vars: vars, darkVars: { ...vars, ...(darkMode ? darkVars : {}) }, colors: colorPalettes };
 }
 
 /**

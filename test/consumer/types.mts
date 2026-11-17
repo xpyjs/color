@@ -69,3 +69,8 @@ color.toLab();
 color.format("my");
 xcolor.use(theme, { colors: { primary: "#f00" } });
 xcolor.getThemeCss();
+import { createTheme, type XColorThemeInstance } from "@xpyjs/color/plugins/theme";
+const independentTheme: XColorThemeInstance = createTheme({colors:{primary:"#f00"},darkMode:"class"});
+independentTheme.update({colors:{primary:"#00f"}}).getVars("dark");
+independentTheme.remove();
+xcolor.getThemeVars("dark");

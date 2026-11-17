@@ -55,6 +55,12 @@ async function smoke() {
   const adjusted = accessibility.adjustContrast("#777","#fff");
   assert.strictEqual(adjusted.met, true);
   assert.strictEqual(accessibility.auditContrastPairs({text:adjusted.color,surface:"#fff"},[{foreground:"text",background:"surface"}])[0].passes, true);
+  const themes = require("@xpyjs/color/plugins/theme");
+  const independent = themes.createTheme({colors:{primary:"#f00"},darkMode:"class"});
+  assert.strictEqual(independent.getVars()["--x-primary"],"#ff0000");
+  assert.notStrictEqual(independent.getVars("dark")["--x-primary"],independent.getVars()["--x-primary"]);
+  assert.strictEqual(independent.inject(),independent.getCss());
+  independent.remove();
   const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");

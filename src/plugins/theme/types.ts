@@ -197,6 +197,8 @@ export interface ThemeResult {
   css: string;
   /** Flat map of CSS variable names to color values. */
   vars: Record<string, string>;
+  /** Complete dark-mode variable snapshot, including unchanged light variables. */
+  darkVars: Record<string, string>;
   /** Generated color palettes keyed by color name. Only includes colors with a base value. */
   colors: Record<string, XColor[]>;
 }

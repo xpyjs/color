@@ -12,6 +12,24 @@
 主题复用 [palette](/plugins/palette) 的色阶算法，使用时只需注册 theme。
 :::
 
+## 独立主题实例
+
+命名导出 `createTheme(options, { styleId? }?)` 不需要注册全局插件。每个实例独立持有配置、缓存和样式元素，输入和读取的配置/变量均为防御性快照；自定义生成函数保留函数身份。
+
+```ts
+import { createTheme } from '@xpyjs/color/plugins/theme'
+const panel = createTheme({ colors: { primary: '#1890ff' }, cssSelector: '.panel', darkMode: 'class', darkSelector: '.panel.dark' })
+panel.inject()
+panel.update({ colors: { primary: '#722ed1' } }).getVars('dark')
+panel.remove()
+```
+
+方法：`getCss()`、`getVars('light' | 'dark')`（默认 light）、`getOptions()`、`update(partial, deep = true)`、`inject()`、`remove()`。update 验证通过后才提交状态并更新自身 DOM；remove 仅移除自身元素，保留配置，可再次 inject。SSR inject 只返回 CSS。
+
+默认自动分配样式 ID，也可显式指定唯一 styleId；已有同名元素不会被接管或覆盖。多个实例若不应在 CSS 中重叠，需要设置不同 cssSelector、darkSelector 或 prefix；状态隔离不改变 CSS 层叠规则。旧全局插件继续使用原有 API 和样式元素。
+
+`getVars('dark')` 是完整暗色变量快照，包含没有暗色覆盖的浅色/自定义变量；没有启用 darkMode 时与浅色内容相同。全局 `xcolor.getThemeVars('dark')` 及 `generateTheme(options).darkVars` 提供相同能力，返回变量仍是具体颜色值。
+
 ## 安装
 
 ```ts
