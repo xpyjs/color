@@ -4,7 +4,7 @@ import { interpolate, srgbToLinear, linearToSrgb, rgbToOklab, oklabToRgb } from 
 // =======================================
 
 import type { XColorPlugin, XColorInput } from "@xpyjs/color";
-import { normalizeSteps, defineMethod } from "@xpyjs/color";
+import { normalizeSteps, defineMethod, Logger } from "@xpyjs/color";
 
 /**
  * Color interpolation space for the scale plugin.
@@ -92,6 +92,7 @@ const scale: XColorPlugin = {
   name: "@xpyjs/color/plugins/scale",
   install(_option, cls, _factory) {
     function at(this: InstanceType<typeof cls>, target: InstanceType<typeof cls>, t: number, options: Omit<ScaleOptions, "steps">) {
+      if (!this.isValid() || !target.isValid()) throw Logger.createError("Invalid gradient color","INVALID_COLOR","scale");
       const position = clamp01(t);
       if (position === 0) return this.clone();
       if (position === 1) return target.clone();

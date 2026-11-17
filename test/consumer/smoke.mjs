@@ -64,6 +64,8 @@ async function smoke() {
   cjs.use(require("@xpyjs/color/plugins/blend"));
   assert.strictEqual(xcolor("#f00").composite("#00f","lighter").toHex(),"#ff00ff");
   assert.strictEqual(xcolor("#f00").blend("#00f","saturation").toHex(),"#ff0000");
+  assert.throws(()=>xcolor("bogus",{strict:true}),error=>error instanceof cjs.XColorError && error.code === "INVALID_INPUT");
+  assert.throws(()=>xcolor("#f00",{strict:true}).red(NaN),error=>error instanceof cjs.XColorError && error.code === "INVALID_ARGUMENT");
   const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
   assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");

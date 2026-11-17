@@ -135,6 +135,8 @@ export type XColorOptions = {
    * @default false
    */
   useDecimal?: boolean;
+  /** Reject invalid construction and non-finite numeric mutations before changing state. Default false. */
+  strict?: boolean;
 }
 
 /**
@@ -180,8 +182,10 @@ export class XColor {
       this._b = this._roundCh(value._b);
       this._a = value._a;
       this._valid = value._valid;
+      if (this._opts.strict && !this._valid) throw Logger.createError("Invalid source color","INVALID_INPUT","constructor");
       return;
     } else if (value === undefined || value === null) {
+      if (value === null && this._opts.strict) throw Logger.createError("Null color input","INVALID_INPUT","constructor");
       this._r = 0;
       this._g = 0;
       this._b = 0;
@@ -190,8 +194,9 @@ export class XColor {
       return;
     }
 
-    const parsed = parseColor(value);
+    const parsed = parseColor(value,!!this._opts.strict);
     if (parsed === null) {
+      if (this._opts.strict) throw Logger.createError("Invalid color input","INVALID_INPUT","constructor");
       this._r = 0;
       this._g = 0;
       this._b = 0;
@@ -212,6 +217,11 @@ export class XColor {
    */
   private _roundCh(value: number): number {
     return this._opts.useDecimal ? value : Math.round(value + 1e-9);
+  }
+
+  /** @internal Strict numeric mutation validation; finite out-of-range values still clamp. */
+  private _checkNumbers(...values:(number|undefined)[]):void {
+    if (this._opts.strict && values.some(value=>value !== undefined && !Number.isFinite(value))) throw Logger.createError("Color channels and amounts must be finite","INVALID_ARGUMENT","mutation");
   }
 
   /**
@@ -240,6 +250,7 @@ export class XColor {
    */
   private _channel(field: '_r' | '_g' | '_b', value?: number): number | this {
     if (value === undefined) return this[field];
+    this._checkNumbers(value);
     this[field] = this._roundCh(clamp(value, 0, 255));
     return this;
   }
@@ -347,6 +358,7 @@ export class XColor {
   alpha(value: number): this;
   alpha(value?: number): number | this {
     if (value === undefined) return this._a;
+    this._checkNumbers(value);
     this._a = clamp(value, 0, 1);
     return this;
   }
@@ -391,6 +403,7 @@ export class XColor {
    */
   hue(value: number): this;
   hue(value?: number): number | this {
+    this._checkNumbers(value);
     if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).h;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.h = ((value % 360) + 360) % 360; });
   }
@@ -420,6 +433,7 @@ export class XColor {
    */
   saturation(value: number): this;
   saturation(value?: number): number | this {
+    this._checkNumbers(value);
     if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).s;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.s = clamp(value, 0, 100); });
   }
@@ -449,6 +463,7 @@ export class XColor {
    */
   lightness(value: number): this;
   lightness(value?: number): number | this {
+    this._checkNumbers(value);
     if (value === undefined) return rgbToHsl(this._r, this._g, this._b, this._opts.useDecimal).l;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.l = clamp(value, 0, 100); });
   }
@@ -478,6 +493,7 @@ export class XColor {
    */
   value(value: number): this;
   value(value?: number): number | this {
+    this._checkNumbers(value);
     if (value === undefined) return rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal).v;
     return this._applyCS(rgbToHsv, hsvToRgb, ["h", "s", "v"], hsv => { hsv.v = clamp(value, 0, 100); });
   }
@@ -515,6 +531,7 @@ export class XColor {
    */
   rgb(r: number, g: number, b: number, a?: number): this;
   rgb(r?: number, g?: number, b?: number, a?: number): RGBA | this {
+    this._checkNumbers(r,g,b,a);
     if (r === undefined) return this.toRgb();
     const nextG = g ?? this._g;
     const nextB = b ?? this._b;
@@ -543,6 +560,7 @@ export class XColor {
    */
   hsl(h: number, s: number, l: number, a?: number): this;
   hsl(h?: number, s?: number, l?: number, a?: number): HSLA | this {
+    this._checkNumbers(h,s,l,a);
     if (h === undefined) return this.toHsl();
     if (!Number.isFinite(h)) return this;
     const current = this.toHsl();
@@ -577,6 +595,7 @@ export class XColor {
    */
   hsv(h: number, s: number, v: number, a?: number): this;
   hsv(h?: number, s?: number, v?: number, a?: number): HSVA | this {
+    this._checkNumbers(h,s,v,a);
     if (h === undefined) return this.toHsv();
     if (!Number.isFinite(h)) return this;
     const current = this.toHsv();
@@ -603,7 +622,7 @@ export class XColor {
   /**
    * Set the color from a string supported by the color parser.
    * @param value - Hex, functional color string, or a registered plugin format
-   * @throws If parsing fails. The current channels are retained and validity becomes false.
+   * @throws If parsing fails. Channels are retained; strict mode also retains validity, otherwise validity becomes false.
    * @returns Current instance
    * @example xcolor().hex('#00ff00').toRgb() // { r: 0, g: 255, b: 0, a: 1 }
    */
@@ -618,8 +637,8 @@ export class XColor {
       this._a = parsed.a;
       this._valid = true;
     } else {
-      this._valid = false;
-      throw Logger.createError(`Invalid hex value: ${value}`);
+      if (!this._opts.strict) this._valid = false;
+      throw Logger.createError(`Invalid hex value: ${value}`,"INVALID_INPUT","hex");
     }
     return this;
   }
@@ -900,6 +919,7 @@ export class XColor {
    * ```
    */
   lighten(amount: number = 10): this {
+    this._checkNumbers(amount);
     const factor = clamp(Math.abs(amount), 0, 100) / 100;
     const target = amount < 0 ? 0 : 100;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => {
@@ -941,6 +961,7 @@ export class XColor {
    * ```
    */
   brighten(amount: number = 10): this {
+    this._checkNumbers(amount);
     const factor = clamp(amount, 0, 100) / 100;
     this._r = this._roundCh(clamp(this._r + (255 - this._r) * factor, 0, 255));
     this._g = this._roundCh(clamp(this._g + (255 - this._g) * factor, 0, 255));
@@ -960,6 +981,7 @@ export class XColor {
    * ```
    */
   saturate(amount: number = 10): this {
+    this._checkNumbers(amount);
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.s = clamp(hsl.s + amount, 0, 100); });
   }
 
@@ -1019,6 +1041,7 @@ export class XColor {
    * ```
    */
   spin(degrees: number): this {
+    this._checkNumbers(degrees);
     if (!Number.isFinite(degrees)) return this;
     return this._applyCS(rgbToHsl, hslToRgb, ["h", "s", "l"], hsl => { hsl.h = ((hsl.h + degrees) % 360 + 360) % 360; });
   }
@@ -1079,6 +1102,7 @@ export class XColor {
    * ```
    */
   fade(amount: number = 10): this {
+    this._checkNumbers(amount);
     this._a = clamp(this._a - amount / 100, 0, 1);
     return this;
   }
@@ -1095,6 +1119,7 @@ export class XColor {
    * ```
    */
   opaquer(amount: number = 10): this {
+    this._checkNumbers(amount);
     this._a = clamp(this._a + amount / 100, 0, 1);
     return this;
   }
@@ -1175,7 +1200,9 @@ export class XColor {
    * ```
    */
   mix(color: XColorInput, amount: number = 50): this {
+    this._checkNumbers(amount);
     const other = color instanceof XColor ? color : new XColor(color, this._opts);
+    if (!this._valid || !other._valid) throw Logger.createError("Invalid mix color","INVALID_COLOR","mix");
     const factor = clamp(amount, 0, 100) / 100;
     this._r = this._roundCh(clamp(interpolate(this._r, other._r, factor), 0, 255));
     this._g = this._roundCh(clamp(interpolate(this._g, other._g, factor), 0, 255));
@@ -1255,6 +1282,7 @@ export class XColor {
    * ```
    */
   brightness(): number {
+    if (!this._valid) throw Logger.createError("Invalid source color","INVALID_COLOR","brightness");
     return (this._r * 299 + this._g * 587 + this._b * 114) / 1000;
   }
 
@@ -1272,6 +1300,7 @@ export class XColor {
    * ```
    */
   luminance(): number {
+    if (!this._valid) throw Logger.createError("Invalid source color","INVALID_COLOR","luminance");
     return round(relativeLuminance(this._r, this._g, this._b), 4);
   }
 
@@ -1295,6 +1324,7 @@ export class XColor {
    */
   contrast(other: XColorInput): number {
     const otherColor = other instanceof XColor ? other : new XColor(other);
+    if (!this._valid || !otherColor._valid) throw Logger.createError("Invalid contrast color","INVALID_COLOR","contrast");
     return contrastRatio(
       relativeLuminance(this._r, this._g, this._b),
       relativeLuminance(otherColor._r, otherColor._g, otherColor._b)

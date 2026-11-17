@@ -34,7 +34,7 @@
 - [x] 18 感知色板：generatePerceptualPalette 固定 50/500/950 锚点、分段 OKLCh 线性目标及降色度映射；目标明度单调、子集稳定、alpha 保留；最终显示色对比度约束支持拒绝或逐项报告。分支：`codex/18-perceptual-palettes`；1053 测试、覆盖率、类型检查、111 构建输出及 ESM/CJS/四种 TS 消费模式通过。双语文档说明映射后不保证等 ΔE，约束不自动移动锚点。
 - [x] 19 独立主题实例：createTheme 隔离配置/缓存/样式所有权，防御性快照、原子更新、SSR、移除/重注入与 ID 冲突保护；getVars/getThemeVars('dark') 和 ThemeResult.darkVars 提供完整暗色快照。分支：`codex/19-isolated-themes`；1060 测试、类型检查、111 构建输出及 ESM/CJS/四种 TS 消费模式通过，双语文档说明 CSS 作用域仍由选择器/前缀控制。
 - [x] 20 混合增强：hue/saturation/color/luminosity 非分离模式与 composite 的 13 种 Porter–Duff 单 RGBA 操作；明确编码 sRGB、源/目标顺序、lighter 饱和累加和零覆盖透明黑。分支：`codex/20-blend-compositing`；1082 测试、覆盖率、类型检查、111 构建输出及 ESM/CJS/四种 TS 消费模式通过，双语文档同步。
-- [ ] 21 错误处理：可选严格模式、结构化错误、统一无效值传播。
+- [x] 21 错误处理：strict 构造/核心数值变更检查与原子失败；XColorError/code/operation；核心混合/分析和插件计算拒绝无效源，scale/deltaE 拒绝无效目标。保留默认 isValid 工作流与 false 型判断。分支：`codex/21-strict-errors`；1108 测试、覆盖率、类型检查、111 构建输出及 ESM/CJS/四种 TS 消费模式通过。双语文档说明兼容变化；核心体积在 23 项重新实测。
 
 ## 文档与质量保障
 

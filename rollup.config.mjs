@@ -103,7 +103,7 @@ function commonJsDeclarations(isCore = false) {
                     !ts.isNamedExports(statement.exportClause)) continue;
                 for (const specifier of statement.exportClause.elements) {
                     if (statement.isTypeOnly || specifier.isTypeOnly ||
-                        (isCore && specifier.name.text === "XColor")) {
+                        (isCore && ["XColor", "XColorError"].includes(specifier.name.text))) {
                         typeNames.add(specifier.name.text);
                     }
                 }

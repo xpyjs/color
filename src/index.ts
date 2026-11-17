@@ -31,6 +31,7 @@ export {
   defineMethod,
   Logger
 } from "./utils";
+export { XColorError, type XColorErrorCode } from "./utils";
 
 // Re-export parsing functions & channel parsers
 export {

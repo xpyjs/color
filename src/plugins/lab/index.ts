@@ -12,6 +12,7 @@ import {
   parseFunctionalChannels,
   parseAlphaChannel,
   defineMethod,
+  Logger,
   clamp
 } from "@xpyjs/color";
 
@@ -307,6 +308,7 @@ const lab: XColorPlugin<LabOptions> = {
 
     defineMethod(cls, 'deltaE', function (this: InstanceType<typeof cls>, other: XColorInput): number {
       const otherColor = new cls(other);
+      if (!otherColor.isValid()) throw Logger.createError("Invalid comparison color","INVALID_COLOR","deltaE");
       const lab1 = this.toLab();
       const lab2 = otherColor.toLab();
 

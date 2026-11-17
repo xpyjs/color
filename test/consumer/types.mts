@@ -77,3 +77,6 @@ xcolor.getThemeVars("dark");
 import blend from "@xpyjs/color/plugins/blend";
 xcolor.use(blend);
 xcolor("#f00").blend("#00f","luminosity").composite("#fff8","xor");
+import { XColorError, type XColorErrorCode } from "@xpyjs/color";
+const strictColor = xcolor("#f00",{strict:true});
+try { strictColor.red(NaN); } catch (error) { if (error instanceof XColorError) { const code:XColorErrorCode = error.code; } }

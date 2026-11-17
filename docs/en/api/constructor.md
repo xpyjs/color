@@ -1,5 +1,20 @@
 # Constructor & Factory
 
+## Strict mode and structured errors
+
+`xcolor(input, { strict: true })` throws `XColorError` for unparseable input, invalid-instance copies and explicit null. Omitted input still creates black. `xcolor.config({ strict: true })` sets the default; instances may override with false. Strict core numeric setters/adjustments reject NaN/Infinity before mutation, while finite out-of-range values retain normal clamping. Clones inherit strict mode; failed hex replacement preserves state and validity.
+
+```ts
+import xcolor, { XColorError } from '@xpyjs/color'
+try { xcolor('invalid', { strict: true }) } catch (error) {
+  if (error instanceof XColorError) console.log(error.code, error.operation)
+}
+```
+
+Errors expose name='XColorError', code (INVALID_INPUT, INVALID_COLOR or INVALID_ARGUMENT) and optional operation context. Logger.createError returns this type with the existing message prefix. Classify by code, not message text. Strict input validation is not strict CSS grammar; use colorSpace.parseCssColor for that.
+
+Default construction still returns invalid instances detectable through isValid(). Clones and single-color adjustments retain invalidity; successful hex replacement repairs it. Mix, contrast, brightness/luminance and defineMethod-registered plugin computations reject invalid sources; scale/deltaE also reject invalid targets. isReadable and equals still return false for invalid colors. Failed default hex replacement still marks invalid and throws; strict mode preserves validity. Plugins retain their own parameter rules; strict mode cannot automatically validate arbitrary third-party plugin arguments.
+
 ## xcolor(input?, options?)
 
 Create an `XColor` instance.

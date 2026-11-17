@@ -1,5 +1,20 @@
 import { luminanceRatio } from "./color-math";
 import { onInstallRollback } from "./registration";
+
+/** Stable categories for library failures; inspect code instead of parsing messages. */
+export type XColorErrorCode = "INVALID_INPUT" | "INVALID_COLOR" | "INVALID_ARGUMENT";
+
+/** Structured library error. Operation is present when the calling API supplies context. */
+export class XColorError extends Error {
+  readonly code: XColorErrorCode;
+  readonly operation?: string;
+  constructor(message:string, code:XColorErrorCode = "INVALID_ARGUMENT", operation?:string) {
+    super(`[X-Color] ${message}`);
+    this.name = "XColorError";
+    this.code = code;
+    this.operation = operation;
+  }
+}
 // =======================================
 // Utility functions for @xpyjs/color
 // =======================================
@@ -41,7 +56,7 @@ export const Logger = {
    * @param message - The error description
    * @returns A new `Error` instance
    */
-  createError: (message: string) => new Error(`${Logger.prefix} ${message}`)
+  createError: (message: string, code:XColorErrorCode = "INVALID_ARGUMENT", operation?:string) => new XColorError(message,code,operation)
 };
 
 /**
@@ -328,7 +343,11 @@ export function defineMethod<T extends object>(
 ): void {
   const previous = Object.getOwnPropertyDescriptor(cls.prototype, name);
   Object.defineProperty(cls.prototype, name, {
-    value: fn,
+    value: function(this:T,...args:any[]) {
+      const color = this as T & {isValid?:()=>boolean};
+      if (name !== "isReadable" && typeof color.isValid === "function" && !color.isValid()) throw Logger.createError(name === "palette" || name === "mostReadable" ? "Invalid base color" : "Invalid source color","INVALID_COLOR",name);
+      return fn.apply(this,args);
+    },
     writable: true,
     configurable: true,
     enumerable: false

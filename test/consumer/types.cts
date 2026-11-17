@@ -1,4 +1,7 @@
 import xcolor = require("@xpyjs/color");
+const structuredError: xcolor.XColorError = xcolor.Logger.createError("example");
+const errorCode: xcolor.XColorErrorCode = structuredError.code;
+xcolor("#f00",{strict:true});
 import lab = require("@xpyjs/color/plugins/lab");
 import palette = require("@xpyjs/color/plugins/palette");
 import theme = require("@xpyjs/color/plugins/theme");
