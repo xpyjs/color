@@ -67,7 +67,11 @@ import xcolor from '@xpyjs/color'
 const red = xcolor('#ff0000')
 const blue = xcolor('rgb(0, 0, 255)')
 const green = xcolor('hsl(120, 100%, 50%)')
+// 命名色需要先注册插件
+import namePlugin from '@xpyjs/color/plugins/name'
+xcolor.use(namePlugin)
 const named = xcolor('coral')
+named.toHex() // '#ff7f50'
 const obj = xcolor({ r: 255, g: 128, b: 0 })
 const num = xcolor(0xFF8040)
 
