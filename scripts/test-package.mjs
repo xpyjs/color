@@ -53,6 +53,10 @@ async function testPackage() {
 
     if (!args.includes("--runtime-only")) {
       const tsc = resolve("node_modules/typescript/bin/tsc");
+      // Do not inherit ambient test types when TEMP is inside the repository.
+      const typeRoots = join(fixture, "node_modules/@types");
+      fs.mkdirSync(typeRoots, { recursive: true });
+      const typeOptions = ["--strict", "--noEmit", "--typeRoots", typeRoots];
       const examples = ["docs", "docs/en"].flatMap((directory, language) => {
         const samples = [
           ["guide/custom-plugin.md", ": XColorPlugin"],
@@ -73,10 +77,10 @@ async function testPackage() {
         });
       });
       for (const module of ["node16", "nodenext"]) {
-        run(tsc, ["--module", module, "--strict", "--noEmit", "types.mts", "types.cts", "mixed.mts", ...examples]);
+        run(tsc, ["--module", module, ...typeOptions, "types.mts", "types.cts", "mixed.mts", ...examples]);
       }
       for (const resolution of ["bundler", "node10"]) {
-        run(tsc, ["--module", "esnext", "--moduleResolution", resolution, "--strict", "--noEmit", "types.mts", ...examples]);
+        run(tsc, ["--module", "esnext", "--moduleResolution", resolution, ...typeOptions, "types.mts", ...examples]);
       }
     }
   } finally {

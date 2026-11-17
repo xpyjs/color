@@ -57,8 +57,8 @@ function polar([l,a,b]: readonly number[]): Coordinates {
 export function toXyzD65(space: ColorSpace, coordinates: readonly number[]): Coordinates {
   if (space === "hwb") {
     const hue = ((coordinates[0] % 360) + 360) % 360;
-    const w = Math.max(0, Math.min(100, coordinates[1]))/100;
-    const b = Math.max(0, Math.min(100, coordinates[2]))/100;
+    const w = Math.max(0, coordinates[1])/100;
+    const b = Math.max(0, coordinates[2])/100;
     const pure = hslToRgb(hue,100,50,true);
     const rgb = [pure.r,pure.g,pure.b].map(v=>w+b >= 1 ? w/(w+b)*255 : v*(1-w-b)+w*255);
     return mul(SRGB_TO_XYZ, rgb.map(srgbToLinear));

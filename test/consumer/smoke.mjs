@@ -35,6 +35,8 @@ async function smoke() {
   assert.strictEqual(xcolor(p3.toSrgb(wide)).alpha(), .3);
   assert.strictEqual(xcolor("#f00").toHslArray()[0], 0);
   const spaces = require("@xpyjs/color/plugins/colorSpace");
+  const normalizedHwb = spaces.fromColorSpace(spaces.parseCssColor("hwb(120 200% 100% / .4)"));
+  assert.strictEqual(normalizedHwb.toHex(), "#aaaaaa66");
   const coordinateColor = spaces.parseColorSpace("color(display-p3 1 0 0 / .25)");
   assert.strictEqual(spaces.inGamut(coordinateColor, "display-p3"), true);
   assert.strictEqual(spaces.inGamut(coordinateColor, "srgb"), false);

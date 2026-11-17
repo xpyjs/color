@@ -10,7 +10,6 @@ import {
   parseFunctionalChannels,
   parseAlphaChannel,
   defineMethod,
-  clamp,
   hsvToRgb,
   rgbToHsl
 } from "@xpyjs/color";
@@ -75,8 +74,8 @@ function rgbToHwb(r: number, g: number, b: number): HWB {
 // ── HWB → RGB ──
 
 function hwbToRgb(h: number, w: number, bk: number): { r: number; g: number; b: number } {
-  const wn = clamp(w, 0, 100) / 100;
-  const bn = clamp(bk, 0, 100) / 100;
+  const wn = Math.max(0, w) / 100;
+  const bn = Math.max(0, bk) / 100;
   if (wn + bn >= 1) {
     const gray = 255 * wn / (wn + bn);
     return { r: gray, g: gray, b: gray };

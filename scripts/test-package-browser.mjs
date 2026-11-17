@@ -47,13 +47,21 @@ export async function testBrowser(fixture, electron = false, cdnVersion) {
         import xcolor from "@xpyjs/color";
         import name from "${dist}/plugins/name/index.js";
         import bundled from "/bundle/bundled.js";
+        import { parseCssColor, fromColorSpace, resolveCssColor, createColorGradient } from "${dist}/plugins/colorSpace/index.js";
 
         window.xcolor.use(window.xcolorPlugins.name);
         xcolor.use(name);
+        const nativeHwb = document.createElement("span");
+        nativeHwb.style.color = "hwb(120 200% 100%)";
+        document.body.appendChild(nativeHwb);
+        const advanced = fromColorSpace(parseCssColor("hwb(120 200% 100%)")).toHex() === "#aaaaaa"
+          && getComputedStyle(nativeHwb).color === "rgb(170, 170, 170)"
+          && fromColorSpace(resolveCssColor("color-mix(in srgb, red, blue)")).toHex() === "#800080"
+          && createColorGradient([{color:parseCssColor("red")},{color:parseCssColor("blue")}]).colors(3).length === 3;
         const worker = new Worker("/worker.js", { type: "module" });
         worker.onmessage = ({ data }) => {
           const colors = [xcolor("red").toHex(), window.xcolor("red").toHex(), bundled, data];
-          document.body.dataset.result = colors.every((color) => color === "#ff0000") ? "passed" : colors.join(",");
+          document.body.dataset.result = advanced && colors.every((color) => color === "#ff0000") ? "passed" : "advanced=" + advanced + ";" + colors.join(",");
           worker.terminate();
         };
       </script>

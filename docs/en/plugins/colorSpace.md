@@ -18,6 +18,8 @@ Supported spaces: `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`, `prophoto-rgb`
 
 RGB channels use the 0–1 scale but may be negative or out of range. Lab/LCH use D50 and 0–100 lightness; OKLab/OKLCh use 0–1 lightness. Polar hue is in degrees. Alpha must be finite and within 0–1.
 
+HWB whiteness/blackness have a zero lower bound and normalize proportionally when their sum exceeds 100%. `hwb(120 200% 100%)` therefore yields `#aaaaaa`, without first clipping each component to 100%. Records and the hwb plugin follow the same rule.
+
 ## Perceptual palettes
 
 `generatePerceptualPalette(base, options?)` fixes white=50, base=500 and black=950. Entries are `{ shade, source, color, contrast? }`: source is the OKLCh target; color is sRGB mapped by chroma reduction. Default shades are 50,100,200…900,950. Custom `shades` accepts finite numbers in [50,950], preserving order and duplicates. Subsets never change the color assigned to a shade.

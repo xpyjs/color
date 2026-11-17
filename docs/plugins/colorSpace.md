@@ -16,6 +16,8 @@ formatColorSpace(mapToGamut(source, 'srgb', 'oklch-chroma'))
 
 RGB 坐标使用 0–1 标度，但记录和转换允许负值及超范围值。XYZ 使用相对亮度标度。Lab/LCH 使用 D50 和 0–100 亮度；OKLab/OKLCh 使用 0–1 亮度；柱坐标色相为度数。alpha 必须是 0–1 的有限数值。
 
+HWB 白度/黑度仅限制下界为 0；总和超过 100% 时按二者比例归一化。例如 `hwb(120 200% 100%)` 为 `#aaaaaa`，不先分别夹到 100%。记录转换与 hwb 插件使用相同规则。
+
 ## 精度与旧 API
 
 记录保留完整计算精度，新增的 `hsl` / `hsv` 空间使用角度和 0–100 百分比标度。`toColorSpace()` 保留实例实际存储的 alpha，不经过旧 `toRgb()` 的两位舍入。创建实例时已经丢掉的小数不能恢复，RGB 小数输入仍应启用 `useDecimal`。
