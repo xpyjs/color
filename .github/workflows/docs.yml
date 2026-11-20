@@ -34,6 +34,9 @@ jobs:
         run: npm ci
 
       - name: Build docs
+        env:
+          # docs:build bundles the library and all plugins before VitePress runs.
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run docs:build
 
       - name: Upload artifact
