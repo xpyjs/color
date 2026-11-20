@@ -9,3 +9,6 @@ coverage/
 .vscode/
 
 docs/.vitepress/cache/
+docs-interactivity-plan.md
+docs-interactivity-todo.md
+推广卡.md
