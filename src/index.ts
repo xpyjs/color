@@ -15,7 +15,7 @@ export {
   type XColorStringFormat,
   type XColorStringFormatMap
 } from "./core";
-export type { RGBA, HSLA, HSVA, XColorPlugin, XColorParser } from "./types";
+export type { RGBA, HSLA, XColorPlugin, XColorParser } from "./types";
 
 // Re-export utility functions for advanced usage
 export {

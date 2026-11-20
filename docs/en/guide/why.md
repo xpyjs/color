@@ -6,7 +6,7 @@ Color manipulation is a common need in frontend development and design tools. Wh
 
 ### Extremely Lightweight
 
-Core library is about **17 KB** min / **5.5 KB** gzip.
+The core measures about **17 kB** minified and **5.7 kB** gzipped on Node 22.
 
 ### Chainable + Mutable Instance
 
@@ -35,7 +35,7 @@ Short methods are also available: `r()`, `g()`, `b()`, `a()`, `h()`, `s()`, `l()
 
 ### Plugin System
 
-The core only includes the most commonly used features (RGB/HSL/HSV conversion, basic operations, queries). CMYK, Lab, color schemes, color vision simulation, etc. are loaded on demand through official plugins, without adding unnecessary bundle size:
+The core only includes the most commonly used features (RGB/HSL conversion, basic operations, queries). CMYK, Lab, color schemes, color vision simulation, etc. are loaded on demand through official plugins, without adding unnecessary bundle size:
 
 ```ts
 import xcolor from '@xpyjs/color'

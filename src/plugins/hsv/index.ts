@@ -1,7 +1,31 @@
 import { XColor, clamp, round, Logger, defineMethod, registerColorParser, registerStringFormatter, parseFunctionalChannels } from "@xpyjs/color";
 import { rgbToHsv, hsvToRgb } from "../../utils";
-import type { HSVA, XColorPlugin } from "@xpyjs/color";
+import type { XColorPlugin } from "@xpyjs/color";
 import { hueToken, numericToken } from "../../tokens";
+
+/**
+ * HSV (HSB) color object with alpha.
+ *
+ * - `h` (hue) is in degrees `0–360` on the color wheel
+ * - `s` (saturation) and `v` (value/brightness) are percentages `0–100`
+ * - `a` (alpha) is a float `0–1`
+ *
+ * @example
+ * ```ts
+ * const red: HSVA = { h: 0, s: 100, v: 100, a: 1 };
+ * const darkBlue: HSVA = { h: 240, s: 100, v: 50, a: 1 };
+ * ```
+ */
+export interface HSVA {
+  /** Hue angle — degrees `0` to `360` on the color wheel */
+  h: number;
+  /** Saturation — percentage `0` (grey/desaturated) to `100` (fully saturated) */
+  s: number;
+  /** Value (brightness) — percentage `0` (black) to `100` (full brightness) */
+  v: number;
+  /** Alpha (opacity) — float `0` (fully transparent) to `1` (fully opaque) */
+  a: number;
+}
 
 declare module "@xpyjs/color" {
   interface XColorInputObjectMap { hsva: Omit<HSVA, "a"> & { a?: number }; }
@@ -18,7 +42,7 @@ declare module "@xpyjs/color" {
     /** Alias for value(). */
     v(): number;
     v(value: number): this;
-    /** Serialize HSV channels with alpha rounded to two decimals. */
+    /** Serialize HSV channels with stored alpha precision. */
     toHsv(): HSVA;
     /** Serialize HSV as a tuple. */
     toHsvArray(): [number,number,number,number];

@@ -1,7 +1,5 @@
 # Getter / Setter
 
-> Register the [hsv plugin](/en/plugins/hsv) for HSV methods. Import HSV conversion utilities from that plugin entry.
-
 
 Channel methods in xcolor serve as both getter and setter — call without arguments to read, with arguments to set:
 
@@ -86,23 +84,6 @@ xcolor('#ff0000').lightness()   // 50
 xcolor('#ff0000').lightness(80) // lighten
 ```
 
-## HSV Channels
-
-<SvgHsvCone />
-
-### value() / v()
-
-Get or set the HSV value/brightness (0–100).
-
-```ts
-xcolor('#ff0000').value()   // 100
-xcolor('#ff0000').value(50) // reduce brightness
-```
-
-::: info
-`hue()` is the same angle in HSL and HSV. `saturation()` is the **HSL saturation**; read/write HSV saturation through the `hsv()` object, and use `value()` for HSV brightness.
-:::
-
 ## Compound Getter / Setter
 
 ### rgb(r, g, b)
@@ -121,15 +102,6 @@ Without arguments, returns an `{ h, s, l, a }` object. With arguments, sets chan
 ```ts
 xcolor('#ff0000').hsl()          // { h: 0, s: 100, l: 50, a: 1 }
 xcolor('#ff0000').hsl(210, 80, 60)
-```
-
-### hsv(h, s, v)
-
-Without arguments, returns an `{ h, s, v, a }` object. With arguments, sets channels; omitted channels keep their current values:
-
-```ts
-xcolor('#ff0000').hsv()            // { h: 0, s: 100, v: 100, a: 1 }
-xcolor('#ff0000').hsv(120, 100, 80)
 ```
 
 ### hex(value)
@@ -154,7 +126,6 @@ All aliases are fully equivalent to the original methods — use whichever feels
 | `hue()` | `h()` |
 | `saturation()` | `s()` |
 | `lightness()` | `l()` |
-| `value()` | `v()` |
 
 ## Chaining Example
 

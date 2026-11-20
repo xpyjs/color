@@ -1,23 +1,5 @@
 # Constructor & Factory
 
-> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
-
-
-## Strict mode and structured errors
-
-`xcolor(input, { strict: true })` throws `XColorError` for unparseable input, invalid-instance copies and explicit null. Omitted input still creates black. `xcolor.config({ strict: true })` sets the default; instances may override with false. Strict core numeric setters/adjustments reject NaN/Infinity before mutation, while finite out-of-range values retain normal clamping. Clones inherit strict mode; failed hex replacement preserves state and validity.
-
-```ts
-import xcolor, { XColorError } from '@xpyjs/color'
-try { xcolor('invalid', { strict: true }) } catch (error) {
-  if (error instanceof XColorError) console.log(error.code, error.operation)
-}
-```
-
-Errors expose name='XColorError', code (INVALID_INPUT, INVALID_COLOR or INVALID_ARGUMENT) and optional operation context. Logger.createError returns this type with the existing message prefix. Classify by code, not message text. Strict input validation is not strict CSS grammar; use colorSpace.parseCssColor for that.
-
-Default construction still returns invalid instances detectable through isValid(). Clones and single-color adjustments retain invalidity; successful hex replacement repairs it. Mix, contrast, brightness/luminance and defineMethod-registered plugin computations reject invalid sources; scale/deltaE also reject invalid targets. isReadable and equals still return false for invalid colors. Failed default hex replacement still marks invalid and throws; strict mode preserves validity. Plugins retain their own parameter rules; strict mode cannot automatically validate arbitrary third-party plugin arguments.
-
 ## xcolor(input?, options?)
 
 Create an `XColor` instance.
@@ -48,7 +30,6 @@ xcolor('rgb(255, 0, 0)')      // rgb()
 xcolor('rgba(255, 0, 0, 0.5)')// rgba()
 xcolor('hsl(0, 100%, 50%)')   // hsl()
 xcolor('hsla(0, 100%, 50%, 0.5)')
-xcolor('hsv(0, 100%, 100%)')  // hsv()
 xcolor('color(srgb 1 0 0)')   // CSS color()
 ```
 
@@ -58,10 +39,9 @@ xcolor('color(srgb 1 0 0)')   // CSS color()
 xcolor({ r: 255, g: 0, b: 0 })           // RGB
 xcolor({ r: 255, g: 0, b: 0, a: 0.5 })   // RGBA
 xcolor({ h: 0, s: 100, l: 50 })           // HSL
-xcolor({ h: 0, s: 100, v: 100 })          // HSV
 ```
 
-RGB objects may omit channels (default 0), and alpha is always optional (default 1). HSL objects require all of `h`, `s`, `l`; HSV objects require all of `h`, `s`, `v`. With the CMYK plugin installed, CMYK objects require all of `c`, `m`, `y`, `k`.
+RGB objects may omit channels (default 0), and alpha is optional (default 1). HSL objects require all of `h`, `s`, and `l`. With the CMYK plugin installed, CMYK objects require all of `c`, `m`, `y`, and `k`.
 
 #### Number
 
@@ -90,6 +70,7 @@ xcolor('nope')   // black #000000, isValid() = false (invalid input)
 ```ts
 interface XColorOptions {
   useDecimal?: boolean  // when true, preserve fractional RGB channels (range stays 0–255)
+  strict?: boolean
 }
 ```
 
@@ -119,3 +100,27 @@ b.toHex() // '#ff3333'
 ```
 
 **Returns**: a new `XColor` instance
+
+## Strict mode {#strict-mode-and-structured-errors}
+
+Pass `{ strict: true }` to throw an `XColorError` on invalid input. To set the default for new instances, call `xcolor.config({ strict: true })`. An instance can override it with `{ strict: false }`. Clones keep the original instance’s setting.
+
+| Operation | Default mode | Strict mode |
+| --- | --- | --- |
+| Create from an unparseable string | Returns an instance with `isValid() === false` | Throws `INVALID_INPUT` |
+| Call `xcolor()` with no arguments | Creates valid black | Creates valid black |
+| Replace valid red with `hex("invalid")` | Throws and marks the instance invalid | Throws and keeps the original valid red |
+
+```ts
+import xcolor, { XColorError } from '@xpyjs/color'
+
+try {
+  xcolor('invalid', { strict: true })
+} catch (error) {
+  if (error instanceof XColorError) console.log(error.code) // INVALID_INPUT
+}
+```
+
+Use `error.code` to handle errors. Possible codes are `INVALID_INPUT`, `INVALID_COLOR`, and `INVALID_ARGUMENT`. Some errors also include `operation`.
+
+Core numeric setters and adjustments throw before applying `NaN` or `Infinity`. Finite values still follow each method’s normal clamping rules. Plugins define their own validation. To validate CSS color literals, use [`parseCssColor()`](/en/plugins/colorSpace).

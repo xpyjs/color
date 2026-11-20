@@ -6,7 +6,7 @@ xcolor is written in TypeScript and ships with full type declarations. No `@type
 
 ```ts
 import xcolor, { XColor } from '@xpyjs/color'
-import type { RGBA, HSLA, HSVA, XColorInput, XColorOptions } from '@xpyjs/color'
+import type { RGBA, HSLA, XColorInput, XColorOptions } from '@xpyjs/color'
 ```
 
 ### Common Types
@@ -18,7 +18,6 @@ import type { RGBA, HSLA, HSVA, XColorInput, XColorOptions } from '@xpyjs/color'
 | `XColorOptions` | Configuration options |
 | `RGBA` | `{ r, g, b, a }` |
 | `HSLA` | `{ h, s, l, a }` |
-| `HSVA` | `{ h, s, v, a }` |
 
 ### Function Parameter Typing
 

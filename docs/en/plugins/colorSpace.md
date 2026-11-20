@@ -1,5 +1,7 @@
 # colorSpace - Unclipped coordinate records
 
+Choose a gradient API: [Two-color RGB steps](./gradient.md) · [Space, easing, and sampling](./scale.md) · [Multiple stops and custom domains](./colorSpace.md#createcolorgradient)
+
 After registration, `xcolor(record)` accepts tagged objects and `colorSpace()` / `colorSpace(record)` provide a getter and chainable setter. HWB records use `[h, w, b]`. Without registration, use the named `fromColorSpace(record, options?)` factory. Creating or updating an `XColor` explicitly enters sRGB and clips; retain records for wide-gamut calculations. Invalid setters leave the instance unchanged, and valid setters keep its precision options.
 
 Input types now match the parsers: HSL/HSV require all three channels, CMYK all four ink channels, and RGB at least one of r/g/b. Alpha is optional. Previously accepted but invalid Partial objects now produce type errors. Untagged Lab/HWB objects are not supported input formats; use tagged records instead.
@@ -53,7 +55,7 @@ Coordinate distance ignores alpha and does not measure composited appearance. `i
 
 CIEDE2000 is verified against all 34 [Sharma/Wu/Dalal reference vectors](https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/), including neutral colors and 180° hue boundaries.
 
-## Multi-stop gradients
+## Multi-stop gradients {#createcolorgradient}
 
 `createColorGradient(stops, options?)` snapshots 2–10000 `{ color: record, position?: number }` stops and defaults to OKLab interpolation. `at(value)` samples the data domain; `colors(count = 5)` samples uniformly, including domain endpoints.
 

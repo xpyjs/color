@@ -2,8 +2,8 @@
   "description": "Core runtime only; plugins and declarations excluded. gzip uses Node default settings. 5 KiB is an optimization goal, not the current acceptance limit.",
   "measuredWith": { "node": "22.12.0", "zlib": "1.3.0.1-motley-71660e1" },
   "files": {
-    "index.cjs": { "minifiedBytes": 19266, "gzipBytes": 6041, "maxGzipBytes": 6144 },
-    "index.esm.js": { "minifiedBytes": 19043, "gzipBytes": 6011, "maxGzipBytes": 6144 },
-    "index.umd.js": { "minifiedBytes": 19157, "gzipBytes": 6055, "maxGzipBytes": 6144 }
+    "index.cjs": { "minifiedBytes": 17265, "gzipBytes": 5631, "maxGzipBytes": 6144 },
+    "index.esm.js": { "minifiedBytes": 17052, "gzipBytes": 5599, "maxGzipBytes": 6144 },
+    "index.umd.js": { "minifiedBytes": 17172, "gzipBytes": 5656, "maxGzipBytes": 6144 }
   }
 }

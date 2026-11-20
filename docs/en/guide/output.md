@@ -1,7 +1,5 @@
 # Output
 
-> Register the [hsv plugin](/en/plugins/hsv) for HSV methods. Import HSV conversion utilities from that plugin entry.
-
 
 xcolor provides multiple methods to serialize color instances into different formats.
 
@@ -50,15 +48,6 @@ c.toHsl()          // { h: 24, s: 100, l: 50, a: 1 }
 c.toHslString()    // 'hsl(24, 100%, 50%)'
 ```
 
-## HSV
-
-```ts
-const c = xcolor('#ff6600')
-
-c.toHsv()          // { h: 24, s: 100, v: 100, a: 1 }
-c.toHsvString()    // 'hsv(24, 100%, 100%)'
-```
-
 ## Number
 
 Convert to a 24-bit integer (excluding alpha):
@@ -95,7 +84,6 @@ c.toString('hex3')  // '#f00'
 c.toString('hex8')  // '#ff0000ff'
 c.toString('rgb')   // 'rgb(255, 0, 0)'
 c.toString('hsl')   // 'hsl(0, 100%, 50%)'
-c.toString('hsv')   // 'hsv(0, 100%, 100%)'
 ```
 
 `format()` is an alias for `toString()`.
@@ -111,7 +99,7 @@ xcolor.use(cmyk)
 xcolor('#ff0000').toString('cmyk') // 'cmyk(0%, 100%, 100%, 0%)'
 ```
 
-Supported plugin format keys include: `cmyk`, `lab`, `lch`, `oklab`, `oklch`, `hwb`, `a98Rgb`, `displayP3`, `proPhotoRgb`, `rec2020`, `xyz`, `percentageRgb`, `name`, etc.
+Supported plugin format keys include: `cmyk`, `lab`, `lch`, `oklab`, `oklch`, `hsv`, `hwb`, `a98Rgb`, `displayP3`, `proPhotoRgb`, `rec2020`, `xyz`, `percentageRgb`, `name`, etc.
 
 ## Built-in Format Keys Reference
 
@@ -122,4 +110,3 @@ Supported plugin format keys include: `cmyk`, `lab`, `lch`, `oklab`, `oklch`, `h
 | `hex8` | `#ff0000ff` | 8-digit with alpha |
 | `rgb` | `rgb(255, 0, 0)` | CSS rgb/rgba |
 | `hsl` | `hsl(0, 100%, 50%)` | CSS hsl/hsla |
-| `hsv` | `hsv(0, 100%, 100%)` | HSV format |

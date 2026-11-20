@@ -1,6 +1,14 @@
+<script setup>
+import ManipulationDemo from '../.vitepress/theme/components/ManipulationDemo.vue'
+</script>
+
 # 颜色操作
 
 所有操作方法**原地修改**实例并返回 `this`，支持链式调用。如需保留原色，先 `.clone()`。
+
+## 调色方法比较 {#compare-adjustments}
+
+<ManipulationDemo />
 
 ## 亮度
 

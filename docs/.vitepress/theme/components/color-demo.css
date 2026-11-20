@@ -1,0 +1,27 @@
+.interactive-color-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: clamp(12px, 3vw, 20px);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+}
+.demo-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; }
+.demo-controls label { display: grid; align-content: start; gap: 4px; min-width: 0; max-width: 100%; font-size: 13px; }
+.demo-controls input, .demo-controls select { max-width: 100%; accent-color: var(--vp-c-brand-1); }
+.demo-controls input:not([type="range"]), .demo-controls select {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 5px;
+  padding: 3px 6px;
+  background: var(--vp-c-bg-soft);
+}
+.demo-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; }
+.demo-results article { min-width: 0; padding: 10px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); overflow-wrap: anywhere; }
+.demo-swatch { margin: 5px 0; background: repeating-conic-gradient(#ddd 0% 25%, #fff 0% 50%) 0 / 12px 12px; }
+.demo-swatch > div { min-height: 32px; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--vp-c-brand-1); }

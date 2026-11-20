@@ -1,5 +1,7 @@
 # Manipulation
 
+[Compare adjustments](../api/manipulation.md#compare-adjustments) to see how the same amount affects lightness, RGB channels, and opacity.
+
 xcolor provides a series of manipulation methods based on HSL and RGB color spaces. All manipulation methods **modify the instance in place** and return `this`, supporting chaining.
 
 ::: tip

@@ -1027,6 +1027,7 @@ const glowShadow = computed(() => {
 
 .hero-mini-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
 }
 .hero-mini-tabs button {

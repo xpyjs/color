@@ -1,5 +1,7 @@
 # gradient - 渐变
 
+选择渐变 API： [两色 RGB 等分](./gradient.md) · [空间、缓动和采样](./scale.md) · [多色标和自定义数据域](./colorSpace.md#createcolorgradient)
+
 生成两个颜色之间的渐变色序列，或从单一颜色生成明暗变化序列。
 
 ## 安装

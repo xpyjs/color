@@ -1,10 +1,11 @@
 import xcolor, { defineMethod, registerStringFormatter } from "@xpyjs/color";
 import type { XColor, XColorPlugin } from "@xpyjs/color";
 import lab from "@xpyjs/color/plugins/lab";
-import hsv, { rgbToHsv } from "@xpyjs/color/plugins/hsv";
+import hsv, { rgbToHsv, type HSVA } from "@xpyjs/color/plugins/hsv";
 xcolor.use(hsv);
 xcolor({ h: 120, s: 100, v: 100 }).value(50).toString("hsv");
-rgbToHsv(0, 255, 0);
+const hsvGreen: HSVA = { ...rgbToHsv(0, 255, 0), a: 1 };
+xcolor(hsvGreen);
 import theme from "@xpyjs/color/plugins/theme";
 import cmyk from "@xpyjs/color/plugins/cmyk";
 xcolor.use(cmyk);

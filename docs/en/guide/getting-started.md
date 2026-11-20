@@ -1,6 +1,6 @@
 # Getting Started
 
-`@xpyjs/color` (abbreviated as **xcolor**) is a lightweight, fast, zero-dependency JavaScript / TypeScript color manipulation library. The core is about 4 KB (gzip), supports chaining, unified Getter/Setter design, and a flexible plugin system.
+`@xpyjs/color` (abbreviated as **xcolor**) is a lightweight, fast, zero-dependency JavaScript / TypeScript color manipulation library. The core is about 5.7 kB (gzipped), supports chaining, unified Getter/Setter design, and a flexible plugin system.
 
 ## Environment Requirements
 

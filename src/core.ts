@@ -26,8 +26,8 @@ let _globalOpts: XColorOptions = {};
  * Plugins can augment this interface (e.g. the CMYK plugin adds `cmyk: CMYKInput`)
  * so that the object-input union automatically widens.
  *
- * RGB is the only built-in model that accepts partial channel objects; HSL,
- * HSV and CMYK require all color channels. `a` is optional for every model.
+ * RGB accepts partial channel objects. HSL requires all three channels.
+ * Alpha (`a`) is optional.
  * @internal
  */
 export interface XColorInputObjectMap {
@@ -51,7 +51,7 @@ export type XColorObjectInput = XColorInputObjectMap[keyof XColorInputObjectMap]
 /**
  * Primitive (non-XColor) color inputs accepted by the parser pipeline:
  * - `number`  — 24-bit integer `0x000000`–`0xFFFFFF`, e.g. `0xFF0000`
- * - `string`  — hex, `rgb()`, `hsl()`, `hsv()`, named color (via name plugin), etc.
+ * - `string`  — hex, `rgb()`, `hsl()`, named color (via name plugin), etc.
  * - `object`  — plain object with known channel keys, see {@link XColorObjectInput}
  */
 export type XColorInputNative = number | string | XColorObjectInput;
@@ -83,7 +83,6 @@ export type XColorInput = XColorInputNative | XColor;
  * - `"hex8"` — `#RRGGBBAA` (always includes alpha)
  * - `"rgb"`  — `rgb(R, G, B)` or `rgba(R, G, B, A)`
  * - `"hsl"`  — `hsl(H, S%, L%)` or `hsla(H, S%, L%, A)`
- * - `"hsv"`  — `hsv(H, S%, V%)` or `hsva(H, S%, V%, A)`
  *
  * @example Extending via a plugin
  * ```ts
@@ -166,7 +165,7 @@ export class XColor {
   /**
    * Create a new XColor instance.
    *
-   * @param value - Color input (hex, rgb, hsl, hsv, named, object, number)
+   * @param value - Color input (hex, rgb, hsl, named, object, number)
    * @param opts - Options for color creation
    */
   constructor(value?: XColorInput, opts?: XColorOptions) {
@@ -223,7 +222,7 @@ export class XColor {
   }
 
   /**
-   * Apply a color-space transformation: convert to HSL/HSV, run `fn`, convert back.
+   * Apply a color-space transformation: convert to HSL, run `fn`, convert back.
    * @internal
    */
   private _applyCS<T>(
@@ -384,11 +383,11 @@ export class XColor {
   }
 
   // =======================================
-  // HSL/HSV Channel Methods
+  // HSL Channel Methods
   // =======================================
 
   /**
-   * Get the hue value (0-360) in HSL/HSV color space.
+   * Get the hue value (0-360) in HSL color space.
    * @returns Hue angle in degrees
    * @example xcolor('#ff0000').hue() // 0
    */
@@ -419,7 +418,6 @@ export class XColor {
 
   /**
    * Get the HSL saturation value (0-100).
-   * HSV saturation is available through {@link toHsv()} / {@link hsv()}.
    * @returns Saturation percentage
    * @example xcolor('#ff0000').saturation() // 100
    */
@@ -1493,7 +1491,7 @@ export interface XColorFactory {
    * When `value` is already an `XColor` instance, a clone is returned.
    * When `value` is omitted, returns a valid black (`#000000`) instance.
    *
-   * @param value - Color input (hex, rgb, hsl, hsv, number, object, or XColor)
+   * @param value - Color input (hex, rgb, hsl, number, object, or XColor)
    * @param opts  - Optional creation options (e.g. `{ useDecimal: true }`)
    * @returns A new `XColor` instance
    */
@@ -1607,7 +1605,6 @@ export interface XColorFactory {
  * - Hex string:        `'#ff0000'`, `'#f00'`, `'#ff000080'`
  * - RGB / RGBA string: `'rgb(255, 0, 0)'`, `'rgba(255, 0, 0, 0.5)'`
  * - HSL / HSLA string: `'hsl(0, 100%, 50%)'`, `'hsla(0, 100%, 50%, 0.5)'`
- * - HSV string:        `'hsv(0, 100%, 100%)'`
  * - sRGB string:       `'srgb(1 0 0)'`, `'color(srgb 1 0 0)'`
  * - Object:            `{ r: 255, g: 0, b: 0 }`, `{ h: 0, s: 100, l: 50 }`
  * - Number:            `0xFF0000` (24-bit integer)

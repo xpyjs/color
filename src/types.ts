@@ -45,30 +45,6 @@ export interface HSLA {
   a: number;
 }
 
-/**
- * HSV (HSB) color object with alpha.
- *
- * - `h` (hue) is in degrees `0–360` on the color wheel
- * - `s` (saturation) and `v` (value/brightness) are percentages `0–100`
- * - `a` (alpha) is a float `0–1`
- *
- * @example
- * ```ts
- * const red: HSVA = { h: 0, s: 100, v: 100, a: 1 };
- * const darkBlue: HSVA = { h: 240, s: 100, v: 50, a: 1 };
- * ```
- */
-export interface HSVA {
-  /** Hue angle — degrees `0` to `360` on the color wheel */
-  h: number;
-  /** Saturation — percentage `0` (grey/desaturated) to `100` (fully saturated) */
-  s: number;
-  /** Value (brightness) — percentage `0` (black) to `100` (full brightness) */
-  v: number;
-  /** Alpha (opacity) — float `0` (fully transparent) to `1` (fully opaque) */
-  a: number;
-}
-
 export { type XColorPlugin } from "./plugins/types";
 export type { XColorParser } from "./parse";
 export type {

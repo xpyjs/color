@@ -1,6 +1,14 @@
+<script setup>
+import ManipulationDemo from '../../.vitepress/theme/components/ManipulationDemo.vue'
+</script>
+
 # Color Manipulation
 
 All manipulation methods **modify the instance in place** and return `this`, supporting method chaining. If you need to preserve the original color, call `.clone()` first.
+
+## Compare adjustments {#compare-adjustments}
+
+<ManipulationDemo />
 
 ## Brightness
 

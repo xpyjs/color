@@ -19,7 +19,7 @@ color.lighten(20).toHex()  // 类型推断完整
 
 ```ts
 import xcolor, { XColor } from '@xpyjs/color'
-import type { RGBA, HSLA, HSVA, XColorInput, XColorOptions } from '@xpyjs/color'
+import type { RGBA, HSLA, XColorInput, XColorOptions } from '@xpyjs/color'
 ```
 
 ### 常用类型
@@ -31,7 +31,6 @@ import type { RGBA, HSLA, HSVA, XColorInput, XColorOptions } from '@xpyjs/color'
 | `XColorOptions` | 配置选项（如 `{ useDecimal: true }`）|
 | `RGBA` | `{ r: number, g: number, b: number, a: number }` |
 | `HSLA` | `{ h: number, s: number, l: number, a: number }` |
-| `HSVA` | `{ h: number, s: number, v: number, a: number }` |
 
 ### 函数参数类型标注
 

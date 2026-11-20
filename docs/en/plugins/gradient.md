@@ -1,5 +1,7 @@
 # gradient - Gradient
 
+Choose a gradient API: [Two-color RGB steps](./gradient.md) · [Space, easing, and sampling](./scale.md) · [Multiple stops and custom domains](./colorSpace.md#createcolorgradient)
+
 Generate gradient color sequences between two colors, or generate a tonal range from a single color.
 
 ## Install

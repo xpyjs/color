@@ -1,7 +1,5 @@
 # 自定义插件开发
 
-> HSV 方法需要注册 [hsv 插件](/plugins/hsv)。转换工具从该插件入口导入。
-
 
 本页面面向希望扩展 xcolor 能力的开发者。你将了解插件结构、可用的工具函数，以及如何为 TypeScript 用户提供完整的类型提示。
 
@@ -234,8 +232,6 @@ export default myPlugin
 | --- | --- |
 | `rgbToHsl(r, g, b)` | RGB → HSL |
 | `hslToRgb(h, s, l)` | HSL → RGB |
-| `rgbToHsv(r, g, b)` | RGB → HSV |
-| `hsvToRgb(h, s, v)` | HSV → RGB |
 | `rgbaToHex(r, g, b, a, allow3Char?, forceAlpha?)` | RGBA → hex 字符串 |
 
 ### 解析工具

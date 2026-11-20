@@ -54,12 +54,13 @@ xcolor.use(somePlugin, { /* 选项 */ })
 
 ### 色彩空间
 
-扩展颜色的输入解析和输出格式：
+提供色彩空间转换、颜色输入解析和输出格式。
 
 | 插件 | 说明 |
 | --- | --- |
 | [cmyk](/plugins/cmyk) | CMYK 印刷色彩空间 |
 | [lab](/plugins/lab) | CIE Lab / LCH 感知色彩空间 |
+| [hsv](/plugins/hsv) | HSV 输入、通道读写与输出 |
 | [hwb](/plugins/hwb) | HWB 色彩空间 |
 | [oklab](/plugins/oklab) | Oklab / Oklch 现代感知色彩空间 |
 | [a98Rgb](/plugins/a98Rgb) | Adobe RGB (1998) 广色域 |
@@ -67,25 +68,25 @@ xcolor.use(somePlugin, { /* 选项 */ })
 | [proPhotoRgb](/plugins/proPhotoRgb) | ProPhoto RGB 广色域 |
 | [rec2020](/plugins/rec2020) | Rec. 2020 广色域 |
 | [xyz](/plugins/xyz) | CIE XYZ (D65/D50) |
-| [name](/plugins/name) | CSS 颜色名称（148 种）|
+| [colorSpace](/plugins/colorSpace) | 保留原色彩空间的颜色记录，支持空间转换、色域映射、色差比较和多色标渐变 |
+| [name](/plugins/name) | 解析 CSS 命名色并输出匹配的名称 |
+| [percentageRgb](/plugins/percentageRgb) | 输出百分比通道的 RGB 字符串 |
 
 ### 功能扩展
 
-为颜色实例添加新的操作和查询能力：
+提供调色、配色、主题生成和可读性检查等功能。
 
 | 插件 | 说明 |
 | --- | --- |
-| [a11y](/plugins/a11y) | 无障碍（对比度、可读性判断）|
-| [blend](/plugins/blend) | 11 种图层混合模式 |
+| [a11y](/plugins/a11y) | 对比度计算、可读性判断、对比度调整和批量审查 |
+| [blend](/plugins/blend) | 图层混合与 Porter–Duff 合成 |
 | [gradient](/plugins/gradient) | 渐变色序列与明暗色调生成 |
 | [harmony](/plugins/harmony) | 配色方案（互补、三色、四色等）|
-| [name](/plugins/name) | CSS 颜色名称（148 种）|
-| [palette](/plugins/palette) | 色阶面板生成 |
-| [percentageRgb](/plugins/percentageRgb) | 百分比 RGB 输出 |
-| [scale](/plugins/scale) | 色彩空间插值与缓动 |
+| [palette](/plugins/palette) | 从基础色生成色阶面板 |
+| [scale](/plugins/scale) | 在指定色彩空间内插值，支持缓动和定点采样 |
 | [simulate](/plugins/simulate) | 色觉障碍模拟 |
 | [temperature](/plugins/temperature) | 色温读取与设置 |
-| [theme](/plugins/theme) | 主题色生成与 CSS 变量注入 |
+| [theme](/plugins/theme) | 生成语义色和明暗主题，输出或注入 CSS 变量 |
 
 ## 开发自定义插件
 

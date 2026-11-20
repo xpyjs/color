@@ -1,7 +1,5 @@
 # Color Output
 
-> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
-
 
 Convert `XColor` instances to various formats. All output methods are read-only operations and do not modify the instance.
 
@@ -72,24 +70,6 @@ Returns an `hsl()` or `hsla()` string.
 xcolor('#ff0000').toHslString()  // 'hsl(0, 100%, 50%)'
 ```
 
-## HSV
-
-### toHsv() {#toHsv}
-
-Returns a `{ h, s, v, a }` object.
-
-```ts
-xcolor('#ff0000').toHsv()  // { h: 0, s: 100, v: 100, a: 1 }
-```
-
-### toHsvString() {#toHsvString}
-
-Returns an `hsv()` string.
-
-```ts
-xcolor('#ff0000').toHsvString()  // 'hsv(0, 100%, 100%)'
-```
-
 ## Number
 
 ### toNumber() {#toNumber}
@@ -116,7 +96,6 @@ Pass a format argument to output a specific format:
 xcolor('#ff0000').toString()        // '#ff0000'
 xcolor('#ff0000').toString('rgb')   // 'rgb(255, 0, 0)'
 xcolor('#ff0000').toString('hsl')   // 'hsl(0, 100%, 50%)'
-xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 ```
 
 Alias: `format()`
@@ -130,7 +109,6 @@ Alias: `format()`
 | `'hex8'` | `#ff0000ff` (forces alpha) |
 | `'rgb'` | `rgb(255, 0, 0)` |
 | `'hsl'` | `hsl(0, 100%, 50%)` |
-| `'hsv'` | `hsv(0, 100%, 100%)` |
 
 Plugins can extend additional formats. For example, after registering the `cmyk` plugin, you can use `toString('cmyk')`.
 
@@ -139,8 +117,8 @@ Plugins can extend additional formats. For example, after registering the `cmyk`
 | Output | Precision and alpha |
 | --- | --- |
 | `alpha()` | Returns the stored alpha |
-| `toRgb()`, `toHsl()`, `toHsv()` and their array forms | Alpha preserves the stored precision. `toHslArray()` returns `[h, s, l, a]` and `toHsvArray()` returns `[h, s, v, a]`. |
-| RGB, HSL and HSV strings | Retain stored alpha. HSL and HSV string coordinates are rounded to integers. |
+| `toRgb()`, `toHsl()` and their array forms | Alpha preserves the stored precision. `toHslArray()` returns `[h, s, l, a]`. |
+| RGB and HSL strings | Retain stored alpha. HSL string coordinates are rounded to integers. |
 | Hex | Quantizes RGB and alpha to 8-bit channels |
 | `toNumber()` | Quantizes RGB and omits alpha |
 

@@ -1,7 +1,5 @@
 # Getter / Setter
 
-> HSV 方法需要注册 [hsv 插件](/plugins/hsv)。转换工具从该插件入口导入。
-
 
 xcolor 的通道方法同时扮演 getter 和 setter 的角色——不传参读取，传参设置：
 
@@ -86,23 +84,6 @@ xcolor('#ff0000').lightness()   // 50
 xcolor('#ff0000').lightness(80) // 提亮
 ```
 
-## HSV 通道
-
-<SvgHsvCone />
-
-### value() / v()
-
-获取或设置 HSV 明度（0–100）。
-
-```ts
-xcolor('#ff0000').value()   // 100
-xcolor('#ff0000').value(50) // 降低明度
-```
-
-::: info
-`hue()` 在 HSL 和 HSV 中是同一个角度。`saturation()` 是 **HSL 饱和度**；HSV 的饱和度通过 `hsv()` 对象读写，HSV 明度使用 `value()`。
-:::
-
 ## 复合 Getter / Setter
 
 ### rgb(r, g, b)
@@ -121,15 +102,6 @@ xcolor('#ff0000').rgb(0, 128, 255) // 同时设置三通道
 ```ts
 xcolor('#ff0000').hsl()          // { h: 0, s: 100, l: 50, a: 1 }
 xcolor('#ff0000').hsl(210, 80, 60)
-```
-
-### hsv(h, s, v)
-
-不传参返回 `{ h, s, v, a }` 对象。传参设置通道，省略的通道保持当前值：
-
-```ts
-xcolor('#ff0000').hsv()            // { h: 0, s: 100, v: 100, a: 1 }
-xcolor('#ff0000').hsv(120, 100, 80)
 ```
 
 ### hex(value)
@@ -154,7 +126,6 @@ xcolor('#ff0000').hex('#00ff00') // 变为绿色
 | `hue()` | `h()` |
 | `saturation()` | `s()` |
 | `lightness()` | `l()` |
-| `value()` | `v()` |
 
 ## 链式示例
 

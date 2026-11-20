@@ -1,5 +1,7 @@
 # 颜色操作
 
+[试用调色方法比较器](../api/manipulation.md#compare-adjustments)，观察同一强度如何改变亮度、RGB 和透明度。
+
 xcolor 提供了一系列基于 HSL 和 RGB 色彩空间的操作方法。所有操作方法都**原地修改**当前实例并返回 `this`，支持链式调用。
 
 ::: tip

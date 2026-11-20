@@ -1,7 +1,5 @@
 # 通道读写
 
-> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
-
 
 所有通道方法不传参时为 getter（返回当前值），传参时为 setter（设置值并返回 `this`）。
 
@@ -84,23 +82,6 @@ xcolor('#ff0000').lightness()    // 50
 xcolor('#ff0000').lightness(80)  // 提亮
 ```
 
-## HSV 通道
-
-### value(val?) {#value}
-
-读写 HSV 明度。范围 0–100。
-
-别名：`v()`
-
-```ts
-xcolor('#ff0000').value()    // 100
-xcolor('#ff0000').value(50)  // 降低明度
-```
-
-::: info
-`hue()` 和 `saturation()` 在 HSL 和 HSV 中共享。
-:::
-
 ## 复合读写
 
 ### rgb(r?, g?, b?) {#rgb}
@@ -119,15 +100,6 @@ xcolor('#ff0000').rgb(0, 128, 255)  // 设置三通道
 ```ts
 xcolor('#ff0000').hsl()              // { h: 0, s: 100, l: 50, a: 1 }
 xcolor('#ff0000').hsl(210, 80, 60)   // 设置为蓝色调
-```
-
-### hsv(h?, s?, v?) {#hsv}
-
-不传参返回 `{ h, s, v, a }` 对象。传参同时设置 HSV 三通道。
-
-```ts
-xcolor('#ff0000').hsv()               // { h: 0, s: 100, v: 100, a: 1 }
-xcolor('#ff0000').hsv(120, 100, 80)  // 设置为绿色调
 ```
 
 ### hex(value?) {#hex}

@@ -1,5 +1,7 @@
 # colorSpace - 保留原空间的颜色计算
 
+选择渐变 API： [两色 RGB 等分](./gradient.md) · [空间、缓动和采样](./scale.md) · [多色标和自定义数据域](./colorSpace.md#createcolorgradient)
+
 此模块提供独立于 `XColor` 的 `{ space, coordinates, alpha }` 记录。转换不经过 sRGB 裁剪，不修改输入，也不按输出格式提前舍入。现有广色域插件的 `parseWideColor()` 结果可以直接传入。
 
 ```ts
@@ -65,7 +67,7 @@ sortColors(colors, { by: 'distance', reference: colors[0] }) // 按到参考色�
 
 CIEDE2000 以 [Sharma/Wu/Dalal 参考数据](https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/) 的 34 组向量验证，包括中性色及 180° 色相边界。
 
-### 多色标渐变
+### 多色标渐变 {#createcolorgradient}
 
 `createColorGradient(stops, options?)` 创建输入快照，默认在 OKLab 插值，不修改输入。每个色标为 `{ color: record, position?: number }`，数量 2–10000；`at(value)` 按数据域采样，`colors(count = 5)` 均匀采样并包含域端点。
 

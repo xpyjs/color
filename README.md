@@ -30,11 +30,11 @@
 
 ## ✨ Features
 
-- 🪶 **Small core** — ~17.5 kB minified / ~5.7 kB gzip, zero runtime dependencies; optional plugins are additional
+- 🪶 **Small core** — ~17 kB minified / ~5.7 kB gzip, zero runtime dependencies; optional plugins are additional
 - 🔌 **Plugin System** — Extend functionality like dayjs, load what you need
 - 🎯 **TypeScript First** — Full type definitions and IntelliSense
 - ⛓️ **Chainable API** — Fluent interface for all operations
-- 🎨 **Multi-format** — Hex, RGB, HSL, HSV, Numbers (named colors via the `name` plugin)
+- 🎨 **Multi-format** — Hex, RGB, HSL, Numbers (named colors via the `name` plugin)
 - 🏷️ **Method Aliases** — Shorthand aliases like `r()`, `g()`, `b()`, `h()`, `s()`, `l()`
 - ♿ **Accessibility** — WCAG contrast ratio, readability checks (via plugin)
 - 🎭 **Blend Modes** — Photoshop-like blending (via plugin)

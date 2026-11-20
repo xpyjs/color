@@ -1,7 +1,5 @@
 # 创建颜色
 
-> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
-
 
 `xcolor()` 工厂函数接受多种格式的颜色输入，返回一个可操作的颜色实例。
 
@@ -42,15 +40,6 @@ xcolor('hsla(120, 100%, 50%, 0.8)')    // 半透明绿色
 
 参数含义：色相 (0–360°)、饱和度 (0–100%)、亮度 (0–100%)。
 
-## HSV 字符串
-
-```ts
-xcolor('hsv(0, 100%, 100%)')           // 红色
-xcolor('hsva(240, 100%, 100%, 0.5)')   // 半透明蓝色
-```
-
-参数含义：色相 (0–360°)、饱和度 (0–100%)、明度 (0–100%)。
-
 ## sRGB 字符串
 
 CSS Color Level 4 的 `color(srgb ...)` 函数：
@@ -73,12 +62,9 @@ xcolor({ r: 255, g: 0, b: 0, a: 0.5 }) // 半透明红色
 
 // HSL 对象
 xcolor({ h: 120, s: 100, l: 50 })      // 绿色
-
-// HSV 对象
-xcolor({ h: 240, s: 100, v: 100 })     // 蓝色
 ```
 
-RGB 对象可以省略通道（缺省为 0），alpha 始终可省略（默认 1）。HSL 对象必须提供完整的 `h`、`s`、`l`；HSV 对象必须提供完整的 `h`、`s`、`v`。
+RGB 对象可以省略通道（缺省为 0），alpha 始终可省略（默认 1）。HSL 对象必须提供完整的 `h`、`s`、`l`。
 
 ## 数字输入
 
@@ -164,9 +150,9 @@ xcolor({ c: 0, m: 100, y: 100, k: 0 }) // CMYK 对象
 | Hex | 核心 | 3、4、6、8 位十六进制，可省略 `#` | — | 4、8 位格式支持 | `hex`、`hex3`、`hex8` 输出 CSS Hex |
 | RGB | 核心 | `rgb()`、`rgba()`，通道用数字或百分比 | `{ r, g, b, a? }`，缺少的 RGB 通道为 0 | 字符串支持数字或百分比 | `rgb` 输出 CSS RGB |
 | HSL | 核心 | `hsl()`、`hsla()`，色相支持度数及 `deg`、`grad`、`rad`、`turn`，S/L 为 0–100 | `{ h, s, l, a? }` | 字符串支持数字或百分比 | `hsl` 输出 CSS HSL |
-| HSV | hsv 插件 | `hsv()`、`hsva()`，角度同 HSL，S/V 为 0–100 | `{ h, s, v, a? }` | 字符串支持数字或百分比 | `hsv` 是库内写法 |
 | sRGB | 核心 | `color(srgb …)` 或 `srgb()`，0–1 或百分比 | — | 支持斜线 alpha | 使用 `rgb` 或 Hex 输出 |
 | 命名色 | `name` | CSS 命名色与 `transparent` | — | `transparent` 的 alpha 为 0 | `name` 可输出名称，无法匹配时回退到 Hex |
+| HSV | `hsv` | `hsv()`、`hsva()`，角度同 HSL，S/V 为 0–100 | `{ h, s, v, a? }` | 字符串支持数字或百分比 | `hsv` 是库内写法 |
 | HWB | `hwb` | `hwb()`，角度同 HSL，W/B 为 0–100 | — | 支持斜线 alpha | `hwb` 输出 CSS HWB |
 | CMYK | `cmyk` | `cmyk()`，0–100 或百分比 | `{ c, m, y, k, a? }` | 支持可选 alpha | `cmyk` 是库内写法 |
 | Lab / LCH | `lab` | `lab()`、`lch()`，支持数字和各通道定义的百分比，LCH 色相支持角度单位 | — | 支持斜线 alpha | `lab`、`lch` 在 `whitePoint: 'D50'` 下使用 CSS 坐标 |

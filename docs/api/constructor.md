@@ -1,23 +1,5 @@
 # 构造与工厂
 
-> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
-
-
-## 严格模式与错误
-
-`xcolor(input, { strict: true })` 在输入无法解析、复制无效实例或显式传 null 时抛出 `XColorError`。无参数仍创建黑色。也可通过 `xcolor.config({ strict: true })` 设置默认，实例可显式传 false。严格模式检查核心数值 setter 和调整参数：NaN/Infinity 在修改前抛错；有限越界值仍按原规则夹取。克隆保留 strict 选项，hex 替换失败保留原值与有效状态。
-
-```ts
-import xcolor, { XColorError } from '@xpyjs/color'
-try { xcolor('invalid', { strict: true }) } catch (error) {
-  if (error instanceof XColorError) console.log(error.code, error.operation)
-}
-```
-
-结构化字段：name='XColorError'，code 为 INVALID_INPUT、INVALID_COLOR 或 INVALID_ARGUMENT；调用点提供上下文时带 operation。旧 Logger.createError 也返回该错误，保留原消息前缀，不应依赖消息文本分类。严格模式检查有效颜色输入，不等同于严格 CSS 语法；CSS 字面量语法请使用 colorSpace.parseCssColor。
-
-默认构造仍返回可用 isValid() 检查的无效实例；克隆和单色调整保持无效标记，成功 hex 替换可修复。mix、contrast、brightness/luminance 及通过 defineMethod 注册的插件计算拒绝无效源；涉及另一颜色的 scale/deltaE 也拒绝无效目标。isReadable 和 equals 对无效颜色仍返回 false。默认 hex 失败仍会标记无效并抛错；只有 strict 模式保留有效状态。插件参数规则由各插件定义，strict 不保证第三方插件自动验证所有参数。
-
 ## xcolor(input?, options?)
 
 创建一个 `XColor` 实例。
@@ -48,7 +30,6 @@ xcolor('rgb(255, 0, 0)')      // rgb()
 xcolor('rgba(255, 0, 0, 0.5)')// rgba()
 xcolor('hsl(0, 100%, 50%)')   // hsl()
 xcolor('hsla(0, 100%, 50%, 0.5)')
-xcolor('hsv(0, 100%, 100%)')  // hsv()
 xcolor('color(srgb 1 0 0)')   // CSS color()
 ```
 
@@ -58,10 +39,9 @@ xcolor('color(srgb 1 0 0)')   // CSS color()
 xcolor({ r: 255, g: 0, b: 0 })           // RGB
 xcolor({ r: 255, g: 0, b: 0, a: 0.5 })   // RGBA
 xcolor({ h: 0, s: 100, l: 50 })           // HSL
-xcolor({ h: 0, s: 100, v: 100 })          // HSV
 ```
 
-RGB 对象可以省略通道（缺省为 0），alpha 始终可省略（默认 1）。HSL 对象必须提供完整的 `h`、`s`、`l`，HSV 对象必须提供完整的 `h`、`s`、`v`；安装 CMYK 插件后，CMYK 对象必须提供完整的 `c`、`m`、`y`、`k`。
+RGB 对象可以省略通道（缺省为 0），alpha 可以省略（默认 1）。HSL 对象必须提供完整的 `h`、`s`、`l`。安装 CMYK 插件后，CMYK 对象必须提供完整的 `c`、`m`、`y`、`k`。
 
 #### 数字
 
@@ -90,6 +70,7 @@ xcolor('nope')   // 黑色 #000000，isValid() = false（无效输入）
 ```ts
 interface XColorOptions {
   useDecimal?: boolean  // true 时保留 RGB 通道的小数精度（范围仍为 0–255）
+  strict?: boolean
 }
 ```
 
@@ -119,3 +100,27 @@ b.toHex() // '#ff3333'
 ```
 
 **返回值**：新的 `XColor` 实例
+
+## 严格模式 {#严格模式与错误}
+
+传入 `{ strict: true }` 后，无效输入会抛出 `XColorError`。可用 `xcolor.config({ strict: true })` 设置新实例的默认值，单个实例可传 `{ strict: false }` 覆盖。克隆会保留原实例的设置。
+
+| 操作 | 默认模式 | 严格模式 |
+| --- | --- | --- |
+| 用无法解析的字符串创建颜色 | 返回实例，`isValid() === false` | 抛出 `INVALID_INPUT` |
+| 无参调用 `xcolor()` | 创建有效的黑色 | 创建有效的黑色 |
+| 对有效的红色调用 `hex("invalid")` | 抛错并将实例标记为无效 | 抛错，保留原来的有效红色 |
+
+```ts
+import xcolor, { XColorError } from '@xpyjs/color'
+
+try {
+  xcolor('invalid', { strict: true })
+} catch (error) {
+  if (error instanceof XColorError) console.log(error.code) // INVALID_INPUT
+}
+```
+
+可按 `error.code` 处理错误。错误码包括 `INVALID_INPUT`、`INVALID_COLOR` 和 `INVALID_ARGUMENT`，部分错误还提供 `operation`。
+
+核心数值设置和调整方法遇到 `NaN` 或 `Infinity` 会在修改前抛错。有限值仍按各方法原有规则夹取，插件自行定义参数校验。校验 CSS 颜色字面量时，可使用 [`parseCssColor()`](/plugins/colorSpace)。

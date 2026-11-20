@@ -54,12 +54,13 @@ xcolor.use(somePlugin, { /* options */ })
 
 ### Color Spaces
 
-Extend color input parsing and output formats:
+Convert between color spaces, parse color inputs, and format outputs.
 
 | Plugin | Description |
 | --- | --- |
 | [cmyk](/en/plugins/cmyk) | CMYK print color space |
 | [lab](/en/plugins/lab) | CIE Lab / LCH perceptual color space |
+| [hsv](/en/plugins/hsv) | HSV input, channel access, and output |
 | [hwb](/en/plugins/hwb) | HWB color space |
 | [oklab](/en/plugins/oklab) | Oklab / Oklch modern perceptual color space |
 | [a98Rgb](/en/plugins/a98Rgb) | Adobe RGB (1998) wide gamut |
@@ -67,25 +68,25 @@ Extend color input parsing and output formats:
 | [proPhotoRgb](/en/plugins/proPhotoRgb) | ProPhoto RGB wide gamut |
 | [rec2020](/en/plugins/rec2020) | Rec. 2020 wide gamut |
 | [xyz](/en/plugins/xyz) | CIE XYZ (D65/D50) |
-| [name](/en/plugins/name) | CSS color names (148 colors) |
+| [colorSpace](/en/plugins/colorSpace) | Preserve the original color space, convert coordinates, map gamuts, compare colors, and create multi-stop gradients |
+| [name](/en/plugins/name) | Parse CSS named colors and output matching names |
+| [percentageRgb](/en/plugins/percentageRgb) | Format RGB channels as percentages |
 
 ### Utilities
 
-Add new manipulation and query capabilities to color instances:
+Manipulate colors, build palettes and themes, and check readability.
 
 | Plugin | Description |
 | --- | --- |
-| [a11y](/en/plugins/a11y) | Accessibility (contrast, readability checks) |
-| [blend](/en/plugins/blend) | 11 layer blend modes |
+| [a11y](/en/plugins/a11y) | Contrast calculation, readability checks, contrast adjustment, and batch audits |
+| [blend](/en/plugins/blend) | Layer blending and Porter–Duff compositing |
 | [gradient](/en/plugins/gradient) | Gradient sequences and tonal range generation |
 | [harmony](/en/plugins/harmony) | Color schemes (complement, triad, tetrad, etc.) |
-| [name](/en/plugins/name) | CSS color names (148 colors) |
-| [palette](/en/plugins/palette) | Shade palette generation |
-| [percentageRgb](/en/plugins/percentageRgb) | Percentage RGB output |
-| [scale](/en/plugins/scale) | Color space interpolation and easing |
+| [palette](/en/plugins/palette) | Generate a shade palette from a base color |
+| [scale](/en/plugins/scale) | Interpolate in a chosen color space with easing and position sampling |
 | [simulate](/en/plugins/simulate) | Color vision deficiency simulation |
 | [temperature](/en/plugins/temperature) | Color temperature read and write |
-| [theme](/en/plugins/theme) | Theme color generation and CSS variable injection |
+| [theme](/en/plugins/theme) | Generate semantic colors and light and dark themes, then export or inject CSS variables |
 
 ## Custom Plugin Development
 

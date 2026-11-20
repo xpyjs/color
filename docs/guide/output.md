@@ -1,7 +1,5 @@
 # 颜色输出
 
-> HSV 方法需要注册 [hsv 插件](/plugins/hsv)。转换工具从该插件入口导入。
-
 
 xcolor 提供多种方法将颜色实例序列化为不同格式。
 
@@ -50,15 +48,6 @@ c.toHsl()          // { h: 24, s: 100, l: 50, a: 1 }
 c.toHslString()    // 'hsl(24, 100%, 50%)'
 ```
 
-## HSV
-
-```ts
-const c = xcolor('#ff6600')
-
-c.toHsv()          // { h: 24, s: 100, v: 100, a: 1 }
-c.toHsvString()    // 'hsv(24, 100%, 100%)'
-```
-
 ## 数字
 
 转换为 24 位整数（不含 alpha）：
@@ -95,7 +84,6 @@ c.toString('hex3')  // '#f00'
 c.toString('hex8')  // '#ff0000ff'
 c.toString('rgb')   // 'rgb(255, 0, 0)'
 c.toString('hsl')   // 'hsl(0, 100%, 50%)'
-c.toString('hsv')   // 'hsv(0, 100%, 100%)'
 ```
 
 `format()` 是 `toString()` 的别名。
@@ -111,7 +99,7 @@ xcolor.use(cmyk)
 xcolor('#ff0000').toString('cmyk') // 'cmyk(0%, 100%, 100%, 0%)'
 ```
 
-支持的插件格式键包括：`cmyk`、`lab`、`lch`、`oklab`、`oklch`、`hwb`、`a98Rgb`、`displayP3`、`proPhotoRgb`、`rec2020`、`xyz`、`percentageRgb`、`name` 等。
+支持的插件格式键包括：`cmyk`、`lab`、`lch`、`oklab`、`oklch`、`hsv`、`hwb`、`a98Rgb`、`displayP3`、`proPhotoRgb`、`rec2020`、`xyz`、`percentageRgb`、`name` 等。
 
 ## 内置格式键一览
 
@@ -122,4 +110,3 @@ xcolor('#ff0000').toString('cmyk') // 'cmyk(0%, 100%, 100%, 0%)'
 | `hex8` | `#ff0000ff` | 8 位含 alpha |
 | `rgb` | `rgb(255, 0, 0)` | CSS rgb/rgba |
 | `hsl` | `hsl(0, 100%, 50%)` | CSS hsl/hsla |
-| `hsv` | `hsv(0, 100%, 100%)` | HSV 格式 |

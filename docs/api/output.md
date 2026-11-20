@@ -1,7 +1,5 @@
 # 颜色输出
 
-> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
-
 
 将 `XColor` 实例转换为各种格式。所有输出方法均为纯读取操作，不修改实例。
 
@@ -72,24 +70,6 @@ xcolor('#ff0000').toHsl()  // { h: 0, s: 100, l: 50, a: 1 }
 xcolor('#ff0000').toHslString()  // 'hsl(0, 100%, 50%)'
 ```
 
-## HSV
-
-### toHsv() {#toHsv}
-
-返回 `{ h, s, v, a }` 对象。
-
-```ts
-xcolor('#ff0000').toHsv()  // { h: 0, s: 100, v: 100, a: 1 }
-```
-
-### toHsvString() {#toHsvString}
-
-返回 `hsv()` 字符串。
-
-```ts
-xcolor('#ff0000').toHsvString()  // 'hsv(0, 100%, 100%)'
-```
-
 ## 数字
 
 ### toNumber() {#toNumber}
@@ -116,7 +96,6 @@ xcolor('#0000ff').toNumber()  // 255
 xcolor('#ff0000').toString()        // '#ff0000'
 xcolor('#ff0000').toString('rgb')   // 'rgb(255, 0, 0)'
 xcolor('#ff0000').toString('hsl')   // 'hsl(0, 100%, 50%)'
-xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 ```
 
 别名：`format()`
@@ -130,7 +109,6 @@ xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 | `'hex8'` | `#ff0000ff`（强制 alpha）|
 | `'rgb'` | `rgb(255, 0, 0)` |
 | `'hsl'` | `hsl(0, 100%, 50%)` |
-| `'hsv'` | `hsv(0, 100%, 100%)` |
 
 插件可以扩展更多格式，如注册 `cmyk` 插件后可使用 `toString('cmyk')`。
 
@@ -139,8 +117,8 @@ xcolor('#ff0000').toString('hsv')   // 'hsv(0, 100%, 100%)'
 | 输出 | 精度和 alpha |
 | --- | --- |
 | `alpha()` | 返回实例保存的 alpha |
-| `toRgb()`、`toHsl()`、`toHsv()` 和对应数组 | alpha 保留实例保存的精度。`toHslArray()` 为 `[h, s, l, a]`，`toHsvArray()` 为 `[h, s, v, a]`。 |
-| RGB、HSL、HSV 字符串 | 保留实例 alpha，HSL 和 HSV 的颜色坐标在字符串中取整 |
+| `toRgb()`、`toHsl()` 和对应数组 | alpha 保留实例保存的精度。`toHslArray()` 为 `[h, s, l, a]`。 |
+| RGB、HSL 字符串 | 保留实例 alpha，HSL 的颜色坐标在字符串中取整。 |
 | Hex | RGB 与 alpha 均量化为 8 位通道 |
 | `toNumber()` | RGB 取整，输出省略 alpha |
 

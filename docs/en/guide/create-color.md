@@ -1,7 +1,5 @@
 # Create Color
 
-> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
-
 
 The `xcolor()` factory function accepts color input in various formats and returns an operable color instance.
 
@@ -42,15 +40,6 @@ xcolor('hsla(120, 100%, 50%, 0.8)')    // semi-transparent green
 
 Parameters: hue (0–360°), saturation (0–100%), lightness (0–100%).
 
-## HSV Strings
-
-```ts
-xcolor('hsv(0, 100%, 100%)')           // red
-xcolor('hsva(240, 100%, 100%, 0.5)')   // semi-transparent blue
-```
-
-Parameters: hue (0–360°), saturation (0–100%), value (0–100%).
-
 ## sRGB Strings
 
 CSS Color Level 4 `color(srgb ...)` function:
@@ -73,12 +62,9 @@ xcolor({ r: 255, g: 0, b: 0, a: 0.5 }) // semi-transparent red
 
 // HSL object
 xcolor({ h: 120, s: 100, l: 50 })      // green
-
-// HSV object
-xcolor({ h: 240, s: 100, v: 100 })     // blue
 ```
 
-RGB objects may omit channels (default 0), and alpha is always optional (default 1). HSL objects require complete `h`, `s`, `l`; HSV objects require complete `h`, `s`, `v`.
+RGB objects may omit channels (default 0), and alpha is always optional (default 1). HSL objects require complete `h`, `s`, `l`.
 
 ## Number Input
 
@@ -164,9 +150,9 @@ The table describes standalone values. Register the listed plugin before parsing
 | Hex | Core | 3, 4, 6, or 8 digits, optional `#` | — | 4 or 8 digits | `hex`, `hex3`, `hex8` emit CSS hex |
 | RGB | Core | `rgb()`, `rgba()`, numeric or percentage channels | `{ r, g, b, a? }`, omitted RGB channels use 0 | Number or percent in strings | `rgb` emits CSS RGB |
 | HSL | Core | `hsl()`, `hsla()`, hue in degrees or with `deg`, `grad`, `rad`, `turn`; S/L in 0–100 | `{ h, s, l, a? }` | Number or percent in strings | `hsl` emits CSS HSL |
-| HSV | hsv plugin | `hsv()`, `hsva()`, same hue units as HSL; S/V in 0–100 | `{ h, s, v, a? }` | Number or percent in strings | `hsv` is xcolor notation |
 | sRGB | Core | `color(srgb …)` or `srgb()`, 0–1 or percent | — | Optional slash alpha | Use the `rgb` or hex output |
 | Named colors | `name` | CSS names and `transparent` | — | `transparent` has zero alpha | `name` emits a name when available, with hex fallback |
+| HSV | `hsv` | `hsv()` or `hsva()`, angle units as in HSL and 0–100 S/V | `{ h, s, v, a? }` | Number or percent in strings | `hsv` is xcolor notation |
 | HWB | `hwb` | `hwb()`, angle units as in HSL and 0–100 W/B | — | Optional slash alpha | `hwb` emits CSS HWB |
 | CMYK | `cmyk` | `cmyk()`, 0–100 or percent | `{ c, m, y, k, a? }` | Optional alpha | `cmyk` is xcolor notation |
 | Lab / LCH | `lab` | `lab()` or `lch()`, numbers and model-specific percentages, LCH hue accepts angle units | — | Optional slash alpha | `lab`, `lch` use CSS coordinates with `whitePoint: 'D50'` |

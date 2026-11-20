@@ -1,7 +1,5 @@
 # Channel Read/Write
 
-> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
-
 
 All channel methods act as a getter when called without arguments (returning the current value) and as a setter when called with an argument (setting the value and returning `this`).
 
@@ -84,23 +82,6 @@ xcolor('#ff0000').lightness()    // 50
 xcolor('#ff0000').lightness(80)  // lighten
 ```
 
-## HSV Channels
-
-### value(val?) {#value}
-
-Read or write HSV brightness. Range 0–100.
-
-Alias: `v()`
-
-```ts
-xcolor('#ff0000').value()    // 100
-xcolor('#ff0000').value(50)  // reduce brightness
-```
-
-::: info
-`hue()` and `saturation()` are shared between HSL and HSV.
-:::
-
 ## Compound Read/Write
 
 ### rgb(r?, g?, b?) {#rgb}
@@ -119,15 +100,6 @@ Without arguments, returns a `{ h, s, l, a }` object. With arguments, sets all t
 ```ts
 xcolor('#ff0000').hsl()              // { h: 0, s: 100, l: 50, a: 1 }
 xcolor('#ff0000').hsl(210, 80, 60)   // set to a blue tone
-```
-
-### hsv(h?, s?, v?) {#hsv}
-
-Without arguments, returns a `{ h, s, v, a }` object. With arguments, sets all three HSV channels at once.
-
-```ts
-xcolor('#ff0000').hsv()               // { h: 0, s: 100, v: 100, a: 1 }
-xcolor('#ff0000').hsv(120, 100, 80)  // set to a green tone
 ```
 
 ### hex(value?) {#hex}
