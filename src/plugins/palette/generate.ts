@@ -2,7 +2,8 @@
 // Plugin: palette - Palette generation algorithms
 // =======================================
 
-import { Logger, rgbToHsv, hsvToRgb, clamp, round } from "@xpyjs/color";
+import { Logger, clamp, round } from "@xpyjs/color";
+import { rgbToHsv, hsvToRgb } from "../../utils";
 import type { XColor } from "@xpyjs/color";
 import type { Shade, PaletteType } from "./types";
 import { DEFAULT_SHADES } from "./types";

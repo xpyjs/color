@@ -1,5 +1,8 @@
 # Channel Read/Write
 
+> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
+
+
 All channel methods act as a getter when called without arguments (returning the current value) and as a setter when called with an argument (setting the value and returning `this`).
 
 ## RGB Channels

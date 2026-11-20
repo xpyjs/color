@@ -7,7 +7,7 @@ const clamp = (n: number, max: number) => Math.max(0, Math.min(max, n));
 
 // A bounded CSS literal parser, independent of global parser registrations.
 // Expressions, escapes, comments, system colors and custom profiles need a CSS context.
-export function parseCssLiteral(input: string): XColorSpaceRecord | null {
+export function parseCssLiteral(input: string, mode: "css" | "record" = "css"): XColorSpaceRecord | null {
   if (typeof input !== "string") return null;
   const text = input.trim().toLowerCase();
   if (text === "transparent") return { space: "srgb", coordinates: [0, 0, 0], alpha: 0 };
@@ -28,7 +28,7 @@ export function parseCssLiteral(input: string): XColorSpaceRecord | null {
     if (!tagged || !RGB_SPACES.includes(tagged[1])) return null;
     space = tagged[1] as XColorSpace;
     body = tagged[2];
-  } else if (["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch"].includes(name)) {
+  } else if (["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch"].includes(name) || (mode === "record" && name === "hsv")) {
     space = name === "rgb" || name === "rgba" ? "srgb" : name === "hsla" ? "hsl" : name as XColorSpace;
   } else return null;
 
@@ -58,12 +58,17 @@ export function parseCssLiteral(input: string): XColorSpaceRecord | null {
   let values: [number, number, number];
   if (name === "rgb" || name === "rgba") {
     values = [0, 1, 2].map(i => clamp(token(i, 255), 255) / 255) as typeof values;
-  } else if (space === "hsl" || space === "hwb") {
-    values = [token(0, 0, true), Math.max(0, token(1, 100)), token(2, 100)];
-    if (space === "hwb") values[2] = Math.max(0, values[2]);
+  } else if (space === "hsl" || space === "hwb" || space === "hsv") {
+    values = [token(0, 0, true), token(1, 100), token(2, 100)];
+    if (mode === "css") {
+      values[1] = Math.max(0, values[1]);
+      if (space === "hwb") values[2] = Math.max(0, values[2]);
+    }
   } else if (name !== "color") {
     const ok = space.startsWith("ok"), polar = space.endsWith("lch");
-    values = [clamp(token(0, ok ? 1 : 100), ok ? 1 : 100), token(1, ok ? .4 : polar ? 150 : 125), token(2, ok ? .4 : 125, polar)];
+    const white = ok ? 1 : 100;
+    const lightness = token(0, white);
+    values = [mode === "css" ? clamp(lightness, white) : lightness, token(1, ok ? .4 : polar ? 150 : 125), token(2, ok ? .4 : 125, polar)];
     if (polar) values[1] = Math.max(0, values[1]);
   } else values = [token(0, 1), token(1, 1), token(2, 1)];
   const alpha = missing[3] ? 0 : alphaToken === undefined ? 1 : clamp(numericToken(alphaToken, 1), 1);

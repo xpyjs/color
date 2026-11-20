@@ -1,340 +1,3 @@
-<script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useData } from 'vitepress'
-import Toast from './Toast.vue'
-
-const { lang } = useData()
-const isZh = computed(() => lang.value?.startsWith('zh'))
-
-// ─── State ───────────────────────────────────────
-const colorInput = ref('#3b82f6')
-const xcolorLib = ref<any>(null)
-const pluginModules = ref<Record<string, any>>({})
-const activePlugins = ref<Set<string>>(new Set())
-const activeTab = ref<'rgb' | 'hsl' | 'hsv' | 'cmyk' | 'lab'>('rgb')
-
-// Toast ref
-const toastRef = ref<InstanceType<typeof Toast> | null>(null)
-
-// Dice spin state
-const diceSpinning = ref(false)
-const diceDirection = ref(1) // 1 = clockwise, -1 = counter-clockwise
-
-// Manipulation sliders
-const lightenVal = ref(0)
-const darkenVal = ref(0)
-const saturateVal = ref(0)
-const spinVal = ref(0)
-
-const plugins = [
-  { id: 'harmony', label: 'harmony' },
-  { id: 'gradient', label: 'gradient' },
-  { id: 'cmyk', label: 'cmyk' },
-  { id: 'lab', label: 'lab' },
-  { id: 'name', label: 'name' },
-  { id: 'a11y', label: 'a11y' },
-  { id: 'simulate', label: 'simulate' },
-  { id: 'temperature', label: 'temperature' },
-  { id: 'blend', label: 'blend' },
-  { id: 'scale', label: 'scale' },
-]
-
-// ─── Lazy load xcolor ─────────────────────────────
-onMounted(async () => {
-  try {
-    const mod = await import('@xpyjs/color')
-    xcolorLib.value = mod.default || mod
-
-    // Preload all plugin modules
-    const mods = await Promise.all([
-      import('@xpyjs/color/plugins/harmony'),
-      import('@xpyjs/color/plugins/gradient'),
-      import('@xpyjs/color/plugins/cmyk'),
-      import('@xpyjs/color/plugins/lab'),
-      import('@xpyjs/color/plugins/name'),
-      import('@xpyjs/color/plugins/a11y'),
-      import('@xpyjs/color/plugins/simulate'),
-      import('@xpyjs/color/plugins/temperature'),
-      import('@xpyjs/color/plugins/blend'),
-      import('@xpyjs/color/plugins/scale'),
-    ])
-    const names = ['harmony', 'gradient', 'cmyk', 'lab', 'name', 'a11y', 'simulate', 'temperature', 'blend', 'scale']
-    names.forEach((n, i) => {
-      pluginModules.value[n] = mods[i].default || mods[i]
-    })
-
-    // Auto-enable harmony + gradient
-    togglePlugin('harmony')
-    togglePlugin('gradient')
-  } catch (e) {
-    console.warn('[HomeHero] Failed to load xcolor:', e)
-  }
-})
-
-function togglePlugin(id: string) {
-  if (!xcolorLib.value || !pluginModules.value[id]) return
-  if (activePlugins.value.has(id)) {
-    activePlugins.value.delete(id)
-  } else {
-    activePlugins.value.add(id)
-    xcolorLib.value.use(pluginModules.value[id])
-  }
-  activePlugins.value = new Set(activePlugins.value) // trigger reactivity
-}
-
-// ─── Color instance (reactive) ────────────────────
-const colorInstance = computed(() => {
-  if (!xcolorLib.value) return null
-  try {
-    const c = xcolorLib.value(colorInput.value)
-    if (lightenVal.value > 0) c.lighten(lightenVal.value)
-    if (darkenVal.value > 0) c.darken(darkenVal.value)
-    if (saturateVal.value > 0) c.saturate(saturateVal.value)
-    if (spinVal.value !== 0) c.spin(spinVal.value)
-    return c
-  } catch { return null }
-})
-
-const displayColor = computed(() => {
-  if (!colorInstance.value) return colorInput.value
-  try { return colorInstance.value.toHex() } catch { return colorInput.value }
-})
-
-const contrastFg = computed(() => {
-  if (!colorInstance.value) return '#fff'
-  try { return colorInstance.value.isLight() ? '#1a1a2e' : '#ffffff' } catch { return '#fff' }
-})
-
-// ─── Format values ────────────────────────────────
-const formats = computed(() => {
-  const c = colorInstance.value
-  if (!c) return []
-  const ap = activePlugins.value
-  const list: { label: string; value: string }[] = [
-    { label: 'HEX', value: safe(() => c.toHex()) },
-    { label: 'RGB', value: safe(() => c.toRgbString()) },
-    { label: 'HSL', value: safe(() => c.toHslString()) },
-    { label: 'HSV', value: safe(() => c.toHsvString()) },
-  ]
-  if (ap.has('cmyk')) list.push({ label: 'CMYK', value: safe(() => c.toCmykString()) })
-  if (ap.has('lab')) {
-    list.push({ label: 'Lab', value: safe(() => c.toLabString()) })
-    list.push({ label: 'LCH', value: safe(() => c.toLchString()) })
-  }
-  if (ap.has('name')) list.push({ label: 'Name', value: safe(() => c.toName() || '—') })
-  if (ap.has('temperature')) list.push({ label: 'Temp', value: safe(() => c.temperature() + 'K') })
-  return list
-})
-
-function safe(fn: () => string): string {
-  try { return fn() } catch { return '—' }
-}
-
-// ─── RGB / HSL / HSV sliders ──────────────────────
-const rgbSliders = computed(() => {
-  const c = colorInstance.value
-  if (!c) return { r: 128, g: 128, b: 128 }
-  try { const o = c.rgb(); return { r: o.r, g: o.g, b: o.b } } catch { return { r: 128, g: 128, b: 128 } }
-})
-
-const hslSliders = computed(() => {
-  const c = colorInstance.value
-  if (!c) return { h: 0, s: 50, l: 50 }
-  try { const o = c.hsl(); return { h: o.h, s: o.s, l: o.l } } catch { return { h: 0, s: 50, l: 50 } }
-})
-
-const hsvSliders = computed(() => {
-  const c = colorInstance.value
-  if (!c) return { h: 0, s: 50, v: 50 }
-  try { const o = c.hsv(); return { h: o.h, s: o.s, v: o.v } } catch { return { h: 0, s: 50, v: 50 } }
-})
-
-function setRgb(channel: 'r' | 'g' | 'b', val: number) {
-  if (!xcolorLib.value) return
-  const c = colorInstance.value
-  if (!c) return
-  const rgb = c.rgb()
-  rgb[channel] = val
-  colorInput.value = xcolorLib.value(`rgb(${rgb.r},${rgb.g},${rgb.b})`).toHex()
-  resetSliders()
-}
-
-function setHsl(channel: 'h' | 's' | 'l', val: number) {
-  if (!xcolorLib.value) return
-  const c = colorInstance.value
-  if (!c) return
-  const hsl = c.hsl()
-  hsl[channel] = val
-  colorInput.value = xcolorLib.value(`hsl(${hsl.h},${hsl.s}%,${hsl.l}%)`).toHex()
-  resetSliders()
-}
-
-function setHsv(channel: 'h' | 's' | 'v', val: number) {
-  if (!xcolorLib.value) return
-  const c = colorInstance.value
-  if (!c) return
-  const hsv = c.hsv()
-  hsv[channel] = val
-  colorInput.value = xcolorLib.value({ h: hsv.h, s: hsv.s, v: hsv.v }).toHex()
-  resetSliders()
-}
-
-// ─── CMYK sliders ─────────────────────────────────
-const cmykSliders = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('cmyk')) return { c: 0, m: 0, y: 0, k: 0 }
-  try { const o = c.toCmyk(); return { c: Math.round(o.c), m: Math.round(o.m), y: Math.round(o.y), k: Math.round(o.k) } } catch { return { c: 0, m: 0, y: 0, k: 0 } }
-})
-
-function setCmyk(channel: 'c' | 'm' | 'y' | 'k', val: number) {
-  if (!xcolorLib.value || !activePlugins.value.has('cmyk')) return
-  const c = colorInstance.value
-  if (!c) return
-  try {
-    const cmyk = c.toCmyk()
-    cmyk[channel] = val
-    colorInput.value = xcolorLib.value({ c: cmyk.c, m: cmyk.m, y: cmyk.y, k: cmyk.k }).toHex()
-    resetSliders()
-  } catch { /* ignore */ }
-}
-
-// ─── Lab sliders ──────────────────────────────────
-const labSliders = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('lab')) return { l: 50, a: 0, b: 0 }
-  try { const o = c.toLab(); return { l: Math.round(o.l), a: Math.round(o.a), b: Math.round(o.b) } } catch { return { l: 50, a: 0, b: 0 } }
-})
-
-function setLab(channel: 'l' | 'a' | 'b', val: number) {
-  if (!xcolorLib.value || !activePlugins.value.has('lab')) return
-  const c = colorInstance.value
-  if (!c) return
-  try {
-    const lab = c.toLab()
-    lab[channel] = val
-    colorInput.value = xcolorLib.value(`lab(${lab.l} ${lab.a} ${lab.b})`).toHex()
-    resetSliders()
-  } catch { /* ignore */ }
-}
-
-// ─── Temperature slider ──────────────────────────
-const temperatureValue = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('temperature')) return 6500
-  try { return c.temperature() } catch { return 6500 }
-})
-
-function setTemperature(kelvin: number) {
-  if (!xcolorLib.value || !activePlugins.value.has('temperature')) return
-  try {
-    colorInput.value = xcolorLib.value.temperature(kelvin).toHex()
-    resetSliders()
-  } catch { /* ignore */ }
-}
-
-// ─── Plugin visual: Gradient ─────────────────────
-const gradientTarget = ref('#f97316')
-const gradientSteps = ref(7)
-const gradientColors = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('gradient')) return []
-  try { return c.clone().gradient(gradientTarget.value, gradientSteps.value).map((s: any) => s.toHex()) } catch { return [] }
-})
-
-// ─── Plugin visual: Blend ────────────────────────
-const blendTarget = ref('#3b82f6')
-const blendModes = ['multiply', 'screen', 'overlay', 'darken', 'lighten', 'dodge', 'burn', 'hardLight', 'softLight', 'difference', 'exclusion'] as const
-const blendResults = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('blend')) return []
-  return blendModes.map(mode => {
-    try { return { mode, hex: c.clone().blend(blendTarget.value, mode).toHex() } } catch { return { mode, hex: '#000' } }
-  })
-})
-
-// ─── Plugin visual: Simulate ─────────────────────
-const simulateModes = ['protanopia', 'deuteranopia', 'tritanopia', 'grayscale'] as const
-const simulateResults = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('simulate')) return []
-  return simulateModes.map(mode => {
-    try { return { mode, hex: c.clone().simulate(mode).toHex() } } catch { return { mode, hex: '#888' } }
-  })
-})
-
-// ─── Plugin visual: A11y ─────────────────────────
-const a11yBg = ref('#ffffff')
-const a11yInfo = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('a11y')) return null
-  try {
-    const info = c.wcagLevel(a11yBg.value)
-    return info
-  } catch { return null }
-})
-
-// ─── Plugin visual: Scale ────────────────────────
-const scaleTarget = ref('#e11d48')
-const scaleSteps = ref(7)
-const scaleSpace = ref<'rgb' | 'hsl'>('rgb')
-const scaleColors = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('scale')) return []
-  try { return c.clone().scale(scaleTarget.value, { steps: scaleSteps.value, space: scaleSpace.value }).map((s: any) => s.toHex()) } catch { return [] }
-})
-
-// ─── Plugin visual: Harmony (extended) ───────────
-const harmonyMode = ref<'complement' | 'triad' | 'tetrad' | 'splitComplement' | 'analogous' | 'monochromatic'>('complement')
-const harmonyResult = computed(() => {
-  const c = colorInstance.value
-  if (!c || !activePlugins.value.has('harmony')) return []
-  try {
-    const result = c.clone()[harmonyMode.value]()
-    if (Array.isArray(result)) return result.map((s: any) => s.toHex())
-    return [result.toHex()]
-  } catch { return [] }
-})
-
-function resetSliders() {
-  lightenVal.value = 0
-  darkenVal.value = 0
-  saturateVal.value = 0
-  spinVal.value = 0
-}
-
-function randomColor() {
-  if (!xcolorLib.value) return
-  diceSpinning.value = true
-  diceDirection.value = Math.random() > 0.5 ? 1 : -1
-  colorInput.value = xcolorLib.value.random().toHex()
-  resetSliders()
-  setTimeout(() => { diceSpinning.value = false }, 600)
-}
-
-// ─── Copy to clipboard ───────────────────────────
-async function copyValue(text: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    toastRef.value?.show(
-      `${isZh.value ? '已复制' : 'Copied'}: ${text}`,
-      displayColor.value
-    )
-  } catch {
-    // fallback
-  }
-}
-
-// ─── Glow shadow ─────────────────────────────────
-const glowShadow = computed(() => {
-  const hex = displayColor.value || '#3b82f6'
-  const c = hex.replace('#', '')
-  const r = parseInt(c.substring(0, 2), 16)
-  const g = parseInt(c.substring(2, 4), 16)
-  const b = parseInt(c.substring(4, 6), 16)
-  return `0 0 60px rgba(${r},${g},${b},0.3), 0 0 120px rgba(${r},${g},${b},0.15)`
-})
-</script>
-
 <template>
   <div id="color-explorer" class="home-hero-wrapper" :style="{ '--hero-accent': displayColor }">
     <div class="home-hero-card" :style="{ boxShadow: glowShadow, borderColor: displayColor }">
@@ -634,6 +297,345 @@ const glowShadow = computed(() => {
     <Toast ref="toastRef" />
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useData } from 'vitepress'
+import Toast from './Toast.vue'
+
+const { lang } = useData()
+const isZh = computed(() => lang.value?.startsWith('zh'))
+
+// ─── State ───────────────────────────────────────
+const colorInput = ref('#3b82f6')
+const xcolorLib = ref<any>(null)
+const pluginModules = ref<Record<string, any>>({})
+const activePlugins = ref<Set<string>>(new Set())
+const activeTab = ref<'rgb' | 'hsl' | 'hsv' | 'cmyk' | 'lab'>('rgb')
+
+// Toast ref
+const toastRef = ref<InstanceType<typeof Toast> | null>(null)
+
+// Dice spin state
+const diceSpinning = ref(false)
+const diceDirection = ref(1) // 1 = clockwise, -1 = counter-clockwise
+
+// Manipulation sliders
+const lightenVal = ref(0)
+const darkenVal = ref(0)
+const saturateVal = ref(0)
+const spinVal = ref(0)
+
+const plugins = [
+  { id: 'harmony', label: 'harmony' },
+  { id: 'gradient', label: 'gradient' },
+  { id: 'cmyk', label: 'cmyk' },
+  { id: 'lab', label: 'lab' },
+  { id: 'name', label: 'name' },
+  { id: 'a11y', label: 'a11y' },
+  { id: 'simulate', label: 'simulate' },
+  { id: 'temperature', label: 'temperature' },
+  { id: 'blend', label: 'blend' },
+  { id: 'scale', label: 'scale' },
+]
+
+// ─── Lazy load xcolor ─────────────────────────────
+onMounted(async () => {
+  try {
+    const mod = await import('@xpyjs/color')
+    const hsv = await import('@xpyjs/color/plugins/hsv')
+    xcolorLib.value = mod.default || mod
+    xcolorLib.value.use(hsv.default)
+
+    // Preload all plugin modules
+    const mods = await Promise.all([
+      import('@xpyjs/color/plugins/harmony'),
+      import('@xpyjs/color/plugins/gradient'),
+      import('@xpyjs/color/plugins/cmyk'),
+      import('@xpyjs/color/plugins/lab'),
+      import('@xpyjs/color/plugins/name'),
+      import('@xpyjs/color/plugins/a11y'),
+      import('@xpyjs/color/plugins/simulate'),
+      import('@xpyjs/color/plugins/temperature'),
+      import('@xpyjs/color/plugins/blend'),
+      import('@xpyjs/color/plugins/scale'),
+    ])
+    const names = ['harmony', 'gradient', 'cmyk', 'lab', 'name', 'a11y', 'simulate', 'temperature', 'blend', 'scale']
+    names.forEach((n, i) => {
+      pluginModules.value[n] = mods[i].default || mods[i]
+    })
+
+    // Auto-enable harmony + gradient
+    togglePlugin('harmony')
+    togglePlugin('gradient')
+  } catch (e) {
+    console.warn('[HomeHero] Failed to load xcolor:', e)
+  }
+})
+
+function togglePlugin(id: string) {
+  if (!xcolorLib.value || !pluginModules.value[id]) return
+  if (activePlugins.value.has(id)) {
+    activePlugins.value.delete(id)
+  } else {
+    activePlugins.value.add(id)
+    xcolorLib.value.use(pluginModules.value[id])
+  }
+  activePlugins.value = new Set(activePlugins.value) // trigger reactivity
+}
+
+// ─── Color instance (reactive) ────────────────────
+const colorInstance = computed(() => {
+  if (!xcolorLib.value) return null
+  try {
+    const c = xcolorLib.value(colorInput.value)
+    if (lightenVal.value > 0) c.lighten(lightenVal.value)
+    if (darkenVal.value > 0) c.darken(darkenVal.value)
+    if (saturateVal.value > 0) c.saturate(saturateVal.value)
+    if (spinVal.value !== 0) c.spin(spinVal.value)
+    return c
+  } catch { return null }
+})
+
+const displayColor = computed(() => {
+  if (!colorInstance.value) return colorInput.value
+  try { return colorInstance.value.toHex() } catch { return colorInput.value }
+})
+
+const contrastFg = computed(() => {
+  if (!colorInstance.value) return '#fff'
+  try { return colorInstance.value.isLight() ? '#1a1a2e' : '#ffffff' } catch { return '#fff' }
+})
+
+// ─── Format values ────────────────────────────────
+const formats = computed(() => {
+  const c = colorInstance.value
+  if (!c) return []
+  const ap = activePlugins.value
+  const list: { label: string; value: string }[] = [
+    { label: 'HEX', value: safe(() => c.toHex()) },
+    { label: 'RGB', value: safe(() => c.toRgbString()) },
+    { label: 'HSL', value: safe(() => c.toHslString()) },
+    { label: 'HSV', value: safe(() => c.toHsvString()) },
+  ]
+  if (ap.has('cmyk')) list.push({ label: 'CMYK', value: safe(() => c.toCmykString()) })
+  if (ap.has('lab')) {
+    list.push({ label: 'Lab', value: safe(() => c.toLabString()) })
+    list.push({ label: 'LCH', value: safe(() => c.toLchString()) })
+  }
+  if (ap.has('name')) list.push({ label: 'Name', value: safe(() => c.toName() || '—') })
+  if (ap.has('temperature')) list.push({ label: 'Temp', value: safe(() => c.temperature() + 'K') })
+  return list
+})
+
+function safe(fn: () => string): string {
+  try { return fn() } catch { return '—' }
+}
+
+// ─── RGB / HSL / HSV sliders ──────────────────────
+const rgbSliders = computed(() => {
+  const c = colorInstance.value
+  if (!c) return { r: 128, g: 128, b: 128 }
+  try { const o = c.rgb(); return { r: o.r, g: o.g, b: o.b } } catch { return { r: 128, g: 128, b: 128 } }
+})
+
+const hslSliders = computed(() => {
+  const c = colorInstance.value
+  if (!c) return { h: 0, s: 50, l: 50 }
+  try { const o = c.hsl(); return { h: o.h, s: o.s, l: o.l } } catch { return { h: 0, s: 50, l: 50 } }
+})
+
+const hsvSliders = computed(() => {
+  const c = colorInstance.value
+  if (!c) return { h: 0, s: 50, v: 50 }
+  try { const o = c.hsv(); return { h: o.h, s: o.s, v: o.v } } catch { return { h: 0, s: 50, v: 50 } }
+})
+
+function setRgb(channel: 'r' | 'g' | 'b', val: number) {
+  if (!xcolorLib.value) return
+  const c = colorInstance.value
+  if (!c) return
+  const rgb = c.rgb()
+  rgb[channel] = val
+  colorInput.value = xcolorLib.value(`rgb(${rgb.r},${rgb.g},${rgb.b})`).toHex()
+  resetSliders()
+}
+
+function setHsl(channel: 'h' | 's' | 'l', val: number) {
+  if (!xcolorLib.value) return
+  const c = colorInstance.value
+  if (!c) return
+  const hsl = c.hsl()
+  hsl[channel] = val
+  colorInput.value = xcolorLib.value(`hsl(${hsl.h},${hsl.s}%,${hsl.l}%)`).toHex()
+  resetSliders()
+}
+
+function setHsv(channel: 'h' | 's' | 'v', val: number) {
+  if (!xcolorLib.value) return
+  const c = colorInstance.value
+  if (!c) return
+  const hsv = c.hsv()
+  hsv[channel] = val
+  colorInput.value = xcolorLib.value({ h: hsv.h, s: hsv.s, v: hsv.v }).toHex()
+  resetSliders()
+}
+
+// ─── CMYK sliders ─────────────────────────────────
+const cmykSliders = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('cmyk')) return { c: 0, m: 0, y: 0, k: 0 }
+  try { const o = c.toCmyk(); return { c: Math.round(o.c), m: Math.round(o.m), y: Math.round(o.y), k: Math.round(o.k) } } catch { return { c: 0, m: 0, y: 0, k: 0 } }
+})
+
+function setCmyk(channel: 'c' | 'm' | 'y' | 'k', val: number) {
+  if (!xcolorLib.value || !activePlugins.value.has('cmyk')) return
+  const c = colorInstance.value
+  if (!c) return
+  try {
+    const cmyk = c.toCmyk()
+    cmyk[channel] = val
+    colorInput.value = xcolorLib.value({ c: cmyk.c, m: cmyk.m, y: cmyk.y, k: cmyk.k }).toHex()
+    resetSliders()
+  } catch { /* ignore */ }
+}
+
+// ─── Lab sliders ──────────────────────────────────
+const labSliders = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('lab')) return { l: 50, a: 0, b: 0 }
+  try { const o = c.toLab(); return { l: Math.round(o.l), a: Math.round(o.a), b: Math.round(o.b) } } catch { return { l: 50, a: 0, b: 0 } }
+})
+
+function setLab(channel: 'l' | 'a' | 'b', val: number) {
+  if (!xcolorLib.value || !activePlugins.value.has('lab')) return
+  const c = colorInstance.value
+  if (!c) return
+  try {
+    const lab = c.toLab()
+    lab[channel] = val
+    colorInput.value = xcolorLib.value(`lab(${lab.l} ${lab.a} ${lab.b})`).toHex()
+    resetSliders()
+  } catch { /* ignore */ }
+}
+
+// ─── Temperature slider ──────────────────────────
+const temperatureValue = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('temperature')) return 6500
+  try { return c.temperature() } catch { return 6500 }
+})
+
+function setTemperature(kelvin: number) {
+  if (!xcolorLib.value || !activePlugins.value.has('temperature')) return
+  try {
+    colorInput.value = xcolorLib.value.temperature(kelvin).toHex()
+    resetSliders()
+  } catch { /* ignore */ }
+}
+
+// ─── Plugin visual: Gradient ─────────────────────
+const gradientTarget = ref('#f97316')
+const gradientSteps = ref(7)
+const gradientColors = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('gradient')) return []
+  try { return c.clone().gradient(gradientTarget.value, gradientSteps.value).map((s: any) => s.toHex()) } catch { return [] }
+})
+
+// ─── Plugin visual: Blend ────────────────────────
+const blendTarget = ref('#3b82f6')
+const blendModes = ['multiply', 'screen', 'overlay', 'darken', 'lighten', 'dodge', 'burn', 'hardLight', 'softLight', 'difference', 'exclusion'] as const
+const blendResults = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('blend')) return []
+  return blendModes.map(mode => {
+    try { return { mode, hex: c.clone().blend(blendTarget.value, mode).toHex() } } catch { return { mode, hex: '#000' } }
+  })
+})
+
+// ─── Plugin visual: Simulate ─────────────────────
+const simulateModes = ['protanopia', 'deuteranopia', 'tritanopia', 'grayscale'] as const
+const simulateResults = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('simulate')) return []
+  return simulateModes.map(mode => {
+    try { return { mode, hex: c.clone().simulate(mode).toHex() } } catch { return { mode, hex: '#888' } }
+  })
+})
+
+// ─── Plugin visual: A11y ─────────────────────────
+const a11yBg = ref('#ffffff')
+const a11yInfo = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('a11y')) return null
+  try {
+    const info = c.wcagLevel(a11yBg.value)
+    return info
+  } catch { return null }
+})
+
+// ─── Plugin visual: Scale ────────────────────────
+const scaleTarget = ref('#e11d48')
+const scaleSteps = ref(7)
+const scaleSpace = ref<'rgb' | 'hsl'>('rgb')
+const scaleColors = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('scale')) return []
+  try { return c.clone().scale(scaleTarget.value, { steps: scaleSteps.value, space: scaleSpace.value }).map((s: any) => s.toHex()) } catch { return [] }
+})
+
+// ─── Plugin visual: Harmony (extended) ───────────
+const harmonyMode = ref<'complement' | 'triad' | 'tetrad' | 'splitComplement' | 'analogous' | 'monochromatic'>('complement')
+const harmonyResult = computed(() => {
+  const c = colorInstance.value
+  if (!c || !activePlugins.value.has('harmony')) return []
+  try {
+    const result = c.clone()[harmonyMode.value]()
+    if (Array.isArray(result)) return result.map((s: any) => s.toHex())
+    return [result.toHex()]
+  } catch { return [] }
+})
+
+function resetSliders() {
+  lightenVal.value = 0
+  darkenVal.value = 0
+  saturateVal.value = 0
+  spinVal.value = 0
+}
+
+function randomColor() {
+  if (!xcolorLib.value) return
+  diceSpinning.value = true
+  diceDirection.value = Math.random() > 0.5 ? 1 : -1
+  colorInput.value = xcolorLib.value.random().toHex()
+  resetSliders()
+  setTimeout(() => { diceSpinning.value = false }, 600)
+}
+
+// ─── Copy to clipboard ───────────────────────────
+async function copyValue(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    toastRef.value?.show(
+      `${isZh.value ? '已复制' : 'Copied'}: ${text}`,
+      displayColor.value
+    )
+  } catch {
+    // fallback
+  }
+}
+
+// ─── Glow shadow ─────────────────────────────────
+const glowShadow = computed(() => {
+  const hex = displayColor.value || '#3b82f6'
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0, 2), 16)
+  const g = parseInt(c.substring(2, 4), 16)
+  const b = parseInt(c.substring(4, 6), 16)
+  return `0 0 60px rgba(${r},${g},${b},0.3), 0 0 120px rgba(${r},${g},${b},0.15)`
+})
+</script>
 
 <style scoped>
 .home-hero-wrapper {

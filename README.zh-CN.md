@@ -1,4 +1,7 @@
 <p align="center">
+
+> HSV 输入和方法现需先注册 `@xpyjs/color/plugins/hsv`，执行 `xcolor.use(hsvPlugin)`。HSV 转换工具函数也改从该插件入口导入。
+
   <img src=".github/assets/logo.png" alt="xcolor logo" width="120" height="120" />
 </p>
 
@@ -15,7 +18,7 @@
 </p>
 
 <p align="center">
-  一个轻量（核心 gzip 后约 <b>6.1 kB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
+  一个轻量（核心 gzip 后约 <b>5.7 kB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
 </p>
 
 <p align="center">
@@ -30,7 +33,7 @@
 
 ## ✨ 特性
 
-- 🪶 **轻量核心** — 压缩后约 19.3 kB / gzip 约 6.1 kB，零运行时依赖；可选插件体积另计
+- 🪶 **轻量核心** — 压缩后约 17.5 kB / gzip 约 5.7 kB，零运行时依赖；可选插件体积另计
 - 🔌 **插件系统** — 类似 dayjs 的扩展机制，按需加载
 - 🎯 **TypeScript 优先** — 完整的类型定义和智能提示
 - ⛓️ **链式 API** — 所有操作支持流畅的链式调用

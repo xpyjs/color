@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 // =======================================
 // Tests: Core xcolor class
 // =======================================

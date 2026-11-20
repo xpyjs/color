@@ -1,6 +1,6 @@
 # 快速开始
 
-`@xpyjs/color`（简称 **xcolor**）是一个轻量、快速、零依赖的 JavaScript / TypeScript 颜色操作库。核心体积约 4 KB（gzip），支持链式调用、Getter/Setter 合一设计，以及灵活的插件系统。
+`@xpyjs/color`（简称 **xcolor**）是一个轻量、快速、零依赖的 JavaScript / TypeScript 颜色操作库。核心体积约 5.6 kB（gzip，本地 Node 18 实测），支持链式调用、Getter/Setter 合一设计，以及灵活的插件系统。
 
 ## 环境要求
 

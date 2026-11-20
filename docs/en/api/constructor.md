@@ -1,5 +1,8 @@
 # Constructor & Factory
 
+> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
+
+
 ## Strict mode and structured errors
 
 `xcolor(input, { strict: true })` throws `XColorError` for unparseable input, invalid-instance copies and explicit null. Omitted input still creates black. `xcolor.config({ strict: true })` sets the default; instances may override with false. Strict core numeric setters/adjustments reject NaN/Infinity before mutation, while finite out-of-range values retain normal clamping. Clones inherit strict mode; failed hex replacement preserves state and validity.

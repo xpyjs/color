@@ -8,7 +8,7 @@
 import { xcolor, XColor, registerStringFormatter } from "./core";
 import {
   clamp, round, clampByte, normalizeSteps, rgbaToHex,
-  rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb,
+  rgbToHsl, hslToRgb,
   relativeLuminance, contrastRatio, defineMethod, Logger
 } from "./utils";
 import {
@@ -21,6 +21,6 @@ export default Object.assign(xcolor, {
   parseColor, registerColorParser, parseFunctionalChannels,
   parseRgbChannel, parseAlphaChannel, parsePercent, parseHue,
   clamp, round, clampByte, normalizeSteps, rgbaToHex,
-  rgbToHsl, hslToRgb, rgbToHsv, hsvToRgb,
+  rgbToHsl, hslToRgb,
   relativeLuminance, contrastRatio, defineMethod, Logger
 });

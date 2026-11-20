@@ -2,7 +2,7 @@
 // Core XColor class - @xpyjs/color
 // =======================================
 
-import type { RGBA, HSLA, HSVA, XColorPlugin } from "./types";
+import type { RGBA, HSLA, XColorPlugin } from "./types";
 import {
   clamp,
   round,
@@ -10,8 +10,6 @@ import {
   rgbaToHex,
   rgbToHsl,
   hslToRgb,
-  rgbToHsv,
-  hsvToRgb,
   relativeLuminance,
   contrastRatio
 } from "./utils";
@@ -32,7 +30,6 @@ let _globalOpts: XColorOptions = {};
 export interface XColorInputObjectMap {
   rgba: Partial<RGBA> & ({ r: number } | { g: number } | { b: number });
   hsla: Omit<HSLA, "a"> & { a?: number };
-  hsva: Omit<HSVA, "a"> & { a?: number };
 }
 
 /**
@@ -105,8 +102,6 @@ export interface XColorStringFormatMap {
   rgb: true;
   /** CSS `hsl()` / `hsla()` functional notation, e.g. `hsl(0, 100%, 50%)`. */
   hsl: true;
-  /** `hsv()` / `hsva()` functional notation, e.g. `hsv(0, 100%, 100%)`. */
-  hsv: true;
 }
 
 /**
@@ -479,36 +474,6 @@ export class XColor {
     return arguments.length ? this.lightness(value!) : this.lightness();
   }
 
-  /**
-   * Get the value(brightness) value (0-100) in HSV color space.
-   * @returns Value percentage
-   * @example xcolor('#ff0000').value() // 100
-   */
-  value(): number;
-  /**
-   * Set the value(brightness) value (0-100). Values are clamped.
-   * @param value - New value percentage (0-100)
-   * @returns Current instance
-   * @example xcolor('#800000').value(100).toHex() // '#ff0000'
-   */
-  value(value: number): this;
-  value(value?: number): number | this {
-    this._checkNumbers(value);
-    if (value === undefined) return rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal).v;
-    return this._applyCS(rgbToHsv, hsvToRgb, ["h", "s", "v"], hsv => { hsv.v = clamp(value, 0, 100); });
-  }
-
-  /**
-   * Alias for {@link value}. Get or set the value (0-100).
-   * @example xcolor('#ff0000').v() // 100
-   * @example xcolor('#800000').v(100).toHex() // '#ff0000'
-   */
-  v(): number;
-  v(value: number): this;
-  v(value?: number): number | this {
-    return arguments.length ? this.value(value!) : this.value();
-  }
-
   // =======================================
   // Compound Getter/Setter Methods
   // =======================================
@@ -568,41 +533,6 @@ export class XColor {
       ((h % 360) + 360) % 360,
       clamp(s ?? current.s, 0, 100),
       clamp(l ?? current.l, 0, 100),
-      this._opts.useDecimal
-    );
-    this._r = this._roundCh(c.r);
-    this._g = this._roundCh(c.g);
-    this._b = this._roundCh(c.b);
-    if (a !== undefined) this._a = clamp(a, 0, 1);
-    return this;
-  }
-
-  /**
-   * Get the HSV(A) object.
-   * @returns `{ h, s, v, a }` (same as {@link toHsv()})
-    * @alias toHsv
-   * @example xcolor('#ff0000').hsv() // { h: 0, s: 100, v: 100, a: 1 }
-   */
-  hsv(): HSVA;
-  /**
-   * Set the HSV(A) channels.
-   * @param h Hue (0-360)
-   * @param s Saturation (0-100)
-   * @param v Value (0-100)
-   * @param a Alpha (0-1)
-   * @returns Current instance
-   * @example xcolor('#000').hsv(0, 100, 100).toHex() // '#ff0000'
-   */
-  hsv(h: number, s: number, v: number, a?: number): this;
-  hsv(h?: number, s?: number, v?: number, a?: number): HSVA | this {
-    this._checkNumbers(h,s,v,a);
-    if (h === undefined) return this.toHsv();
-    if (!Number.isFinite(h)) return this;
-    const current = this.toHsv();
-    const c = hsvToRgb(
-      ((h % 360) + 360) % 360,
-      clamp(s ?? current.s, 0, 100),
-      clamp(v ?? current.v, 0, 100),
       this._opts.useDecimal
     );
     this._r = this._roundCh(c.r);
@@ -771,48 +701,6 @@ export class XColor {
   }
 
   /**
-   * Serialize the color to an {@link HSVA} object `{ h, s, v, a }`.
-   * Alpha is rounded to 2 decimal places.
-   * @returns HSVA color object
-   * @example
-   * ```ts
-   * xcolor('#ff0000').toHsv()   // { h: 0, s: 100, v: 100, a: 1 }
-   * xcolor('#800000').toHsv()   // { h: 0, s: 100, v: 50, a: 1 }
-   * ```
-   */
-  toHsv(): HSVA {
-    const _hsv = rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal);
-    return { h: _hsv.h, s: _hsv.s, v: _hsv.v, a: round(this._a, 2) };
-  }
-
-  /**
-   * Serialize as [hue, saturation, value, alpha], with the same precision as toHsv().
-   * @returns HSV channels and alpha
-   */
-  toHsvArray(): [number, number, number, number] {
-    const { h, s, v, a } = this.toHsv();
-    return [h, s, v, a];
-  }
-
-  /**
-   * Serialize the color to an `hsv()` or `hsva()` string.
-   * Alpha is omitted (uses `hsv()`) when the color is fully opaque.
-   * @returns Color string in HSV notation
-   * @example
-   * ```ts
-   * xcolor('#ff0000').toHsvString()             // 'hsv(0, 100%, 100%)'
-   * xcolor('rgba(255,0,0,0.5)').toHsvString()   // 'hsva(0, 100%, 100%, 0.5)'
-   * ```
-   */
-  toHsvString(): string {
-    const _hsv = rgbToHsv(this._r, this._g, this._b, this._opts.useDecimal);
-    if (this._a === 1) {
-      return "hsv(" + round(_hsv.h) + ", " + round(_hsv.s) + "%, " + round(_hsv.v) + "%)";
-    }
-    return "hsva(" + round(_hsv.h) + ", " + round(_hsv.s) + "%, " + round(_hsv.v) + "%, " + this._a + ")";
-  }
-
-  /**
    * Serialize the color to a 24-bit integer (`0xRRGGBB`).
    * The alpha channel is **not** included.
    * @returns Integer representation of the RGB channels
@@ -857,7 +745,6 @@ export class XColor {
    * c.toString('hex8')   // '#ff0000ff'
    * c.toString('rgb')    // 'rgb(255, 0, 0)'
    * c.toString('hsl')    // 'hsl(0, 100%, 50%)'
-   * c.toString('hsv')    // 'hsv(0, 100%, 100%)'
    * ```
    */
   toString(format?: XColorStringFormat): string {
@@ -879,8 +766,6 @@ export class XColor {
         return this.toRgbString();
       case "hsl":
         return this.toHslString();
-      case "hsv":
-        return this.toHsvString();
       default:
         return this._a < 1 ? this.toRgbString() : this.toHex();
     }
@@ -1323,7 +1208,7 @@ export class XColor {
    * ```
    */
   contrast(other: XColorInput): number {
-    const otherColor = other instanceof XColor ? other : new XColor(other);
+    const otherColor = other instanceof XColor ? other : new XColor(other, this._opts);
     if (!this._valid || !otherColor._valid) throw Logger.createError("Invalid contrast color","INVALID_COLOR","contrast");
     return contrastRatio(
       relativeLuminance(this._r, this._g, this._b),
@@ -1347,7 +1232,7 @@ export class XColor {
    * ```
    */
   equals(other: XColorInput): boolean {
-    const otherColor = other instanceof XColor ? other : new XColor(other);
+    const otherColor = other instanceof XColor ? other : new XColor(other, { useDecimal: this._opts.useDecimal, strict: false });
     return (
       this._valid && otherColor._valid &&
       this._r === otherColor._r &&

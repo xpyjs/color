@@ -24,8 +24,6 @@ export {
   rgbaToHex,
   rgbToHsl,
   hslToRgb,
-  rgbToHsv,
-  hsvToRgb,
   relativeLuminance,
   contrastRatio,
   defineMethod,

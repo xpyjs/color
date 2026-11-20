@@ -3,6 +3,10 @@ const structuredError: xcolor.XColorError = xcolor.Logger.createError("example")
 const errorCode: xcolor.XColorErrorCode = structuredError.code;
 xcolor("#f00",{strict:true});
 import lab = require("@xpyjs/color/plugins/lab");
+import hsv = require("@xpyjs/color/plugins/hsv");
+xcolor.use(hsv);
+xcolor({ h: 120, s: 100, v: 100 }).value(50).toString("hsv");
+hsv.rgbToHsv(0, 255, 0);
 import palette = require("@xpyjs/color/plugins/palette");
 import theme = require("@xpyjs/color/plugins/theme");
 import colorSpace = require("@xpyjs/color/plugins/colorSpace");

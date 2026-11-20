@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 // =======================================
 // Tests: UMD entry (src/umd.ts)
 // Validates that the UMD bundle correctly exposes
@@ -92,8 +95,6 @@ describe("UMD export", () => {
     it("should export color space conversions", () => {
       expect(typeof exp.rgbToHsl).toBe("function");
       expect(typeof exp.hslToRgb).toBe("function");
-      expect(typeof exp.rgbToHsv).toBe("function");
-      expect(typeof exp.hsvToRgb).toBe("function");
     });
 
     it("should export luminance/contrast functions", () => {

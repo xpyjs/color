@@ -1,5 +1,8 @@
 # 构造与工厂
 
+> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
+
+
 ## 严格模式与错误
 
 `xcolor(input, { strict: true })` 在输入无法解析、复制无效实例或显式传 null 时抛出 `XColorError`。无参数仍创建黑色。也可通过 `xcolor.config({ strict: true })` 设置默认，实例可显式传 false。严格模式检查核心数值 setter 和调整参数：NaN/Infinity 在修改前抛错；有限越界值仍按原规则夹取。克隆保留 strict 选项，hex 替换失败保留原值与有效状态。

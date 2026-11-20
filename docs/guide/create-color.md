@@ -1,5 +1,8 @@
 # 创建颜色
 
+> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
+
+
 `xcolor()` 工厂函数接受多种格式的颜色输入，返回一个可操作的颜色实例。
 
 ## Hex 字符串
@@ -161,7 +164,7 @@ xcolor({ c: 0, m: 100, y: 100, k: 0 }) // CMYK 对象
 | Hex | 核心 | 3、4、6、8 位十六进制，可省略 `#` | — | 4、8 位格式支持 | `hex`、`hex3`、`hex8` 输出 CSS Hex |
 | RGB | 核心 | `rgb()`、`rgba()`，通道用数字或百分比 | `{ r, g, b, a? }`，缺少的 RGB 通道为 0 | 字符串支持数字或百分比 | `rgb` 输出 CSS RGB |
 | HSL | 核心 | `hsl()`、`hsla()`，色相支持度数及 `deg`、`grad`、`rad`、`turn`，S/L 为 0–100 | `{ h, s, l, a? }` | 字符串支持数字或百分比 | `hsl` 输出 CSS HSL |
-| HSV | 核心 | `hsv()`、`hsva()`，角度同 HSL，S/V 为 0–100 | `{ h, s, v, a? }` | 字符串支持数字或百分比 | `hsv` 是库内写法 |
+| HSV | hsv 插件 | `hsv()`、`hsva()`，角度同 HSL，S/V 为 0–100 | `{ h, s, v, a? }` | 字符串支持数字或百分比 | `hsv` 是库内写法 |
 | sRGB | 核心 | `color(srgb …)` 或 `srgb()`，0–1 或百分比 | — | 支持斜线 alpha | 使用 `rgb` 或 Hex 输出 |
 | 命名色 | `name` | CSS 命名色与 `transparent` | — | `transparent` 的 alpha 为 0 | `name` 可输出名称，无法匹配时回退到 Hex |
 | HWB | `hwb` | `hwb()`，角度同 HSL，W/B 为 0–100 | — | 支持斜线 alpha | `hwb` 输出 CSS HWB |

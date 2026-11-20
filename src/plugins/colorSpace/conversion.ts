@@ -1,5 +1,6 @@
 import { D50_TO_D65, D65_TO_D50, SRGB_TO_XYZ, XYZ_TO_SRGB, mat3Mul, linearToSrgb, srgbToLinear, rgbToOklab, oklabToRgb, type Mat3 } from "../../color-math";
-import { hslToRgb, hsvToRgb, rgbToHsl, rgbToHsv } from "@xpyjs/color";
+import { hslToRgb, rgbToHsl } from "@xpyjs/color";
+import { hsvToRgb, rgbToHsv } from "../../utils";
 
 export type Coordinates = [number, number, number];
 export type RGBSpace = "srgb" | "srgb-linear" | "display-p3" | "a98-rgb" | "prophoto-rgb" | "rec2020";
@@ -57,8 +58,8 @@ function polar([l,a,b]: readonly number[]): Coordinates {
 export function toXyzD65(space: ColorSpace, coordinates: readonly number[]): Coordinates {
   if (space === "hwb") {
     const hue = ((coordinates[0] % 360) + 360) % 360;
-    const w = Math.max(0, coordinates[1])/100;
-    const b = Math.max(0, coordinates[2])/100;
+    const w = coordinates[1]/100;
+    const b = coordinates[2]/100;
     const pure = hslToRgb(hue,100,50,true);
     const rgb = [pure.r,pure.g,pure.b].map(v=>w+b >= 1 ? w/(w+b)*255 : v*(1-w-b)+w*255);
     return mul(SRGB_TO_XYZ, rgb.map(srgbToLinear));

@@ -6,6 +6,30 @@ import { parseWideColor } from "../../src/plugins/displayP3";
 const spaces: XColorSpace[] = ["srgb","srgb-linear","display-p3","a98-rgb","prophoto-rgb","rec2020","xyz","xyz-d65","xyz-d50","lab","lch","oklab","oklch"];
 
 describe("xcolor coordinate records", () => {
+  it.each([0, 1, 2, 3])("round-trips HSV missing component %i", index => {
+    const missing = [false, false, false, false] as [boolean, boolean, boolean, boolean];
+    missing[index] = true;
+    const record = { space: "hsv" as const, coordinates: [0, 100, 100] as [number, number, number], alpha: 1, missing };
+    const parsed = parseColorSpace(formatColorSpace(record))!;
+    expect(parsed.missing).toEqual(missing);
+    expect(parsed.space).toBe("hsv");
+    expect(parsed.alpha).toBe(index === 3 ? 0 : 1);
+    expect(parsed.coordinates).toEqual(record.coordinates.map((value, i) => missing[i] ? 0 : value));
+    xcolor.use(colorSpace);
+    const instance = xcolor(formatColorSpace(record), { strict: true });
+    expect(instance.equals(fromColorSpace(parsed))).toBe(true);
+  });
+  it("preserves wide-gamut colors through extended HWB coordinates", () => {
+    const original = parseColorSpace("color(display-p3 1 0 0)")!;
+    const hwb = convertColorSpace(original, "hwb");
+    expect(hwb.coordinates[1]).toBeLessThan(0);
+    const serialized = formatColorSpace({ ...hwb, missing: [false, false, false, true] });
+    const parsed = parseColorSpace(serialized)!;
+    expect(parsed.missing).toEqual([false, false, false, true]);
+    hwb.coordinates.forEach((value, i) => expect(parsed.coordinates[i]).toBeCloseTo(value, 10));
+    const restored = convertColorSpace(hwb, "display-p3");
+    restored.coordinates.forEach((value, index) => expect(value).toBeCloseTo(original.coordinates[index], 6));
+  });
   it.each(["lab", "oklab", "hsl", "hsv", "hwb", "display-p3", "xyz-d50"] as const)("accepts explicitly tagged %s objects and chainable replacement", space => {
     xcolor.use(colorSpace);
     const source = xcolor("#f00").alpha(.1234).toColorSpace(space);

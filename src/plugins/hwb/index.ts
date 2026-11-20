@@ -4,15 +4,8 @@ import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 // =======================================
 
 import type { XColorPlugin } from "@xpyjs/color";
-import {
-  registerStringFormatter,
-  registerColorParser,
-  parseFunctionalChannels,
-  parseAlphaChannel,
-  defineMethod,
-  hsvToRgb,
-  rgbToHsl
-} from "@xpyjs/color";
+import { registerStringFormatter, registerColorParser, parseFunctionalChannels, parseAlphaChannel, defineMethod, rgbToHsl } from "@xpyjs/color";
+import { hsvToRgb } from "../../utils";
 
 /**
  * HWB (Hue, Whiteness, Blackness) color representation.

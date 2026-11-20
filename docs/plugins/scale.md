@@ -15,7 +15,7 @@ xcolor.use(scalePlugin)
 
 ## 方法
 
-<SvgScaleComparison />
+<ScaleExplorer />
 
 ### scale(to, options?)
 
@@ -30,6 +30,7 @@ xcolor.use(scalePlugin)
 interface ScaleOptions {
   steps?: number      // 步数，默认 5（≥ 2）
   space?: ScaleSpace  // 插值色彩空间
+  premultiplyAlpha?: boolean // default false
   easing?: ScaleEasing // 缓动函数
 }
 ```
@@ -39,19 +40,18 @@ interface ScaleOptions {
 | 值 | 说明 |
 | --- | --- |
 | `'rgb'` | RGB 线性插值（默认）|
+| `'srgb-linear'` | Linear-light sRGB |
+| `'oklab'` | OKLab |
 | `'hsl'` | HSL 插值 |
-| `'hsv'` | HSV 插值 |
-| `'lab'` | CIE Lab 插值（需安装 lab 插件）|
-| `'lch'` | CIE LCH 插值 |
 
 #### 缓动函数（ScaleEasing）
 
 | 值 | 说明 |
 | --- | --- |
 | `'linear'` | 线性（默认）|
-| `'ease-in'` | 缓入 |
-| `'ease-out'` | 缓出 |
-| `'ease-in-out'` | 缓入缓出 |
+| `'easeIn'` | 缓入 |
+| `'easeOut'` | 缓出 |
+| `'easeInOut'` | 缓入缓出 |
 
 **返回值**：`XColor[]`
 
@@ -59,7 +59,7 @@ interface ScaleOptions {
 xcolor('#ff0000').scale('#0000ff', {
   steps: 7,
   space: 'hsl',
-  easing: 'ease-in-out'
+  easing: 'easeInOut'
 }).map(c => c.toHex())
 ```
 
@@ -84,13 +84,13 @@ xcolor('#ff0000').at('#0000ff', 0.5, { space: 'hsl' }).toHex()  // 通过 HSL �
 
 RGB 插值可能产生"浑浊"的中间色，HSL 插值会沿色轮过渡：
 
-<SvgScaleSpaces />
+
 
 ```ts
 // RGB：红→蓝 中间是紫灰色
 xcolor('#ff0000').scale('#0000ff', { space: 'rgb', steps: 5 })
 
-// HSL：红→蓝 中间经过绿色
+// HSL：红→蓝 中间经过品红
 xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 

@@ -1,5 +1,8 @@
 # Getter / Setter
 
+> Register the [hsv plugin](/en/plugins/hsv) for HSV methods. Import HSV conversion utilities from that plugin entry.
+
+
 Channel methods in xcolor serve as both getter and setter — call without arguments to read, with arguments to set:
 
 ```ts

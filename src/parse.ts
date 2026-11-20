@@ -4,7 +4,7 @@
 
 import type { RGBA } from "./types";
 import type { XColorInputNative } from "./core";
-import { clamp, round, hslToRgb, hsvToRgb, Logger } from "./utils";
+import { clamp, round, hslToRgb, Logger } from "./utils";
 import { pluginInstallation, trackRegistration } from "./registration";
 import { hueToken, numericToken } from "./tokens";
 
@@ -227,12 +227,6 @@ const MODELS: ColorModel[] = [
     names: ["hsl", "hsla"],
     parsers: [hueToken, percentCh, percentCh],
     toRgb: (h, s, l) => hslToRgb(h, s, l, true)
-  },
-  {
-    keys: ["h", "s", "v"],
-    names: ["hsv", "hsva"],
-    parsers: [hueToken, percentCh, percentCh],
-    toRgb: (h, s, v) => hsvToRgb(h, s, v, true)
   },
   {
     names: ["srgb"],

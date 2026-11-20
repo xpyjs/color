@@ -15,7 +15,7 @@ xcolor.use(scalePlugin)
 
 ## Methods
 
-<SvgScaleComparison />
+<ScaleExplorer />
 
 ### scale(to, options?)
 
@@ -30,6 +30,7 @@ Generate an interpolation sequence from the current color to the target color.
 interface ScaleOptions {
   steps?: number      // Number of steps, default 5 (≥ 2)
   space?: ScaleSpace  // Interpolation color space
+  premultiplyAlpha?: boolean // default false
   easing?: ScaleEasing // Easing function
 }
 ```
@@ -39,19 +40,18 @@ interface ScaleOptions {
 | Value | Description |
 | --- | --- |
 | `'rgb'` | RGB linear interpolation (default) |
+| `'srgb-linear'` | Linear-light sRGB |
+| `'oklab'` | OKLab |
 | `'hsl'` | HSL interpolation |
-| `'hsv'` | HSV interpolation |
-| `'lab'` | CIE Lab interpolation (requires lab plugin) |
-| `'lch'` | CIE LCH interpolation |
 
 #### Easing Function (ScaleEasing)
 
 | Value | Description |
 | --- | --- |
 | `'linear'` | Linear (default) |
-| `'ease-in'` | Ease in |
-| `'ease-out'` | Ease out |
-| `'ease-in-out'` | Ease in-out |
+| `'easeIn'` | Ease in |
+| `'easeOut'` | Ease out |
+| `'easeInOut'` | Ease in-out |
 
 **Return value**: `XColor[]`
 
@@ -59,7 +59,7 @@ interface ScaleOptions {
 xcolor('#ff0000').scale('#0000ff', {
   steps: 7,
   space: 'hsl',
-  easing: 'ease-in-out'
+  easing: 'easeInOut'
 }).map(c => c.toHex())
 ```
 
@@ -84,13 +84,13 @@ xcolor('#ff0000').at('#0000ff', 0.5, { space: 'hsl' }).toHex()  // Interpolated 
 
 RGB interpolation may produce "muddy" intermediate colors, while HSL interpolation transitions along the color wheel:
 
-<SvgScaleSpaces />
+
 
 ```ts
 // RGB: red→blue, the middle is a grayish purple
 xcolor('#ff0000').scale('#0000ff', { space: 'rgb', steps: 5 })
 
-// HSL: red→blue, the middle passes through green
+// HSL: red→blue, the middle passes through magenta
 xcolor('#ff0000').scale('#0000ff', { space: 'hsl', steps: 5 })
 ```
 

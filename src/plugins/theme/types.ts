@@ -14,6 +14,7 @@ export type { Shade };
  *   auto-generate a full shade palette and semantic colors.
  * - `object` with `DEFAULT` — The `DEFAULT` key is the base color for
  *   auto-generation; other keys override or extend the generated palette.
+ *   Nested objects with `DEFAULT` also generate their own palettes and semantic colors.
  * - `object` without `DEFAULT` — Pure custom nesting. No palette is generated;
  *   keys are flattened into CSS variable names.
  *

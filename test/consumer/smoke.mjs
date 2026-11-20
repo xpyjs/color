@@ -22,6 +22,10 @@ async function smoke() {
   assert.strictEqual(cjs("red").toString("name"), "red");
   assert.strictEqual(color.toLab().l, 53.24);
 
+  const hsv = esmFirst ? (await import("@xpyjs/color/plugins/hsv")).default : require("@xpyjs/color/plugins/hsv");
+  xcolor.use(hsv);
+  assert.deepStrictEqual(xcolor("hsv(120, 100%, 100%)").v(50).toHsvArray(), [120, 100, 50.2, 1]);
+
   for (const subpath of Object.keys(require("@xpyjs/color/package.json").exports)) {
     if (!subpath.startsWith("./plugins/") || subpath.endsWith("*")) continue;
     const specifier = packageName + subpath.slice(1);

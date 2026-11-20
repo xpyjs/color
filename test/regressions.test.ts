@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import xcolor, { defineMethod, Logger, normalizeSteps, parseColor, registerColorParser, registerStringFormatter } from "@xpyjs/color";
 import a11y from "@xpyjs/color/plugins/a11y";

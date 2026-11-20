@@ -302,7 +302,18 @@
       },
       "default": "./dist/plugins/*/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./plugins/hsv": {
+      "import": {
+        "types": "./dist/types/plugins/hsv/index.d.ts",
+        "default": "./dist/plugins/hsv/index.js"
+      },
+      "require": {
+        "types": "./dist/types/plugins/hsv/index.d.cts",
+        "default": "./dist/plugins/hsv/index.cjs"
+      },
+      "default": "./dist/plugins/hsv/index.js"
+    }
   },
   "files": [
     "dist",

@@ -11,6 +11,15 @@ beforeAll(() => {
 });
 
 describe("gradient plugin", () => {
+  it("rejects invalid endpoints before generating colors", () => {
+    const valid = xcolor("#fff");
+    const invalid = xcolor("not-a-color");
+    expect(() => valid.gradient(invalid)).toThrow();
+    expect(() => valid.gradient("not-a-color")).toThrow();
+    expect(() => invalid.gradient(valid)).toThrow();
+    expect(valid.toHex()).toBe("#ffffff");
+    expect(invalid.isValid()).toBe(false);
+  });
   describe("gradient", () => {
     it("should generate gradient between two colors", () => {
       const c = xcolor("#ff0000");

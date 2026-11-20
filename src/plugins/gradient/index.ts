@@ -4,7 +4,7 @@ import { interpolate } from "../../color-math";
 // =======================================
 
 import type { XColorPlugin, XColorInput } from "@xpyjs/color";
-import { normalizeSteps, defineMethod } from "@xpyjs/color";
+import { normalizeSteps, defineMethod, Logger } from "@xpyjs/color";
 
 /** Extends {@link XColor} instances with gradient and palette generation methods. */
 declare module "@xpyjs/color" {
@@ -15,6 +15,7 @@ declare module "@xpyjs/color" {
      * @param to - Target color
      * @param steps - Number of colors to generate including start and end (default 5, range 2-10000)
      * @returns Array of new XColor instances forming the gradient
+     * @throws If either endpoint is invalid
      * @example
      * ```ts
      * const colors = xcolor('#ff0000').gradient('#0000ff', 5);
@@ -44,6 +45,7 @@ const gradient: XColorPlugin = {
   install(_option, cls, _factory) {
     defineMethod(cls, 'gradient', function (this: InstanceType<typeof cls>, to: XColorInput, steps: number = 5) {
       const end = new cls(to, to instanceof cls ? undefined : this._opts);
+      if (!this.isValid() || !end.isValid()) throw Logger.createError("Invalid gradient color", "INVALID_COLOR", "gradient");
       const colors: InstanceType<typeof cls>[] = [];
       const total = normalizeSteps(steps);
       const opts = this._opts;

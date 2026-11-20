@@ -157,7 +157,7 @@ function validate(color: XColorSpaceRecord): void {
  */
 export function parseColorSpace(input: string): XColorSpaceRecord | null {
   if (typeof input !== "string") return null;
-  if (/\bnone\b/i.test(input)) return parseCssLiteral(input);
+  if (/\bnone\b/i.test(input)) return parseCssLiteral(input, "record");
   for (const space of SPACES) {
     if (isRgbSpace(space) || space.startsWith("xyz")) {
       const parsed = parseCoordinates(input, space);
@@ -326,7 +326,7 @@ const colorSpace: XColorPlugin = {
     registerColorParser(value => {
       if (typeof value === "string") {
         if (!/\bnone\b/i.test(value) && !/^\s*color\(\s*srgb-linear\s/i.test(value)) return null;
-        const parsed = parseCssLiteral(value);
+        const parsed = parseCssLiteral(value, "record");
         if (!parsed) return null;
         return instanceRgba(parsed);
       }

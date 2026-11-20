@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 import { afterEach, describe, expect, it } from "vitest";
 import xcolor, { XColorError, Logger, type XColor } from "../src";
 import scale from "../src/plugins/scale";

@@ -12,7 +12,8 @@ const __dirname = dirname(__filename);
 
 const terserOptions = {
     toplevel: true,
-    mangle: { properties: { regex: /^_(?:a|valid|roundCh|applyCS|channel|pluginCleanups)$/ } },
+    // The separately bundled HSV plugin installs v() on the core prototype.
+    mangle: { properties: { regex: /^_(?:a|valid|roundCh|applyCS|channel|pluginCleanups)$/, reserved: ["v"] } },
     compress: {
         passes: 4,
         pure_getters: true,

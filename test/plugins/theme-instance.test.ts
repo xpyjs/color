@@ -16,6 +16,37 @@ function documentFixture() {
 afterEach(()=>vi.unstubAllGlobals());
 
 describe("xcolor independent themes", () => {
+  it.each(["rgb", "hsl"] as const)("preserves CSS references in strict mode with %s output", format => {
+    xcolor.config({ strict: true });
+    try {
+      const theme = createTheme({ colors: { brand: { DEFAULT: "#123456", hover: "var(--brand-hover)" } }, format });
+      expect(theme.getCss()).toContain("--x-brand-hover: var(--brand-hover);");
+      expect(theme.getCss()).toContain("--x-brand: " + format + "(");
+      expect(() => theme.update({ colors: { brand: { DEFAULT: "invalid" } } })).toThrow();
+    } finally {
+      xcolor.config({});
+    }
+  });
+  it.each([true, false])("keeps the base shorthand aligned with overridden shade 500, semantic=%s", semantic => {
+    const instance = createTheme({ colors: { brand: { DEFAULT: "#123456", 500: "#ff0000" } }, semantic });
+    expect(instance.getVars()["--x-brand"]).toBe("#ff0000");
+    expect(instance.getVars()["--x-brand-500"]).toBe("#ff0000");
+    expect(instance.getCss()).toContain("--x-brand: #ff0000;");
+  });
+
+  it("generates nested DEFAULT palettes and preserves custom overrides", () => {
+    const instance = createTheme({ colors: { brand: { accent: { DEFAULT: "#ff0000", hover: "var(--hover)", 500: "#00ff00" } } }, darkMode: "class" });
+    const light = instance.getVars();
+    expect(light["--x-brand-accent"]).toBe("#00ff00");
+    expect(light["--x-brand-accent-500"]).toBe("#00ff00");
+    expect(light["--x-brand-accent-50"]).toBeDefined();
+    expect(light["--x-brand-accent-hover"]).toBe("var(--hover)");
+    const dark = instance.getVars("dark");
+    expect(dark["--x-brand-accent"]).toBe(dark["--x-brand-accent-500"]);
+    expect(instance.getCss()).toContain("--x-brand-accent-500:");
+    expect(() => instance.update({ colors: { brand: { accent: { DEFAULT: "invalid" } } } })).toThrow();
+    expect(instance.getVars()).toEqual(light);
+  });
   it("isolates configurations, generated snapshots and the global plugin", () => {
     xcolor.use(theme,{colors:{primary:"#f00"}});
     const options = {colors:{primary:{DEFAULT:"#00f",custom:"#123456"}},darkMode:"class" as const};

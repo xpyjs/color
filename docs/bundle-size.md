@@ -17,3 +17,7 @@ Strict validation and structured errors increased core size. The current accepta
 唯一机器可读来源为根目录 `bundle-budget.json`，CI 的 `scripts/check-bundle-size.mjs` 从中读取上限。用 CI 的 Node 22 主版本运行 `npm run build` 后执行 `node scripts/check-bundle-size.mjs` 复测；不同 zlib 版本可能产生少量差异。
 
 The CI check reads limits from the root `bundle-budget.json`. Rebuild with Node 22 and run `node scripts/check-bundle-size.mjs`; minor gzip differences may occur across zlib versions.
+
+## HSV 插件拆分实测
+
+本地 Node 18.16.0 构建并测量，CJS 为 5,684 字节 gzip、ESM 为 5,641 字节、UMD 为 5,701 字节。拆分前分别为 6,033、5,994、6,046 字节。移出 HSV 后减少 345–353 字节，仍高于 5 KiB（5,120 字节）目标。此处保留上方 Node 22 历史基准，验收预算沿用 6 KiB。

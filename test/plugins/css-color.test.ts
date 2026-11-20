@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 import { describe, expect, it } from "vitest";
 import xcolor from "../../src";
 import colorSpace, { convertColorSpace, formatColorSpace, fromColorSpace, parseCssColor } from "../../src/plugins/colorSpace";

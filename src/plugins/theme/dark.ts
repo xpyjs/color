@@ -2,7 +2,8 @@
 // Plugin: theme - Dark mode palette generation
 // =======================================
 
-import { rgbToHsv, hsvToRgb, clamp, round } from "@xpyjs/color";
+import { clamp, round } from "@xpyjs/color";
+import { rgbToHsv, hsvToRgb } from "../../utils";
 import type { Shade } from "./types";
 import { generateSemantic } from "./semantic";
 
