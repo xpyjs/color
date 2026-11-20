@@ -7,6 +7,30 @@ beforeAll(() => {
 });
 
 describe("scale plugin", () => {
+  it.each(["#ffffff", "#808080", "#000000"])("keeps blue hue when interpolating from %s in either direction", (neutral) => {
+    const start = xcolor(neutral, { useDecimal: true });
+    const blue = xcolor("#00f", { useDecimal: true });
+    for (const t of [0.25, 0.5, 0.75]) {
+      const forward = start.at(blue, t, { space: "hsl" });
+      const backward = blue.at(start, 1 - t, { space: "hsl" });
+      expect(forward.hue()).toBeCloseTo(240, 6);
+      expect(forward.toHex()).toBe(backward.toHex());
+    }
+    expect(start.toHex()).toBe(neutral);
+    expect(blue.toHex()).toBe("#0000ff");
+  });
+
+  it("keeps neutral scales neutral and fixes the white-to-blue midpoint", () => {
+    expect(xcolor("#fff").at("#00f", 0.5, { space: "hsl" }).toHex()).toBe("#9f9fdf");
+    const colors = xcolor("#fff").scale("#000", { space: "hsl" });
+    for (const color of colors) {
+      expect(color.red()).toBe(color.green());
+      expect(color.green()).toBe(color.blue());
+    }
+    expect(colors[0].toHex()).toBe("#ffffff");
+    expect(colors[colors.length - 1].toHex()).toBe("#000000");
+  });
+
   it("should generate scale with default steps", () => {
     const colors = xcolor("#ff0000").scale("#0000ff");
     expect(colors).toHaveLength(5);

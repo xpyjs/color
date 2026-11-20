@@ -1,5 +1,7 @@
 # scale - Color Scale Interpolation
 
+HSL interpolation carries the chromatic endpoint's hue across an achromatic endpoint. Transitions from white, gray or black to blue no longer detour through purple. Two achromatic endpoints remain neutral.
+
 Perform precise color space interpolation between two colors, with support for multiple color spaces and easing functions. Provides finer control than the gradient plugin.
 
 ## Install
@@ -13,7 +15,7 @@ xcolor.use(scalePlugin)
 
 ## Methods
 
-<SvgScaleComparison />
+<ScaleExplorer />
 
 ### scale(to, options?)
 
@@ -38,9 +40,9 @@ interface ScaleOptions {
 | Value | Description |
 | --- | --- |
 | `'rgb'` | RGB linear interpolation (default) |
+| `'srgb-linear'` | Linear-light sRGB |
+| `'oklab'` | OKLab |
 | `'hsl'` | HSL interpolation |
-| `'srgb-linear'` | Linear-light sRGB interpolation |
-| `'oklab'` | OKLab interpolation |
 
 #### Easing Function (ScaleEasing)
 
@@ -82,7 +84,7 @@ xcolor('#ff0000').at('#0000ff', 0.5, { space: 'hsl' }).toHex()  // Interpolated 
 
 RGB interpolation may produce "muddy" intermediate colors, while HSL interpolation transitions along the color wheel:
 
-<SvgScaleSpaces />
+
 
 ```ts
 // RGB: red→blue, the middle is a grayish purple

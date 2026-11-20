@@ -2,15 +2,29 @@ export function interpolate(start: number, end: number, position: number): numbe
   return start * (1 - position) + end * position;
 }
 
+/** Composite an sRGB foreground over an opaque background without rounding. */
+export function compositeRgb(
+  foreground: { r: number; g: number; b: number },
+  alpha: number,
+  background: { r: number; g: number; b: number }
+): { r: number; g: number; b: number } {
+  return {
+    r: interpolate(background.r, foreground.r, alpha),
+    g: interpolate(background.g, foreground.g, alpha),
+    b: interpolate(background.b, foreground.b, alpha)
+  };
+}
+
 export function srgbToLinear(c: number): number {
   c = c / 255;
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const magnitude = Math.abs(c);
+  return magnitude <= 0.04045 ? c / 12.92 : Math.sign(c) * ((magnitude + 0.055) / 1.055) ** 2.4;
 }
 
 export function linearToSrgb(c: number): number {
-  return c <= 0.0031308
+  return Math.abs(c) <= 0.0031308
     ? c * 12.92
-    : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+    : Math.sign(c) * (1.055 * Math.pow(Math.abs(c), 1 / 2.4) - 0.055);
 }
 
 export type Mat3 = [number, number, number, number, number, number, number, number, number];
@@ -36,15 +50,15 @@ export const XYZ_TO_SRGB: Mat3 = [
 ];
 
 export const D65_TO_D50: Mat3 = [
-  1.0479298208405488, 0.022946793341019088, -0.05019222954313557,
-  0.029627815688159344, 0.990434484573249, -0.01707382502938514,
-  -0.009243058152591178, 0.015055144896577895, 0.7521316354775848
+  1.0479297925449969, 0.022946870601609652, -0.05019226628920524,
+  0.02962780877005599, 0.9904344267538799, -0.017073799063418826,
+  -0.009243040646204504, 0.015055191490298152, 0.7518742814281371
 ];
 
 export const D50_TO_D65: Mat3 = [
-  0.9554734527042182, -0.023098536874261423, 0.0632593086610217,
-  -0.028369706963208136, 1.0099954580058226, 0.021041398966943008,
-  0.012314001688319899, -0.020507696433477912, 1.3303659366080753
+  0.955473421488075, -0.02309845494876471, 0.06325924320057072,
+  -0.0283697093338637, 1.0099953980813041, 0.021041441191917323,
+  0.012314014864481998, -0.020507649298898964, 1.330365926242124
 ];
 
 export function rgbToOklab(r: number, g: number, b: number): { l: number; a: number; b: number } {

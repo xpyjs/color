@@ -3,6 +3,7 @@
 // =======================================
 
 import type { XColor } from "@xpyjs/color";
+import { parseColor } from "@xpyjs/color";
 import type { XColorThemeOptions, ThemeCssFormat } from "./types";
 
 /**
@@ -14,8 +15,9 @@ import type { XColorThemeOptions, ThemeCssFormat } from "./types";
  */
 export function formatColorValue(value: string, format: ThemeCssFormat, cls: typeof XColor): string {
   if (format === "hex") return value;
-  const color = new cls(value);
-  if (!color.isValid()) return value;
+  const rgba = parseColor(value, true);
+  if (!rgba) return value;
+  const color = new cls().rgb(rgba.r, rgba.g, rgba.b, rgba.a);
   return format === "rgb" ? color.toRgbString() : color.toHslString();
 }
 

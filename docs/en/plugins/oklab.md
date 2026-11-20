@@ -1,5 +1,7 @@
 # oklab / oklch
 
+When parsed into an sRGB instance, lightness at or below 0 maps to black and lightness at or above 1 (100%) maps to white, regardless of chromatic channels. Alpha is preserved. Intermediate lightness still uses channel clipping, not full CSS perceptual gamut mapping.
+
 Oklab and Oklch modern perceptual color space support. Oklab is an improved version of Lab with better perceptual uniformity, making it especially suitable for gradients and color interpolation.
 
 ## Install

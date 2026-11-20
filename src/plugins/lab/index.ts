@@ -5,13 +5,14 @@ import { alphaSuffix, hueToken, numericToken } from "../../tokens";
 // Plugin: lab - CIE Lab & LCH color space support
 // =======================================
 
-import type { XColorPlugin, XColorInput } from "@xpyjs/color";
+import type { XColorPlugin, XColorInput, RGBA } from "@xpyjs/color";
 import {
   registerStringFormatter,
   registerColorParser,
   parseFunctionalChannels,
   parseAlphaChannel,
   defineMethod,
+  Logger,
   clamp
 } from "@xpyjs/color";
 
@@ -67,6 +68,10 @@ declare module "@xpyjs/color" {
     lab: true;
     /** CIE LCH functional notation, e.g. `lch(53.24% 104.55 40)`. */
     lch: true;
+    /** CSS Lab using D50 regardless of the plugin's configured data white point. */
+    cssLab: true;
+    /** CSS LCH using D50 regardless of the plugin's configured data white point. */
+    cssLch: true;
   }
 
   interface XColor {
@@ -119,6 +124,16 @@ declare module "@xpyjs/color" {
      * ```
      */
     toLchString(): string;
+    /**
+     * Serialize CSS lab() coordinates using D50, independent of plugin options.
+     * @returns D50 Lab string with the original alpha
+     */
+    toCssLabString(): string;
+    /**
+     * Serialize CSS lch() coordinates using D50, independent of plugin options.
+     * @returns D50 LCH string with the original alpha
+     */
+    toCssLchString(): string;
   }
 }
 
@@ -214,6 +229,31 @@ function lchToLab(l: number, c: number, h: number): Lab {
   };
 }
 
+/**
+ * Parse CSS lab()/lch() using D50 without registering or reconfiguring a plugin.
+ * @param input - CSS Lab or LCH string
+ * @returns sRGB channels (clipped) with alpha, or null for invalid input
+ * @see https://www.w3.org/TR/css-color-4/#specifying-lab-lch
+ */
+export function parseCssLab(input: string): RGBA | null {
+  if (typeof input !== "string") return null;
+  const labChannels = parseFunctionalChannels(input, "lab", 3);
+  const parsed = labChannels ?? parseFunctionalChannels(input, "lch", 3);
+  if (!parsed) return null;
+  const l = numericToken(parsed.channels[0], 100);
+  const second = numericToken(parsed.channels[1], labChannels ? 125 : 150);
+  const third = labChannels ? numericToken(parsed.channels[2], 125) : hueToken(parsed.channels[2]);
+  if (![l, second, third].every(Number.isFinite)) return null;
+  const alpha = parsed.alpha === undefined ? 1 : parseAlphaChannel(parsed.alpha);
+  if (l <= 0 || l >= 100) {
+    const value = l <= 0 ? 0 : 255;
+    return { r: value, g: value, b: value, a: alpha };
+  }
+  const coordinates = labChannels ? { l, a: second, b: third } : lchToLab(l, Math.max(0, second), third);
+  const xyz = labToXyz(coordinates.l, coordinates.a, coordinates.b, WHITE_D50);
+  return { ...xyzToRgb(...mat3Mul(D50_TO_D65, ...xyz)), a: alpha };
+}
+
 const lab: XColorPlugin<LabOptions> = {
   name: "@xpyjs/color/plugins/lab",
   install(option, cls, _factory) {
@@ -221,6 +261,10 @@ const lab: XColorPlugin<LabOptions> = {
     const white = d50 ? WHITE_D50 : WHITE_D65;
 
     function labToRgb(l: number, a: number, b: number) {
+      if (d50 && (l <= 0 || l >= 100)) {
+        const channel = l <= 0 ? 0 : 255;
+        return { r: channel, g: channel, b: channel };
+      }
       const xyz = labToXyz(d50 ? clamp(l, 0, 100) : l, a, b, white);
       return xyzToRgb(...(d50 ? mat3Mul(D50_TO_D65, ...xyz) : xyz));
     }
@@ -264,6 +308,7 @@ const lab: XColorPlugin<LabOptions> = {
 
     defineMethod(cls, 'deltaE', function (this: InstanceType<typeof cls>, other: XColorInput): number {
       const otherColor = new cls(other);
+      if (!otherColor.isValid()) throw Logger.createError("Invalid comparison color","INVALID_COLOR","deltaE");
       const lab1 = this.toLab();
       const lab2 = otherColor.toLab();
 
@@ -284,8 +329,25 @@ const lab: XColorPlugin<LabOptions> = {
       return `lch(${l}% ${c} ${h}${alphaSuffix(this.alpha())})`;
     });
 
+    function cssLab(color: InstanceType<typeof cls>): Lab {
+      return xyzToLab(mat3Mul(D65_TO_D50, ...rgbToXyz(color.red(), color.green(), color.blue())), WHITE_D50);
+    }
+
+    defineMethod(cls, 'toCssLabString', function (this: InstanceType<typeof cls>): string {
+      const { l, a, b } = cssLab(this);
+      return `lab(${l}% ${a} ${b}${alphaSuffix(this.alpha())})`;
+    });
+
+    defineMethod(cls, 'toCssLchString', function (this: InstanceType<typeof cls>): string {
+      const lab = cssLab(this);
+      const { l, c, h } = labToLch(lab.l, lab.a, lab.b);
+      return `lch(${l}% ${c} ${h}${alphaSuffix(this.alpha())})`;
+    });
+
     registerStringFormatter(cls, "lab", color => color.toLabString());
     registerStringFormatter(cls, "lch", color => color.toLchString());
+    registerStringFormatter(cls, "cssLab", color => color.toCssLabString());
+    registerStringFormatter(cls, "cssLch", color => color.toCssLchString());
   }
 };
 

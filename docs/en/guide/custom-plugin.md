@@ -1,5 +1,8 @@
 # Custom Plugin Development
 
+> Register the [hsv plugin](/en/plugins/hsv) for HSV methods. Import HSV conversion utilities from that plugin entry.
+
+
 This page is for developers who want to extend xcolor's capabilities. You will learn about plugin structure, available utility functions, and how to provide full type hints for TypeScript users.
 
 ## Plugin Structure

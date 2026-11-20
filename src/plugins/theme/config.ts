@@ -128,11 +128,20 @@ export function resolveThemeConfig(
     : options.colors;
 
   var colorKeys = Object.keys(workingColors);
+  var entries = colorKeys.map(key => ({ name: key, value: workingColors[key] }));
 
-  for (var ci = 0; ci < colorKeys.length; ci++) {
-    var colorName = colorKeys[ci];
-    var colorValue = workingColors[colorName];
+  for (var ci = 0; ci < entries.length; ci++) {
+    var colorName = entries[ci].name;
+    var colorValue = entries[ci].value;
     var colorPrefix = prefix + "-" + colorName;
+    if (colorValue && typeof colorValue === "object") {
+      for (const key of Object.keys(colorValue)) {
+        const child = colorValue[key];
+        if (key !== "DEFAULT" && child && typeof child === "object") {
+          entries.push({ name: colorName + "-" + key, value: child });
+        }
+      }
+    }
 
     var baseColor: string | null = null;
 
@@ -142,7 +151,7 @@ export function resolveThemeConfig(
       baseColor = colorValue.DEFAULT;
     }
 
-    if (baseColor) {
+    if (baseColor !== null) {
       // Generate palette from base color
       var base = new cls(baseColor);
       var palette = generatePalette(base, type, shades, cls);
@@ -194,6 +203,11 @@ export function resolveThemeConfig(
         }
       }
 
+      // Resolve the shorthand after user shade overrides have been applied.
+      if (Object.prototype.hasOwnProperty.call(vars, colorPrefix + "-500")) {
+        vars[colorPrefix] = vars[colorPrefix + "-500"];
+      }
+
       // Dark mode
       if (darkMode && palette.length > 0) {
         var darkPalette = generateDarkPalette(palette, shades, cls);
@@ -225,7 +239,7 @@ export function resolveThemeConfig(
 
   var css = buildCssString(vars, darkMode ? darkVars : null, options, cls);
 
-  return { css: css, vars: vars, colors: colorPalettes };
+  return { css: css, vars: vars, darkVars: { ...vars, ...(darkMode ? darkVars : {}) }, colors: colorPalettes };
 }
 
 /**

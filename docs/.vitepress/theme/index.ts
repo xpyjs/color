@@ -1,3 +1,4 @@
+import ScaleExplorer from './components/ScaleExplorer.vue'
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 import Playground from './components/Playground.vue'
@@ -43,6 +44,7 @@ export default {
   extends: DefaultTheme,
   Layout: HomeLayout,
   enhanceApp({ app }) {
+    app.component('ScaleExplorer', ScaleExplorer)
     app.component('Playground', Playground)
     app.component('ColorVisualizer', ColorVisualizer)
     app.component('Toast', Toast)

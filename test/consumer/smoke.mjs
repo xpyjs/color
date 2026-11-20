@@ -22,6 +22,10 @@ async function smoke() {
   assert.strictEqual(cjs("red").toString("name"), "red");
   assert.strictEqual(color.toLab().l, 53.24);
 
+  const hsv = esmFirst ? (await import("@xpyjs/color/plugins/hsv")).default : require("@xpyjs/color/plugins/hsv");
+  xcolor.use(hsv);
+  assert.deepStrictEqual(xcolor("hsv(120, 100%, 100%)").v(50).toHsvArray(), [120, 100, 50.2, 1]);
+
   for (const subpath of Object.keys(require("@xpyjs/color/package.json").exports)) {
     if (!subpath.startsWith("./plugins/") || subpath.endsWith("*")) continue;
     const specifier = packageName + subpath.slice(1);
@@ -34,6 +38,48 @@ async function smoke() {
   assert.strictEqual(p3.formatWideColor(wide), "color(display-p3 1 0.4 0 / 0.3)");
   assert.strictEqual(xcolor(p3.toSrgb(wide)).alpha(), .3);
   assert.strictEqual(xcolor("#f00").toHslArray()[0], 0);
+  const spaces = require("@xpyjs/color/plugins/colorSpace");
+  const normalizedHwb = spaces.fromColorSpace(spaces.parseCssColor("hwb(120 200% 100% / .4)"));
+  assert.strictEqual(normalizedHwb.toHex(), "#aaaaaa66");
+  const coordinateColor = spaces.parseColorSpace("color(display-p3 1 0 0 / .25)");
+  assert.strictEqual(spaces.inGamut(coordinateColor, "display-p3"), true);
+  assert.strictEqual(spaces.inGamut(coordinateColor, "srgb"), false);
+  assert.ok(spaces.convertColorSpace(coordinateColor, "srgb").coordinates[0] > 1);
+  assert.strictEqual(spaces.mapToGamut(coordinateColor).alpha, .25);
+  cjs.use(spaces);
+  const gradient = spaces.createColorGradient([{color:spaces.parseCssColor("red")},{color:spaces.parseCssColor("blue")}],{space:"srgb"});
+  assert.strictEqual(spaces.fromColorSpace(gradient.at(.5)).toHex(), "#800080");
+  assert.strictEqual(gradient.colors().length, 5);
+  assert.strictEqual(spaces.colorDifference(coordinateColor, coordinateColor), 0);
+  assert.strictEqual(spaces.isColorSimilar(coordinateColor, coordinateColor), true);
+  assert.strictEqual(spaces.deduplicateColors([coordinateColor, coordinateColor]).length, 1);
+  assert.strictEqual(spaces.sortColors([coordinateColor],{by:"distance",reference:coordinateColor}).length, 1);
+  const shades = spaces.generatePerceptualPalette(spaces.parseCssColor("red"),{shades:[500,950]});
+  assert.deepStrictEqual(shades.map(entry=>entry.shade),[500,950]);
+  assert.strictEqual(spaces.fromColorSpace(shades[1].color).toHex(),"#000000");
+  const accessibility = require("@xpyjs/color/plugins/a11y");
+  const adjusted = accessibility.adjustContrast("#777","#fff");
+  assert.strictEqual(adjusted.met, true);
+  assert.strictEqual(accessibility.auditContrastPairs({text:adjusted.color,surface:"#fff"},[{foreground:"text",background:"surface"}])[0].passes, true);
+  const themes = require("@xpyjs/color/plugins/theme");
+  const independent = themes.createTheme({colors:{primary:"#f00"},darkMode:"class"});
+  assert.strictEqual(independent.getVars()["--x-primary"],"#ff0000");
+  assert.notStrictEqual(independent.getVars("dark")["--x-primary"],independent.getVars()["--x-primary"]);
+  assert.strictEqual(independent.inject(),independent.getCss());
+  independent.remove();
+  cjs.use(require("@xpyjs/color/plugins/blend"));
+  assert.strictEqual(xcolor("#f00").composite("#00f","lighter").toHex(),"#ff00ff");
+  assert.strictEqual(xcolor("#f00").blend("#00f","saturation").toHex(),"#ff0000");
+  assert.throws(()=>xcolor("bogus",{strict:true}),error=>error instanceof cjs.XColorError && error.code === "INVALID_INPUT");
+  assert.throws(()=>xcolor("#f00",{strict:true}).red(NaN),error=>error instanceof cjs.XColorError && error.code === "INVALID_ARGUMENT");
+  const missing = spaces.parseCssColor("color(srgb-linear none .5 0 / none)");
+  assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("color-mix(in srgb, red, blue)")).toHex(), "#800080");
+  assert.strictEqual(spaces.fromColorSpace(spaces.resolveCssColor("rgb(from var(--brand) r 0 0)", {variables:{"--brand":"red"}})).toHex(), "#ff0000");
+  assert.deepStrictEqual(missing.missing, [true, false, false, true]);
+  assert.strictEqual(spaces.formatColorSpace(missing), "color(srgb-linear none 0.5 0 / none)");
+  assert.strictEqual(spaces.parseCssColor("rgb(1, 2%, 3)"), null);
+  assert.strictEqual(xcolor("color(srgb-linear .21404114048223255 0 0)").toHex(), "#800000");
+  assert.strictEqual(xcolor("#f00").toColorSpace("oklab").space, "oklab");
   assert.strictEqual(cjs.isValidInput("bogus"), false);
 
   cjs.config({ useDecimal: true });

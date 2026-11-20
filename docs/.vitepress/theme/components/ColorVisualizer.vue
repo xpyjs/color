@@ -1,3 +1,117 @@
+<template>
+  <div class="color-visualizer" v-if="loaded">
+    <!-- Input Section -->
+    <div class="cv-input-section">
+      <div class="cv-input-row">
+        <input
+          v-model="colorInput"
+          class="cv-text-input"
+          placeholder="#hex / rgb() / hsl() ..."
+          spellcheck="false"
+        />
+        <input
+          type="color"
+          :value="baseColor?.toHex() ?? '#000000'"
+          @input="onPickerChange"
+          class="cv-color-picker"
+        />
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div
+      class="cv-preview cv-clickable"
+      :style="{ background: previewBg, color: previewText }"
+      @click="manipulatedColor && copyText(manipulatedColor.toHex(), manipulatedColor.toHex())"
+    >
+      <span class="cv-preview-hex">{{ manipulatedColor?.toHex() ?? '—' }}</span>
+    </div>
+
+    <!-- Conversions -->
+    <div class="cv-section" v-if="conversions.length">
+      <h3 class="cv-section-title">{{ t.conversions }}</h3>
+      <div class="cv-conversions">
+        <div v-for="item in conversions" :key="item.label" class="cv-conv-item">
+          <span class="cv-conv-label">{{ item.label }}</span>
+          <code class="cv-conv-value cv-clickable" @click="copyText(item.value, manipulatedColor?.toHex())">{{ item.value }}</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manipulation Sliders -->
+    <div class="cv-section">
+      <h3 class="cv-section-title">
+        {{ t.manipulation }}
+        <button class="cv-reset-btn" @click="resetSliders">{{ t.reset }}</button>
+      </h3>
+      <div class="cv-sliders">
+        <label class="cv-slider-row">
+          <span>Lighten</span>
+          <input type="range" v-model.number="lightenVal" min="0" max="100" />
+          <span class="cv-slider-val">{{ lightenVal }}</span>
+        </label>
+        <label class="cv-slider-row">
+          <span>Darken</span>
+          <input type="range" v-model.number="darkenVal" min="0" max="100" />
+          <span class="cv-slider-val">{{ darkenVal }}</span>
+        </label>
+        <label class="cv-slider-row">
+          <span>Saturate</span>
+          <input type="range" v-model.number="saturateVal" min="0" max="100" />
+          <span class="cv-slider-val">{{ saturateVal }}</span>
+        </label>
+        <label class="cv-slider-row">
+          <span>Desaturate</span>
+          <input type="range" v-model.number="desaturateVal" min="0" max="100" />
+          <span class="cv-slider-val">{{ desaturateVal }}</span>
+        </label>
+        <label class="cv-slider-row">
+          <span>Spin</span>
+          <input type="range" v-model.number="spinVal" min="-360" max="360" />
+          <span class="cv-slider-val">{{ spinVal }}°</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Harmony -->
+    <div class="cv-section" v-if="harmonySchemes.length">
+      <h3 class="cv-section-title">{{ t.harmony }}</h3>
+      <div v-for="scheme in harmonySchemes" :key="scheme.name" class="cv-harmony-group">
+        <span class="cv-harmony-name">{{ scheme.name }}</span>
+        <div class="cv-harmony-swatches">
+          <div
+            v-for="(c, i) in scheme.colors"
+            :key="i"
+            class="cv-swatch cv-clickable"
+            :style="{ background: c.toHex() }"
+            :title="c.toHex()"
+            @click="copyText(c.toHex(), c.toHex())"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Gradient -->
+    <div class="cv-section" v-if="gradientColors.length">
+      <h3 class="cv-section-title">{{ t.gradient }}</h3>
+      <div class="cv-gradient-bar">
+        <div
+          v-for="(hex, i) in gradientColors"
+          :key="i"
+          class="cv-gradient-step cv-clickable"
+          :style="{ background: hex }"
+          :title="hex"
+          @click="copyText(hex, hex)"
+        />
+      </div>
+    </div>
+
+    <Toast ref="toastRef" />
+  </div>
+
+  <div v-else class="cv-loading">Loading...</div>
+</template>
+
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useData } from 'vitepress'
@@ -21,7 +135,9 @@ let loaded = ref(false)
 onMounted(async () => {
   try {
     const core = await import('@xpyjs/color')
+    const hsv = await import('@xpyjs/color/plugins/hsv')
     xcolor = core.xcolor || core.default
+    xcolor.use(hsv.default)
     const XColor = core.XColor || core.default
 
     const [harmony, gradient, cmyk, lab] = await Promise.all([
@@ -145,120 +261,6 @@ async function copyText(text: string, color?: string) {
   }
 }
 </script>
-
-<template>
-  <div class="color-visualizer" v-if="loaded">
-    <!-- Input Section -->
-    <div class="cv-input-section">
-      <div class="cv-input-row">
-        <input
-          v-model="colorInput"
-          class="cv-text-input"
-          placeholder="#hex / rgb() / hsl() ..."
-          spellcheck="false"
-        />
-        <input
-          type="color"
-          :value="baseColor?.toHex() ?? '#000000'"
-          @input="onPickerChange"
-          class="cv-color-picker"
-        />
-      </div>
-    </div>
-
-    <!-- Preview -->
-    <div
-      class="cv-preview cv-clickable"
-      :style="{ background: previewBg, color: previewText }"
-      @click="manipulatedColor && copyText(manipulatedColor.toHex(), manipulatedColor.toHex())"
-    >
-      <span class="cv-preview-hex">{{ manipulatedColor?.toHex() ?? '—' }}</span>
-    </div>
-
-    <!-- Conversions -->
-    <div class="cv-section" v-if="conversions.length">
-      <h3 class="cv-section-title">{{ t.conversions }}</h3>
-      <div class="cv-conversions">
-        <div v-for="item in conversions" :key="item.label" class="cv-conv-item">
-          <span class="cv-conv-label">{{ item.label }}</span>
-          <code class="cv-conv-value cv-clickable" @click="copyText(item.value, manipulatedColor?.toHex())">{{ item.value }}</code>
-        </div>
-      </div>
-    </div>
-
-    <!-- Manipulation Sliders -->
-    <div class="cv-section">
-      <h3 class="cv-section-title">
-        {{ t.manipulation }}
-        <button class="cv-reset-btn" @click="resetSliders">{{ t.reset }}</button>
-      </h3>
-      <div class="cv-sliders">
-        <label class="cv-slider-row">
-          <span>Lighten</span>
-          <input type="range" v-model.number="lightenVal" min="0" max="100" />
-          <span class="cv-slider-val">{{ lightenVal }}</span>
-        </label>
-        <label class="cv-slider-row">
-          <span>Darken</span>
-          <input type="range" v-model.number="darkenVal" min="0" max="100" />
-          <span class="cv-slider-val">{{ darkenVal }}</span>
-        </label>
-        <label class="cv-slider-row">
-          <span>Saturate</span>
-          <input type="range" v-model.number="saturateVal" min="0" max="100" />
-          <span class="cv-slider-val">{{ saturateVal }}</span>
-        </label>
-        <label class="cv-slider-row">
-          <span>Desaturate</span>
-          <input type="range" v-model.number="desaturateVal" min="0" max="100" />
-          <span class="cv-slider-val">{{ desaturateVal }}</span>
-        </label>
-        <label class="cv-slider-row">
-          <span>Spin</span>
-          <input type="range" v-model.number="spinVal" min="-360" max="360" />
-          <span class="cv-slider-val">{{ spinVal }}°</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Harmony -->
-    <div class="cv-section" v-if="harmonySchemes.length">
-      <h3 class="cv-section-title">{{ t.harmony }}</h3>
-      <div v-for="scheme in harmonySchemes" :key="scheme.name" class="cv-harmony-group">
-        <span class="cv-harmony-name">{{ scheme.name }}</span>
-        <div class="cv-harmony-swatches">
-          <div
-            v-for="(c, i) in scheme.colors"
-            :key="i"
-            class="cv-swatch cv-clickable"
-            :style="{ background: c.toHex() }"
-            :title="c.toHex()"
-            @click="copyText(c.toHex(), c.toHex())"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Gradient -->
-    <div class="cv-section" v-if="gradientColors.length">
-      <h3 class="cv-section-title">{{ t.gradient }}</h3>
-      <div class="cv-gradient-bar">
-        <div
-          v-for="(hex, i) in gradientColors"
-          :key="i"
-          class="cv-gradient-step cv-clickable"
-          :style="{ background: hex }"
-          :title="hex"
-          @click="copyText(hex, hex)"
-        />
-      </div>
-    </div>
-
-    <Toast ref="toastRef" />
-  </div>
-
-  <div v-else class="cv-loading">Loading...</div>
-</template>
 
 <style scoped>
 .color-visualizer {

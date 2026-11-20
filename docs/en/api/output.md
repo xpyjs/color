@@ -1,5 +1,8 @@
 # Color Output
 
+> Register the [hsv plugin](/en/plugins/hsv) before using HSV inputs or methods.
+
+
 Convert `XColor` instances to various formats. All output methods are read-only operations and do not modify the instance.
 
 ## Hex

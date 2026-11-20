@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import xcolor, { defineMethod, Logger, normalizeSteps, parseColor, registerColorParser, registerStringFormatter } from "@xpyjs/color";
 import a11y from "@xpyjs/color/plugins/a11y";
@@ -27,6 +30,37 @@ beforeAll(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("xcolor published behavior regressions", () => {
+  it("rejects invalid theme bases without replacing cached or injected themes", () => {
+    xcolor.use(theme, { colors: { primary: "#1890ff" }, prefix: "brand" });
+    const style = { textContent: "" };
+    vi.stubGlobal("document", { getElementById: () => style });
+    const css = xcolor.injectTheme();
+    const vars = xcolor.getThemeVars();
+    for (const primary of ["bogus", "", { DEFAULT: "bogus" }, { DEFAULT: "" }]) {
+      expect(() => generateTheme({ colors: { primary } })).toThrow("Invalid base color");
+      for (const deep of [true, false]) {
+        expect(() => xcolor.updateTheme({ colors: { primary }, prefix: "broken" }, deep)).toThrow("Invalid base color");
+        expect(xcolor.getThemeCss()).toBe(css);
+        expect(xcolor.getThemeVars()).toEqual(vars);
+        expect(style.textContent).toBe(css);
+      }
+    }
+    expect(() => xcolor.use(theme, { colors: { primary: "bogus" } })).toThrow("Invalid base color");
+    expect(xcolor.getThemeCss()).toBe(css);
+    expect(style.textContent).toBe(css);
+    xcolor.updateTheme({ colors: { primary: "#f00" } });
+    expect(xcolor.getThemeVars()["--brand-primary"]).toBe("#ff0000");
+    expect(style.textContent).toBe(xcolor.getThemeCss());
+  });
+
+  it("rejects invalid derivation sources and still permits custom CSS values", () => {
+    expect(() => generateTheme({ colors: { primary: "bogus" }, derive: true })).toThrow("Invalid source color");
+    expect(() => generateTheme({ colors: { primary: "" }, derive: true })).toThrow("Invalid source color");
+    const result = generateTheme({ colors: { primary: { DEFAULT: "#1890ff", text: "var(--text)" }, custom: { muted: "var(--muted)" } } });
+    expect(result.vars["--x-primary-text"]).toBe("var(--text)");
+    expect(result.vars["--x-custom-muted"]).toBe("var(--muted)");
+  });
+
   it.each([
     1.5, "rgb(nope 0 0)", "rgb(1,,2,3)", "rgb(1 2 3 / 1 / .5)",
     "rgb(1 2 3 / 50px)", "hsl(5deg 1turn 50%)",
@@ -165,8 +199,8 @@ describe("xcolor published behavior regressions", () => {
 
   it("uses shade values to classify linear shades when 500 is absent", () => {
     const [light, dark] = xcolor("#f00").palette({ type: "linear", shades: [100, 900] });
-    expect(light.toHex()).toBe("#ffffff");
-    expect(dark.toHex()).toBe("#000000");
+    expect(light.toHex()).toBe("#ffe3e3");
+    expect(dark.toHex()).toBe("#1c0000");
   });
   it("keeps parser order and rolls back methods on failed replacement", () => {
     const parser = (red: number) => (input: unknown) =>

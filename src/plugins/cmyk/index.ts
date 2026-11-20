@@ -10,7 +10,7 @@ import {
   registerStringFormatter,
   defineMethod
 } from "@xpyjs/color";
-import { clamp } from "@xpyjs/color";
+import { clamp, Logger } from "@xpyjs/color";
 
 /**
  * CMYK (Cyan, Magenta, Yellow, Key/Black) color representation.
@@ -41,6 +41,15 @@ export interface CMYK {
 
 declare module "@xpyjs/color" {
   interface XColor {
+    /** Alias for toCmyk(). @returns CMYK channels, without alpha */
+    cmyk(): CMYK;
+    /**
+     * Set CMYK channels, preserving current alpha when omitted.
+     * @param value - Complete ink channels, with optional alpha
+     * @returns Current instance for chaining
+     * @throws For non-finite channels, before modifying the instance
+     */
+    cmyk(value: CMYK): this;
     /**
      * Convert the color to a {@link CMYK} object.
      * All channels (`c`, `m`, `y`, `k`) are integers in `0–100`.
@@ -96,6 +105,13 @@ function cmykToRgb(c: number, m: number, y: number, k: number) {
 const cmyk: XColorPlugin = {
   name: "@xpyjs/color/plugins/cmyk",
   install(_option, cls, _factory) {
+    defineMethod(cls, 'cmyk', function (value?: CMYK) {
+      if (value === undefined) return this.toCmyk();
+      const alpha = value.a ?? this.alpha();
+      if (![value.c,value.m,value.y,value.k,alpha].every(Number.isFinite)) throw Logger.createError("Invalid CMYK channels");
+      const rgb = cmykToRgb(value.c,value.m,value.y,value.k);
+      return this.rgb(rgb.r,rgb.g,rgb.b,alpha);
+    });
     defineMethod(cls, 'toCmyk', function (this: InstanceType<typeof cls>): CMYK {
       const r = this.red() / 255;
       const g = this.green() / 255;

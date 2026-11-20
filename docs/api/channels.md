@@ -1,5 +1,8 @@
 # 通道读写
 
+> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
+
+
 所有通道方法不传参时为 getter（返回当前值），传参时为 setter（设置值并返回 `this`）。
 
 ## RGB 通道

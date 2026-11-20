@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  A tiny (<b>~5.5KB</b> gzipped), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
+  A small (<b>~5.7 kB</b> gzipped core), fast, and plugin-extensible color manipulation library for JavaScript/TypeScript.
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## ✨ Features
 
-- 🪶 **Tiny** — ~5.5KB gzipped core, zero dependencies
+- 🪶 **Small core** — ~17.5 kB minified / ~5.7 kB gzip, zero runtime dependencies; optional plugins are additional
 - 🔌 **Plugin System** — Extend functionality like dayjs, load what you need
 - 🎯 **TypeScript First** — Full type definitions and IntelliSense
 - ⛓️ **Chainable API** — Fluent interface for all operations
@@ -70,7 +70,11 @@ xcolor.use(name)
 const red = xcolor('#ff0000')
 const blue = xcolor('rgb(0, 0, 255)')
 const green = xcolor('hsl(120, 100%, 50%)')
+// Named colors require plugin registration
+import namePlugin from '@xpyjs/color/plugins/name'
+xcolor.use(namePlugin)
 const named = xcolor('coral')
+named.toHex() // '#ff7f50'
 const obj = xcolor({ r: 255, g: 128, b: 0 })
 const num = xcolor(0xFF8040)
 

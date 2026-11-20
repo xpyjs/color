@@ -93,6 +93,17 @@
       },
       "default": "./dist/plugins/cmyk/index.js"
     },
+    "./plugins/colorSpace": {
+      "import": {
+        "types": "./dist/types/plugins/colorSpace/index.d.ts",
+        "default": "./dist/plugins/colorSpace/index.js"
+      },
+      "require": {
+        "types": "./dist/types/plugins/colorSpace/index.d.cts",
+        "default": "./dist/plugins/colorSpace/index.cjs"
+      },
+      "default": "./dist/plugins/colorSpace/index.js"
+    },
     "./plugins/displayP3": {
       "import": {
         "types": "./dist/types/plugins/displayP3/index.d.ts",
@@ -291,7 +302,18 @@
       },
       "default": "./dist/plugins/*/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./plugins/hsv": {
+      "import": {
+        "types": "./dist/types/plugins/hsv/index.d.ts",
+        "default": "./dist/plugins/hsv/index.js"
+      },
+      "require": {
+        "types": "./dist/types/plugins/hsv/index.d.cts",
+        "default": "./dist/plugins/hsv/index.cjs"
+      },
+      "default": "./dist/plugins/hsv/index.js"
+    }
   },
   "files": [
     "dist",

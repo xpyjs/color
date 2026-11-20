@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 // =======================================
 // Tests: Index exports
 // =======================================
@@ -10,12 +13,11 @@ import xcolor, {
   round,
   rgbToHsl,
   hslToRgb,
-  rgbToHsv,
-  hsvToRgb,
   relativeLuminance,
   contrastRatio
 } from "../src/index";
 import type { RGBA, HSLA, HSVA, XColorInput, XColorPlugin } from "../src/index";
+import { rgbToHsv, hsvToRgb } from "../src/plugins/hsv";
 
 describe("index exports", () => {
   it("should export default xcolor factory", () => {

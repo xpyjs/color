@@ -4,6 +4,7 @@ import theme from "../../src/plugins/theme";
 import type { XColorThemeOptions } from "../../src/plugins/theme";
 import { flattenColors, deepMerge } from "../../src/plugins/theme/config";
 import { resolveDeriveOptions, deriveRoleColors, deriveBaseColor, DEFAULT_ROLES, DEFAULT_ROLE_HUES } from "../../src/plugins/theme/derive";
+import { generateDarkPalette } from "../../src/plugins/theme/dark";
 
 const basicOptions: XColorThemeOptions = {
   prefix: "--x",
@@ -20,6 +21,14 @@ beforeAll(() => {
 // Config resolver tests
 // =======================================
 describe("theme plugin - config resolution", () => {
+  it("preserves alpha and precision when deriving dark shades", () => {
+    const input = xcolor({ r: 100.5, g: 150.2, b: 200.7, a: 0.1234 }, { useDecimal: true });
+    const [dark] = generateDarkPalette([input], [500], XColor);
+    expect(dark.alpha()).toBe(0.1234);
+    expect(dark.clone().red(12.5).red()).toBe(12.5);
+    expect(input.red()).toBe(100.5);
+  });
+
   it("should generate CSS vars for string color shorthand", () => {
     const vars = xcolor.getThemeVars();
     // Should have shade variables

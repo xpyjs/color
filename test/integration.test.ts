@@ -1,3 +1,6 @@
+import hsvPluginForTest from "../src/plugins/hsv";
+import { xcolor as hsvFactoryForTest } from "../src/core";
+hsvFactoryForTest.use(hsvPluginForTest);
 // =======================================
 // Integration tests: Full end-to-end flows
 // Validates that all modules work together correctly,

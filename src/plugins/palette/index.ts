@@ -25,11 +25,14 @@ declare module "@xpyjs/color" {
      *
      * Creates a shade palette using the specified algorithm. The base color
      * maps to shade 500, with lighter shades below and darker shades above.
+     * Built-in algorithms retain the base alpha and instance precision options.
+     * Shade 500 is an independent clone; custom generators control their own output.
      *
      * @param options - Type and shade configuration
      * @param options.type - `'antd'` (default), `'linear'`, or a custom function
      * @param options.shades - Shade levels to generate (default: 50-950)
      * @returns Array of XColor instances from lightest to darkest
+     * @throws If the base color is invalid or a custom generator returns invalid colors
      * @example
      * ```ts
      * xcolor('#1890ff').palette()

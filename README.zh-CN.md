@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  一个极小（gzip 后约 <b>5.5KB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
+  一个轻量（核心 gzip 后约 <b>5.7 kB</b>）、快速、支持插件扩展的 JavaScript/TypeScript 颜色操作库。
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 
 ## ✨ 特性
 
-- 🪶 **极小体积** — 核心约 5.5KB（gzip），零依赖
+- 🪶 **轻量核心** — 压缩后约 17.5 kB / gzip 约 5.7 kB，零运行时依赖；可选插件体积另计
 - 🔌 **插件系统** — 类似 dayjs 的扩展机制，按需加载
 - 🎯 **TypeScript 优先** — 完整的类型定义和智能提示
 - ⛓️ **链式 API** — 所有操作支持流畅的链式调用
@@ -70,7 +70,11 @@ xcolor.use(name)
 const red = xcolor('#ff0000')
 const blue = xcolor('rgb(0, 0, 255)')
 const green = xcolor('hsl(120, 100%, 50%)')
+// 命名色需要先注册插件
+import namePlugin from '@xpyjs/color/plugins/name'
+xcolor.use(namePlugin)
 const named = xcolor('coral')
+named.toHex() // '#ff7f50'
 const obj = xcolor({ r: 255, g: 128, b: 0 })
 const num = xcolor(0xFF8040)
 

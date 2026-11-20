@@ -14,6 +14,7 @@ export type { Shade };
  *   auto-generate a full shade palette and semantic colors.
  * - `object` with `DEFAULT` — The `DEFAULT` key is the base color for
  *   auto-generation; other keys override or extend the generated palette.
+ *   Nested objects with `DEFAULT` also generate their own palettes and semantic colors.
  * - `object` without `DEFAULT` — Pure custom nesting. No palette is generated;
  *   keys are flattened into CSS variable names.
  *
@@ -197,6 +198,8 @@ export interface ThemeResult {
   css: string;
   /** Flat map of CSS variable names to color values. */
   vars: Record<string, string>;
+  /** Complete dark-mode variable snapshot, including unchanged light variables. */
+  darkVars: Record<string, string>;
   /** Generated color palettes keyed by color name. Only includes colors with a base value. */
   colors: Record<string, XColor[]>;
 }

@@ -14,6 +14,8 @@ import type {
   XColorThemeDeriveOptions
 } from "./types";
 import { resolveThemeConfig, deepMerge } from "./config";
+export { createTheme } from "./instance";
+export type { XColorThemeInstance, XColorThemeInstanceOptions } from "./instance";
 
 declare module "@xpyjs/color" {
   interface XColorFactory {
@@ -50,14 +52,15 @@ declare module "@xpyjs/color" {
     /**
      * Get the generated theme as a flat map of CSS variable names to values.
      *
-     * @returns Record of variable names to color values
+     * @param mode - light (default) or a complete dark snapshot including inherited variables
+     * @returns Independent record of variable names to color values
      * @example
      * ```ts
      * const vars = xcolor.getThemeVars()
      * // → { '--x-primary-500': '#1890ff', '--x-primary-hover': '#40a9ff', ... }
      * ```
      */
-    getThemeVars(): Record<string, string>;
+    getThemeVars(mode?: "light" | "dark"): Record<string, string>;
 
     /**
      * Update the theme configuration with a partial options object.
@@ -70,6 +73,7 @@ declare module "@xpyjs/color" {
      *
      * @param options - Partial configuration to merge
      * @param deep - Whether to deep merge (`true`, default) or shallow merge (`false`)
+     * @throws If a base/derivation color or palette result is invalid; the previous theme is preserved
      * @example
      * ```ts
      * // Deep merge (default) — only primary color changes
@@ -100,6 +104,7 @@ const STYLE_ID = "xcolor-theme";
  * Generate a theme from its configuration for SSR or build-time use.
  * @param options - Theme colors and generation settings
  * @returns CSS, variable snapshot, and generated palettes
+ * @throws If a base/derivation color or palette result is invalid
  */
 export function generateTheme(options: XColorThemeOptions): ThemeResult {
   return resolveThemeConfig(options, XColor);
@@ -160,8 +165,9 @@ const theme: XColorPlugin<XColorThemeOptions> = {
       return ensureResult().css;
     };
 
-    factory.getThemeVars = function (): Record<string, string> {
-      return { ...ensureResult().vars };
+    factory.getThemeVars = function (mode: "light" | "dark" = "light"): Record<string, string> {
+      if (mode !== "light" && mode !== "dark") throw Logger.createError("Unknown theme mode");
+      return { ...(mode === "dark" ? ensureResult().darkVars : ensureResult().vars) };
     };
 
     factory.updateTheme = function (partial: Partial<XColorThemeOptions>, deep?: boolean): void {

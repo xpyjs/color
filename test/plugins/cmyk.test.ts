@@ -11,6 +11,16 @@ beforeAll(() => {
 });
 
 describe("cmyk plugin", () => {
+  it("supports a chainable CMYK setter with a matching getter and optional alpha", () => {
+    const color = xcolor("#000").alpha(.1234);
+    expect(color.cmyk({c:0,m:100,y:100,k:0})).toBe(color);
+    expect(color.cmyk()).toEqual(color.toCmyk());
+    expect(color.clone().alpha(1).toHex()).toBe("#ff0000");
+    expect(color.alpha()).toBe(.1234);
+    expect(()=>color.cmyk({c:NaN,m:0,y:0,k:0})).toThrow("Invalid CMYK");
+    expect(color.red()).toBe(255);
+    expect(color.cmyk({c:100,m:0,y:100,k:0,a:.5}).toHex()).toBe("#00ff0080");
+  });
   describe("object input", () => {
     it("should create color from CMYK object via xcolor()", () => {
       const c = xcolor({ c: 0, m: 100, y: 100, k: 0 });

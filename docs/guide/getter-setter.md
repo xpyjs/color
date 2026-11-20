@@ -1,5 +1,8 @@
 # Getter / Setter
 
+> HSV 方法需要注册 [hsv 插件](/plugins/hsv)。转换工具从该插件入口导入。
+
+
 xcolor 的通道方法同时扮演 getter 和 setter 的角色——不传参读取，传参设置：
 
 ```ts

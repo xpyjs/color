@@ -26,13 +26,12 @@ export {
   rgbaToHex,
   rgbToHsl,
   hslToRgb,
-  rgbToHsv,
-  hsvToRgb,
   relativeLuminance,
   contrastRatio,
   defineMethod,
   Logger
 } from "./utils";
+export { XColorError, type XColorErrorCode } from "./utils";
 
 // Re-export parsing functions & channel parsers
 export {

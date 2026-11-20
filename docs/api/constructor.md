@@ -1,5 +1,23 @@
 # 构造与工厂
 
+> HSV 输入和方法需要先注册 [hsv 插件](/plugins/hsv)。
+
+
+## 严格模式与错误
+
+`xcolor(input, { strict: true })` 在输入无法解析、复制无效实例或显式传 null 时抛出 `XColorError`。无参数仍创建黑色。也可通过 `xcolor.config({ strict: true })` 设置默认，实例可显式传 false。严格模式检查核心数值 setter 和调整参数：NaN/Infinity 在修改前抛错；有限越界值仍按原规则夹取。克隆保留 strict 选项，hex 替换失败保留原值与有效状态。
+
+```ts
+import xcolor, { XColorError } from '@xpyjs/color'
+try { xcolor('invalid', { strict: true }) } catch (error) {
+  if (error instanceof XColorError) console.log(error.code, error.operation)
+}
+```
+
+结构化字段：name='XColorError'，code 为 INVALID_INPUT、INVALID_COLOR 或 INVALID_ARGUMENT；调用点提供上下文时带 operation。旧 Logger.createError 也返回该错误，保留原消息前缀，不应依赖消息文本分类。严格模式检查有效颜色输入，不等同于严格 CSS 语法；CSS 字面量语法请使用 colorSpace.parseCssColor。
+
+默认构造仍返回可用 isValid() 检查的无效实例；克隆和单色调整保持无效标记，成功 hex 替换可修复。mix、contrast、brightness/luminance 及通过 defineMethod 注册的插件计算拒绝无效源；涉及另一颜色的 scale/deltaE 也拒绝无效目标。isReadable 和 equals 对无效颜色仍返回 false。默认 hex 失败仍会标记无效并抛错；只有 strict 模式保留有效状态。插件参数规则由各插件定义，strict 不保证第三方插件自动验证所有参数。
+
 ## xcolor(input?, options?)
 
 创建一个 `XColor` 实例。

@@ -11,6 +11,14 @@ afterEach(() => {
 });
 
 describe("xcolor.config()", () => {
+  it("compares raw inputs using the receiver's RGB precision", () => {
+    const input = "rgb(100.49 100.49 100.49)";
+    const precise = xcolor(input, { useDecimal: true });
+    expect(precise.equals(input)).toBe(true);
+    expect(precise.equals("#646464")).toBe(false);
+    const white = xcolor("#fff", { useDecimal: true });
+    expect(white.contrast(input)).toBe(white.contrast(precise));
+  });
   it("should set global useDecimal option", () => {
     xcolor.config({ useDecimal: true });
     // useDecimal allows fractional RGB — integer hex input stays integer

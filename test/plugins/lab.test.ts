@@ -4,13 +4,49 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { XColor, xcolor } from "../../src/core";
-import lab from "../../src/plugins/lab";
+import lab, { parseCssLab } from "../../src/plugins/lab";
 
 beforeAll(() => {
   XColor.extend(lab);
 });
 
 describe("lab plugin", () => {
+  it("exposes explicit D50 CSS APIs without changing D65 data defaults", () => {
+    const color = xcolor("#f00").alpha(.1234);
+    expect(color.toLab().l).toBe(53.24);
+    expect(color.toCssLabString()).toMatch(/^lab\(54.29%/);
+    for (const css of [color.toCssLabString(), color.toCssLchString()]) {
+      const parsed = xcolor(parseCssLab(css)!);
+      expect(parsed.alpha()).toBe(.1234);
+      expect(parsed.clone().alpha(1).toHex()).toBe("#ff0000");
+    }
+    expect(color.toString("cssLab")).toBe(color.toCssLabString());
+    expect(color.toString("cssLch")).toBe(color.toCssLchString());
+    expect(color.toLab().l).toBe(53.24);
+  });
+
+  it("keeps explicit CSS output independent of plugin reconfiguration", () => {
+    const color = xcolor("#1890ff");
+    const css = color.toCssLabString();
+    xcolor.use(lab, { whitePoint: "D50" });
+    try {
+      expect(color.toCssLabString()).toBe(css);
+      expect(xcolor("lab(100% 125 125)").toHex()).toBe("#ffffff");
+      expect(xcolor("lch(0% 150 90)").toHex()).toBe("#000000");
+    } finally {
+      xcolor.use(lab);
+    }
+  });
+
+  it("validates CSS Lab and maps lightness endpoints", () => {
+    expect(parseCssLab("rgb(0 0 0)")).toBeNull();
+    expect(parseCssLab("lab(nope 0 0)")).toBeNull();
+    expect(parseCssLab("lch(50 20 nope)")).toBeNull();
+    expect(parseCssLab("lab(50 0 0 / nope)")).toBeNull();
+    expect(parseCssLab("lab(100% 125 125 / .4)")).toEqual({ r:255,g:255,b:255,a:.4 });
+    expect(parseCssLab("lch(-20% 150 90 / .4)")).toEqual({ r:0,g:0,b:0,a:.4 });
+  });
+
   describe("toLab", () => {
     it("should convert white", () => {
       const c = xcolor("#ffffff");

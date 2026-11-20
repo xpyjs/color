@@ -1,5 +1,8 @@
 # Output
 
+> Register the [hsv plugin](/en/plugins/hsv) for HSV methods. Import HSV conversion utilities from that plugin entry.
+
+
 xcolor provides multiple methods to serialize color instances into different formats.
 
 ## Hex

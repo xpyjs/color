@@ -253,7 +253,7 @@ export function deriveRoleColors(
     baseHex = (sourceValue as any).DEFAULT;
   }
 
-  if (!baseHex) {
+  if (baseHex === null) {
     Logger.warn(
       "ThemePlugin derive: source color '" + fromKey + "' not found or has no base value. " +
       "Derivation skipped. Provide '" + fromKey + "' as a string or an object with a DEFAULT key."
@@ -262,6 +262,9 @@ export function deriveRoleColors(
   }
 
   var sourceColor = new cls(baseHex);
+  if (!sourceColor.isValid()) {
+    throw Logger.createError("Invalid source color for theme derivation: " + fromKey);
+  }
 
   // Build extended colors
   var result: Record<string, string | ColorConfig> = {};

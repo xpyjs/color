@@ -2,6 +2,10 @@
 
 Generate design system shade palettes from any color. Supports Ant Design HSV curves, linear interpolation, and custom generator functions.
 
+An invalid base color throws, including empty shade requests and custom generators. Parser fallback black is never promoted into a valid palette.
+
+Built-in algorithms retain the base alpha and instance `useDecimal` option. Shade 500 is an independent copy of the base. Later global configuration does not override the source instance's options. Custom generators control their output opacity and precision.
+
 ## Install
 
 ```ts
@@ -16,6 +20,10 @@ xcolor.use(palettePlugin)
 ### palette(options?)
 
 Generate a design system shade palette from the current color. The base color maps to shade 500, with lighter shades below and darker shades above.
+
+Dark shades can reach pure black. A black base remains black in subsequent dark shades instead of being artificially brightened.
+
+`linear` uses fixed anchors: white at 50, the base at 500, and black at 950. Intermediate colors interpolate by shade value. Subsets, ordering and duplicates do not change a shade's color. This corrects the previous request-relative interpolation, so intermediate colors may differ from older versions.
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |

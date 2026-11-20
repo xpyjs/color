@@ -1,5 +1,7 @@
 # scale - 色阶插值
 
+HSL 插值会忽略无彩色端点的无意义色相，沿用另一端的有效色相。因此白/灰/黑与蓝色之间的过渡不会绕向紫色；两端都无彩色时保持灰阶。
+
 在两个颜色之间进行精确的色彩空间插值，支持多种色彩空间和缓动函数。比 gradient 插件提供更精细的控制。
 
 ## 安装
@@ -13,7 +15,7 @@ xcolor.use(scalePlugin)
 
 ## 方法
 
-<SvgScaleComparison />
+<ScaleExplorer />
 
 ### scale(to, options?)
 
@@ -38,9 +40,9 @@ interface ScaleOptions {
 | 值 | 说明 |
 | --- | --- |
 | `'rgb'` | RGB 线性插值（默认）|
+| `'srgb-linear'` | Linear-light sRGB |
+| `'oklab'` | OKLab |
 | `'hsl'` | HSL 插值 |
-| `'srgb-linear'` | 线性光 sRGB 插值 |
-| `'oklab'` | OKLab 插值 |
 
 #### 缓动函数（ScaleEasing）
 
@@ -82,7 +84,7 @@ xcolor('#ff0000').at('#0000ff', 0.5, { space: 'hsl' }).toHex()  // 通过 HSL �
 
 RGB 插值可能产生"浑浊"的中间色，HSL 插值会沿色轮过渡：
 
-<SvgScaleSpaces />
+
 
 ```ts
 // RGB：红→蓝 中间是紫灰色

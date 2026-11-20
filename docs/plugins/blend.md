@@ -2,6 +2,19 @@
 
 模拟 Photoshop/CSS 的图层混合模式，将两个颜色按照指定算法混合。
 
+## 非分离混合与合成
+
+`blend(source, mode = 'normal')` 新增 `hue`、`saturation`、`color`、`luminosity`，遵循 [W3C 非分离公式](https://www.w3.org/TR/compositing-1/#blendingnonseparable)。这些模式使用规范的 Lum/Sat/ClipColor 运算，不是直接替换 HSL 分量，也不是 WCAG 相对亮度。
+
+```ts
+xcolor('#ff0000').blend('#0000ff', 'color')
+xcolor('#0000ff').composite('#ff0080', 'source-over')
+```
+
+`destination.composite(source, operator = 'source-over')` 在编码 sRGB 中进行单个 RGBA 颜色的 Porter–Duff 合成，支持 clear、copy、destination、source-over、destination-over、source-in、destination-in、source-out、destination-out、source-atop、destination-atop、xor 和 lighter。lighter 累加并限制预乘通道和 alpha；它与 blend 的 lighten（逐通道取大值）不同。
+
+两种操作都返回独立实例，保留目标实例精度选项，不修改输入；合成输出 alpha 为 0 时采用透明黑。无效输入或未知操作会抛错。这里不实现图像形状、图层组隔离或 Canvas 绘制区域，只计算给定 RGBA 像素。
+
 ## 安装
 
 ```ts

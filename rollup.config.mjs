@@ -12,7 +12,8 @@ const __dirname = dirname(__filename);
 
 const terserOptions = {
     toplevel: true,
-    mangle: { properties: { regex: /^_(?:a|valid|roundCh|applyCS|channel|pluginCleanups)$/ } },
+    // The separately bundled HSV plugin installs v() on the core prototype.
+    mangle: { properties: { regex: /^_(?:a|valid|roundCh|applyCS|channel|pluginCleanups)$/, reserved: ["v"] } },
     compress: {
         passes: 4,
         pure_getters: true,
@@ -103,7 +104,7 @@ function commonJsDeclarations(isCore = false) {
                     !ts.isNamedExports(statement.exportClause)) continue;
                 for (const specifier of statement.exportClause.elements) {
                     if (statement.isTypeOnly || specifier.isTypeOnly ||
-                        (isCore && specifier.name.text === "XColor")) {
+                        (isCore && ["XColor", "XColorError"].includes(specifier.name.text))) {
                         typeNames.add(specifier.name.text);
                     }
                 }
