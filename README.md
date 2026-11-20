@@ -7,8 +7,8 @@
 </h1>
 
 <p align="center">
-  <img src="https://img.shields.io/npm/v/@xpyjs/color?color=%2342b883&label=version" alt="version" />
-  <img src="https://img.shields.io/bundlephobia/minzip/@xpyjs/color?color=%2342b883" alt="bundle size" />
+  <img src="https://img.shields.io/npm/v/@xpyjs/color?color=f472b6&label=version" alt="version" />
+  <img src="https://badgen.net/bundlejs/minzip/@xpyjs/color?color=f472b6" alt="bundle size" />
   <img src="https://img.shields.io/npm/l/@xpyjs/color" alt="license" />
   <img src="https://img.shields.io/github/actions/workflow/status/xpyjs/color/ci.yml?branch=main" alt="CI" />
   <img src="https://codecov.io/gh/xpyjs/color/branch/main/graph/badge.svg" alt="coverage" />
